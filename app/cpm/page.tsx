@@ -59,7 +59,7 @@ export default function CPMPage() {
           metricFn={(r) => calcCPM(r.spend, r.impressions)}
           metricLabel="CPM"
           extraColumns={[
-            { key: 'spend', label: 'Amount', format: (v) => `₹${(v || 0).toLocaleString('en-IN')}` },
+            { key: 'spend', label: 'Amount Spent', format: (v) => `₹${(v || 0).toLocaleString('en-IN')}` },
             { key: 'impressions', label: 'Impressions' }
           ]}
         />
