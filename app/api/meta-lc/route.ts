@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,spend,link_clicks,landing_page_views`
+      + `?fields=campaign_name,spend,actions`
       + `&time_increment=monthly`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
       + `&level=campaign&limit=500`
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch day-level data
     const dayUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,spend,link_clicks,landing_page_views`
+      + `?fields=campaign_name,spend,actions`
       + `&time_increment=1`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
       + `&level=campaign&limit=500`
@@ -48,9 +48,19 @@ export async function GET(req: NextRequest) {
         if (!grouped[period]) {
           grouped[period] = { period, spend: 0, link_clicks: 0, landing_page_views: 0 };
         }
+        
+        let lc = 0;
+        let lp = 0;
+        if (row.actions && Array.isArray(row.actions)) {
+          const lcAction = row.actions.find((a: any) => a.action_type === 'link_click');
+          const lpAction = row.actions.find((a: any) => a.action_type === 'landing_page_view');
+          if (lcAction) lc = parseInt(lcAction.value, 10);
+          if (lpAction) lp = parseInt(lpAction.value, 10);
+        }
+
         grouped[period].spend               += Math.round(parseFloat(row.spend || '0'));
-        grouped[period].link_clicks         += parseInt(row.link_clicks || '0', 10);
-        grouped[period].landing_page_views  += parseInt(row.landing_page_views || '0', 10);
+        grouped[period].link_clicks         += lc;
+        grouped[period].landing_page_views  += lp;
       });
 
       return Object.values(grouped).sort((a, b) => a.period.localeCompare(b.period));
