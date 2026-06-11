@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { matchesCampaign } from '@/lib/metricUtils';
+import { matchesCategory, classifyFunnel, FUNNELS, Funnel } from '@/lib/metricUtils';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category') || 'All';
-    const funnel   = searchParams.get('funnel')   || 'All';
     const since    = searchParams.get('since')    || '';
     const until    = searchParams.get('until')    || '';
 
@@ -22,11 +21,14 @@ export async function GET(req: NextRequest) {
       + `&level=campaign&limit=500`
       + `&access_token=${token}`;
 
-    // Fetch day-level data
+    // For day-level data, fetch only the current month (month of 'until')
+    const untilDate = until ? new Date(until) : new Date();
+    const daySinceStr = `${untilDate.getFullYear()}-${String(untilDate.getMonth() + 1).padStart(2, '0')}-01`;
+
     const dayUrl = `${BASE}/${accountId}/insights`
       + `?fields=campaign_name,spend,impressions`
       + `&time_increment=1`
-      + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
+      + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until }))}`
       + `&level=campaign&limit=500`
       + `&access_token=${token}`;
 
@@ -35,28 +37,47 @@ export async function GET(req: NextRequest) {
       fetchAllPages(dayUrl),
     ]);
 
-    // Group and filter by category+funnel
-    const groupRows = (rows: any[]) => {
-      const grouped: Record<string, {
-        period: string; spend: number; impressions: number
-      }> = {};
+    const getEmptyGroup = () => ({
+      TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {}
+    });
 
+    const monthlyData: Record<Funnel, Record<string, any>> = getEmptyGroup();
+    const dailyData: Record<Funnel, Record<string, any>>   = getEmptyGroup();
+    
+    const monthPeriods = new Set<string>();
+    const dayPeriods   = new Set<string>();
+
+    const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>) => {
       rows.forEach(row => {
-        if (!matchesCampaign(row.campaign_name || '', category, funnel)) return;
-        const period = row.date_start; // YYYY-MM-DD or YYYY-MM-01
-        if (!grouped[period]) {
-          grouped[period] = { period, spend: 0, impressions: 0 };
-        }
-        grouped[period].spend       += Math.round(parseFloat(row.spend || '0'));
-        grouped[period].impressions += parseInt(row.impressions || '0', 10);
-      });
+        if (!matchesCategory(row.campaign_name || '', category)) return;
+        const funnel = classifyFunnel(row.campaign_name || '');
+        if (!funnel) return;
 
-      return Object.values(grouped).sort((a, b) => a.period.localeCompare(b.period));
-    }
+        const period = row.date_start; // YYYY-MM-DD or YYYY-MM-01
+        periodSet.add(period);
+
+        if (!targetMap[funnel][period]) {
+          targetMap[funnel][period] = { spend: 0, impressions: 0 };
+        }
+        
+        targetMap[funnel][period].spend       += Math.round(parseFloat(row.spend || '0'));
+        targetMap[funnel][period].impressions += parseInt(row.impressions || '0', 10);
+      });
+    };
+
+    processRows(monthRows, monthlyData, monthPeriods);
+    processRows(dayRows, dailyData, dayPeriods);
+
+    const sortedMonths = Array.from(monthPeriods).sort();
+    const sortedDays   = Array.from(dayPeriods).sort();
 
     return NextResponse.json({
-      monthly: groupRows(monthRows),
-      daily:   groupRows(dayRows),
+      monthly: monthlyData,
+      daily:   dailyData,
+      periods: {
+        months: sortedMonths,
+        days:   sortedDays
+      }
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

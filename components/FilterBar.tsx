@@ -1,20 +1,14 @@
 import React from 'react';
-import { fmtDate } from '@/lib/dateUtils';
+import { getDefaultDateRange } from '@/lib/metricUtils';
 
 export const CATEGORIES = [
   'All', 'Mattress', 'Sofa', 'Desk', 'Chair', 'Elite', 
   'Foot Massager', 'Accessories', 'Bed'
 ];
 
-export const FUNNELS = [
-  'All', 'Top', 'Mid', 'Bottom', 'Growth'
-];
-
 interface FilterBarProps {
   category: string;
   setCategory: (c: string) => void;
-  funnel: string;
-  setFunnel: (f: string) => void;
   since: string;
   setSince: (s: string) => void;
   until: string;
@@ -25,7 +19,6 @@ interface FilterBarProps {
 
 export default function FilterBar({
   category, setCategory,
-  funnel, setFunnel,
   since, setSince,
   until, setUntil,
   onGenerate, loading
@@ -34,11 +27,9 @@ export default function FilterBar({
   // Set defaults if empty
   React.useEffect(() => {
     if (!since || !until) {
-      const today = new Date();
-      const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      setSince(fmtDate(startOfMonth));
-      setUntil(fmtDate(yesterday));
+      const def = getDefaultDateRange();
+      setSince(def.since);
+      setUntil(def.until);
     }
   }, [since, until, setSince, setUntil]);
 
@@ -57,10 +48,6 @@ export default function FilterBar({
       
       <select style={selectStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
-
-      <select style={selectStyle} value={funnel} onChange={(e) => setFunnel(e.target.value)}>
-        {FUNNELS.map(f => <option key={f} value={f}>{f}</option>)}
       </select>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1d27', padding: '4px 12px', borderRadius: '6px', border: '1px solid #2d3748' }}>

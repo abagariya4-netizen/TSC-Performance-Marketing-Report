@@ -1,17 +1,18 @@
 'use client';
 import { useState } from 'react';
 import FilterBar from '@/components/FilterBar';
-import MetricsReport, { MetricRow } from '@/components/MetricsReport';
-import { calcLCtoLP } from '@/lib/metricUtils';
+import MetricsReport from '@/components/MetricsReport';
+import { calcLCtoLP, Funnel } from '@/lib/metricUtils';
 
 export default function LCToLPPage() {
   const [category, setCategory] = useState('All');
-  const [funnel, setFunnel]     = useState('All');
   const [since, setSince]       = useState('');
   const [until, setUntil]       = useState('');
   
-  const [monthlyData, setMonthlyData] = useState<MetricRow[]>([]);
-  const [dailyData, setDailyData]     = useState<MetricRow[]>([]);
+  const [monthlyData, setMonthlyData] = useState<Record<Funnel, Record<string, any>> | null>(null);
+  const [dailyData, setDailyData]     = useState<Record<Funnel, Record<string, any>> | null>(null);
+  const [periods, setPeriods]         = useState<{ months: string[], days: string[] } | null>(null);
+  
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -20,14 +21,15 @@ export default function LCToLPPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ category, funnel, since, until });
+      const params = new URLSearchParams({ category, since, until });
       const res = await fetch(`/api/meta-lc?${params.toString()}`);
       const data = await res.json();
       
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to fetch data');
       
-      setMonthlyData(data.monthly || []);
-      setDailyData(data.daily || []);
+      setMonthlyData(data.monthly);
+      setDailyData(data.daily);
+      setPeriods(data.periods);
       setLastUpdated(new Date().toLocaleString('en-IN'));
     } catch (e: any) {
       setError(e.message);
@@ -37,10 +39,9 @@ export default function LCToLPPage() {
   };
 
   return (
-    <main style={{ background: '#0f1117', minHeight: '100vh', padding: '24px', fontFamily: 'Inter, sans-serif', color: 'white' }}>
+    <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
       <FilterBar 
         category={category} setCategory={setCategory}
-        funnel={funnel} setFunnel={setFunnel}
         since={since} setSince={setSince}
         until={until} setUntil={setUntil}
         onGenerate={generateReport}
@@ -49,12 +50,13 @@ export default function LCToLPPage() {
 
       {error && <div style={{ background: '#3a1a1a', color: '#fc8181', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
 
-      {(monthlyData.length > 0 || dailyData.length > 0) && (
+      {(monthlyData && dailyData && periods) && (
         <MetricsReport 
           type="lc"
           monthlyData={monthlyData}
           dailyData={dailyData}
-          metricFn={(r) => calcLCtoLP(r.link_clicks, r.landing_page_views)}
+          periods={periods}
+          metricFn={(r) => calcLCtoLP(r.landing_page_views, r.link_clicks)}
           metricLabel="LC to LP %"
           extraColumns={[
             { key: 'link_clicks', label: 'Link Clicks' },
