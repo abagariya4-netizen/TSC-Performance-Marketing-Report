@@ -14,7 +14,7 @@ export async function fetchAllPages(url: string, retries = 4): Promise<any[]> {
     while (!success && attempt < retries) {
       attempt++;
       try {
-        const res: Response  = await fetch(next, { cache: 'no-store' });
+        const res: Response  = await fetch(next as string, { cache: 'no-store' });
         const json = await res.json();
         
         if (json.error) {
