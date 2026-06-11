@@ -79,6 +79,7 @@ export default function CityTable({ data, plan }: { data: any, plan: Record<stri
       });
     });
     
+    const gtRow = calcRow(gtMtd, gtYday, gtPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
     lines.push([
       '"Grand Total"',
       gtPlan,
