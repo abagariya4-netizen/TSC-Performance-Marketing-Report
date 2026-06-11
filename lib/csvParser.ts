@@ -11,7 +11,7 @@ export function parseCSVLine(line: string): string[] {
 }
 
 export function cleanNum(s: string): number {
-  return parseFloat(String(s).replace(/[",\\s₹$\\r]/g, ''));
+  return parseFloat(String(s).replace(/[",\s₹$\r]/g, ''));
 }
 
 const KNOWN_STATES = [
@@ -23,21 +23,18 @@ const KNOWN_STATES = [
 ];
 
 export function parseRegionPlanCSV(text: string): Record<string, number> {
-  // FIX: split on \\r?\\n to handle Windows line endings
-  const lines    = text.split(/\\r?\\n/).filter(l => l.trim());
+  const lines    = text.split(/\r?\n/).filter(l => l.trim());
   const allRows  = lines.map(parseCSVLine);
   const dataRows = allRows.slice(1).filter(r => r.length >= 2);
   if (!dataRows.length) return {};
 
-  // FIX: use parseCSVLine rows (not raw split) for column detection
   const n = dataRows[0].length;
   const rScore = new Array(n).fill(0);
   const nScore = new Array(n).fill(0);
 
   dataRows.forEach(row => {
     row.forEach((cell, i) => {
-      // FIX: strip \\r before comparing
-      if (KNOWN_STATES.includes(cell.toLowerCase().trim().replace(/\\r/g, ''))) rScore[i]++;
+      if (KNOWN_STATES.includes(cell.toLowerCase().trim().replace(/\r/g, ''))) rScore[i]++;
       const num = cleanNum(cell);
       if (!isNaN(num) && num > 100) nScore[i]++;
     });
@@ -49,8 +46,7 @@ export function parseRegionPlanCSV(text: string): Record<string, number> {
 
   const plan: Record<string, number> = {};
   dataRows.forEach(row => {
-    // FIX: strip \\r from region name before storing
-    const region = (row[rCol] || '').trim().replace(/\\r/g, '');
+    const region = (row[rCol] || '').trim().replace(/\r/g, '');
     const val    = cleanNum(row[pCol] || '');
     if (region && region.toLowerCase() !== 'grand total' && !isNaN(val) && val > 0) {
       plan[region] = val;
@@ -69,31 +65,27 @@ const FUNNEL_MAP: Record<string, string> = {
 };
 
 export function parseCityPlanCSV(text: string): Record<string, Record<string, number>> {
-  // FIX: split on \\r?\\n to handle Windows line endings
-  const lines    = text.split(/\\r?\\n/).filter(l => l.trim());
+  const lines    = text.split(/\r?\n/).filter(l => l.trim());
   const allRows  = lines.map(parseCSVLine);
   const cityPlan: Record<string, Record<string, number>> = {};
   let currentCity: string | null = null;
 
   for (const row of allRows) {
-    // FIX: strip \\r from all cells
-    const col0 = (row[0] || '').trim().replace(/\\r/g, '').toLowerCase();
-    const col1 = (row[1] || '').trim().replace(/\\r/g, '');
+    const col0 = (row[0] || '').trim().replace(/\r/g, '').toLowerCase();
+    const col1 = (row[1] || '').trim().replace(/\r/g, '');
     if (!col0) continue;
 
-    // Check funnel row FIRST
     if (FUNNEL_MAP[col0] && currentCity) {
       const val = cleanNum(col1);
       if (!isNaN(val) && val >= 0) cityPlan[currentCity][FUNNEL_MAP[col0]] = val;
       continue;
     }
 
-    // Then check city header
     const isCity = CITY_HEADERS.includes(col0) || DELHI_KEYWORDS.some(k => col0.includes(k));
     if (isCity) {
       currentCity = col0.includes('delhi')
         ? 'Delhi+NCR'
-        : row[0].trim().replace(/\\r/g, '').split(' ')
+        : row[0].trim().replace(/\r/g, '').split(' ')
             .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
       cityPlan[currentCity] = {};
     }
