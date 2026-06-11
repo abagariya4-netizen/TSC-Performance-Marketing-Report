@@ -5,9 +5,16 @@ import CityTable from '@/components/CityTable';
 import PlanUpload from '@/components/PlanUpload';
 import { parseRegionPlanCSV, parseCityPlanCSV } from '@/lib/csvParser';
 
+import { useSearchParams } from 'next/navigation';
+
+import { Suspense } from 'react';
+
 type Tab = 'region' | '6city';
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  
   const [activeTab, setActiveTab]       = useState<Tab>('region');
   const [regionPlan, setRegionPlan]     = useState<Record<string,number> | null>(null);
   const [cityPlan, setCityPlan]         = useState<Record<string,Record<string,number>> | null>(null);
@@ -17,6 +24,14 @@ export default function Home() {
   const [error, setError]               = useState<string | null>(null);
   const [lastUpdated, setLastUpdated]   = useState<string | null>(null);
   const [dateInfo, setDateInfo]         = useState<any>(null);
+
+  useEffect(() => {
+    if (tabParam === '6city') {
+      setActiveTab('6city');
+    } else {
+      setActiveTab('region');
+    }
+  }, [tabParam]);
 
   useEffect(() => {
     const rp = localStorage.getItem('tsc_region_plan');
@@ -65,11 +80,10 @@ export default function Home() {
   const anyPlanLoaded = regionPlan || cityPlan;
 
   return (
-    <main style={{ background: '#0f1117', minHeight: '100vh', padding: '24px', fontFamily: 'Inter, sans-serif', color: 'white' }}>
+    <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🛏 TSC Performance Report</h1>
         {dateInfo && (
-          <div style={{ marginTop: '8px', background: '#1a1d27', display: 'inline-block', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', color: '#90cdf4' }}>
+          <div style={{ background: '#1a1d27', display: 'inline-block', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', color: '#90cdf4' }}>
             {dateInfo.displayMonth} | Day {dateInfo.daysPassed} of {dateInfo.totalDays} | {dateInfo.daysRemaining} days remaining
           </div>
         )}
@@ -88,23 +102,9 @@ export default function Home() {
           <div style={{ background: '#1a3a2a', borderRadius: '8px', padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
             <PlanUpload label="Region Plan" onLoad={handleRegionPlanUpload} loaded={!!regionPlan} count={regionPlan ? Object.keys(regionPlan).length : 0} unit="regions" compact />
             <PlanUpload label="6 City Plan" onLoad={handleCityPlanUpload} loaded={!!cityPlan} count={cityPlan ? Object.keys(cityPlan).length : 0} unit="cities" compact />
-          </div>
-
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', alignItems: 'center' }}>
-            <button onClick={() => setActiveTab('region')} disabled={!regionPlan}
-              style={{ padding: '8px 20px', borderRadius: '8px 8px 0 0', border: 'none', cursor: regionPlan ? 'pointer' : 'not-allowed',
-                background: activeTab === 'region' ? '#e8733a' : '#1a1d27',
-                color: activeTab === 'region' ? 'white' : '#666', fontWeight: 600 }}>
-              Region Level Spends (Meta)
-            </button>
-            <button onClick={() => setActiveTab('6city')} disabled={!cityPlan}
-              style={{ padding: '8px 20px', borderRadius: '8px 8px 0 0', border: 'none', cursor: cityPlan ? 'pointer' : 'not-allowed',
-                background: activeTab === '6city' ? '#e8733a' : '#1a1d27',
-                color: activeTab === '6city' ? 'white' : '#666', fontWeight: 600 }}>
-              6 City (Meta)
-            </button>
+            
             <button onClick={generateReport} disabled={loading}
-              style={{ marginLeft: 'auto', padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              style={{ marginLeft: 'auto', padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
                 background: '#e8733a', color: 'white', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
               {loading ? '⏳ Fetching...' : '🔄 Generate Report'}
             </button>
@@ -127,5 +127,13 @@ export default function Home() {
         </>
       )}
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div style={{ color: 'white', padding: '24px' }}>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
