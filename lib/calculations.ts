@@ -13,5 +13,6 @@ export function calcRow(
 
 export function formatINR(n: number | null): string {
   if (n == null) return '—';
-  return Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  const abs = Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  return n < 0 ? `-${abs}` : abs;
 }

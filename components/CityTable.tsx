@@ -37,7 +37,7 @@ export default function CityTable({ data, plan }: { data: any, plan: Record<stri
         <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.plan != null ? diffColor : 'inherit' }}>
           {r.plan != null ? `${r.diffPct > 0 ? '+' : ''}${r.diffPct}%` : '—'}
         </td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.estMinusPlan)}</td>
+        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.estMinusPlan != null ? (r.estMinusPlan < 0 ? '#fc8181' : '#48bb78') : 'inherit' }}>{formatINR(r.estMinusPlan)}</td>
         <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'center' }}>{pillHtml}</td>
       </tr>
     );
