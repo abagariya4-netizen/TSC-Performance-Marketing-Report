@@ -23,7 +23,7 @@ const KNOWN_STATES = [
 ];
 
 export function parseRegionPlanCSV(text: string): Record<string, number> {
-  const lines    = text.split(/\r?\n/).filter(l => l.trim());
+  const lines    = text.split(/\r\n|\n|\r/).filter(l => l.trim());
   const allRows  = lines.map(parseCSVLine);
   const dataRows = allRows.slice(1).filter(r => r.length >= 2);
   if (!dataRows.length) return {};
@@ -65,7 +65,7 @@ const FUNNEL_MAP: Record<string, string> = {
 };
 
 export function parseCityPlanCSV(text: string): Record<string, Record<string, number>> {
-  const lines    = text.split(/\r?\n/).filter(l => l.trim());
+  const lines    = text.split(/\r\n|\n|\r/).filter(l => l.trim());
   const allRows  = lines.map(parseCSVLine);
   const cityPlan: Record<string, Record<string, number>> = {};
   let currentCity: string | null = null;
