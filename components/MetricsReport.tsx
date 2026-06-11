@@ -12,7 +12,7 @@ interface MetricsReportProps {
   extraColumns: { key: string; label: string; format?: (v: any) => string }[];
 }
 
-export default function MetricsReport({ type, monthlyData, dailyData, periods, metricFn, extraColumns }: MetricsReportProps) {
+export default function MetricsReport({ type, monthlyData, dailyData, periods, metricFn, metricLabel, extraColumns }: MetricsReportProps) {
 
   // Formats the primary metric (LC% or CPM fraction)
   const formatVal = (v: number | null) => {
@@ -44,7 +44,16 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
   const exportCSV = (dataMap: Record<Funnel, Record<string, any>>, periodList: string[], isMonth: boolean, filenamePrefix: string) => {
     if (periodList.length === 0) return;
     const currentPeriod = periodList[periodList.length - 1];
-    const headerRow = ['Funnel', ...periodList.map(p => isMonth ? formatMonthHeader(p) : formatDayHeader(p)), ...extraColumns.map(c => c.label), 'vs Last Period', 'vs Avg Last 3', 'Last 7 Days'];
+    
+    // Group 1: Primary metric headers (e.g. Mar LC to LP %, Apr LC to LP %)
+    const g1Headers = periodList.map(p => `${isMonth ? formatMonthHeader(p) : formatDayHeader(p)} ${metricLabel}`);
+    
+    // Group 2/3 headers (e.g. Mar Link Clicks, Mar Landing Page)
+    const extraHeaders = extraColumns.flatMap(c => 
+      periodList.map(p => `${isMonth ? formatMonthHeader(p) : formatDayHeader(p)} ${c.label}`)
+    );
+    
+    const headerRow = ['Funnel', ...g1Headers, ...extraHeaders, 'vs Last Period', 'vs Avg Last 3', 'Last 7 Days'];
     
     let csv = headerRow.join(',') + '\n';
     
@@ -56,12 +65,18 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
       const { vsLastMonth, vsAvg3 } = calcComparisons(periodList, currentPeriod, metricByPeriod);
       const last7 = calcLast7Days(dailyData[funnel] || {}, (p) => dailyData[funnel][p] ? metricFn(dailyData[funnel][p]) : null);
 
-      const currentRow = rowData[currentPeriod] || {};
+      const g1Data = periodList.map(p => metricByPeriod[p] != null ? metricByPeriod[p] : '');
+      const extraData = extraColumns.flatMap(c => 
+        periodList.map(p => {
+          const val = rowData[p] ? rowData[p][c.key] : 0;
+          return val || 0; // Raw number for CSV
+        })
+      );
       
       const rowLine = [
         funnel,
-        ...periodList.map(p => metricByPeriod[p] != null ? metricByPeriod[p] : ''),
-        ...extraColumns.map(c => c.format ? c.format(currentRow[c.key]) : (currentRow[c.key] || 0)),
+        ...g1Data,
+        ...extraData,
         vsLastMonth ?? '',
         vsAvg3 ?? '',
         last7 ?? ''
@@ -107,15 +122,26 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
         <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', whiteSpace: 'nowrap' }}>
             <thead>
+              <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+                <th rowSpan={2} style={{ padding: '10px 12px', textAlign: 'left', verticalAlign: 'bottom' }}>Funnel</th>
+                <th colSpan={periodList.length} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>{metricLabel}</th>
+                {extraColumns.map(c => (
+                  <th key={c.key} colSpan={periodList.length} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>{c.label}</th>
+                ))}
+                <th colSpan={3} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>Comparisons</th>
+              </tr>
               <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-                <th style={{ padding: '10px 12px', textAlign: 'left' }}>Funnel</th>
                 {periodList.map(p => (
-                  <th key={p} style={{ padding: '10px 12px', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                  <th key={`g1-${p}`} style={{ padding: '10px 12px', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
                     {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
                   </th>
                 ))}
                 {extraColumns.map(c => (
-                  <th key={c.key} style={{ padding: '10px 12px' }}>{c.label}</th>
+                  periodList.map(p => (
+                    <th key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                      {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
+                    </th>
+                  ))
                 ))}
                 <th style={{ padding: '10px 12px' }}>{currentHeader} vs Last {isMonth ? 'Month' : 'Day'}</th>
                 <th style={{ padding: '10px 12px' }}>{currentHeader} vs Avg 3 {isMonth ? 'Months' : 'Days'}</th>
@@ -131,22 +157,25 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
                 const { vsLastMonth, vsAvg3 } = calcComparisons(periodList, currentPeriod, metricByPeriod);
                 const last7 = calcLast7Days(dailyData[funnel] || {}, (p) => dailyData[funnel][p] ? metricFn(dailyData[funnel][p]) : null);
 
-                const currentRow = rowData[currentPeriod] || {};
-
                 return (
                   <tr key={funnel} style={{ background: i % 2 === 0 ? '#1a1d27' : '#1f2333' }}>
                     <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left', fontWeight: 'bold' }}>
                       {funnel.charAt(0).toUpperCase() + funnel.slice(1).toLowerCase()}
                     </td>
                     {periodList.map(p => (
-                      <td key={p} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                      <td key={`g1-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
                         {formatVal(metricByPeriod[p])}
                       </td>
                     ))}
                     {extraColumns.map(c => (
-                      <td key={c.key} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                        {c.format ? c.format(currentRow[c.key]) : currentRow[c.key]?.toLocaleString('en-IN') || 0}
-                      </td>
+                      periodList.map(p => {
+                        const val = rowData[p] ? rowData[p][c.key] : 0;
+                        return (
+                          <td key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                            {c.format ? c.format(val) : val?.toLocaleString('en-IN') || 0}
+                          </td>
+                        );
+                      })
                     ))}
                     <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatPct(vsLastMonth)}</td>
                     <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatPct(vsAvg3)}</td>
