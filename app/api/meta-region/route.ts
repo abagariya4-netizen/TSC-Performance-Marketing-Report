@@ -13,10 +13,8 @@ export async function GET() {
     const mtdUrl  = buildCampaignUrl(accountId, token, dates.sinceMTD,  dates.untilMTD);
     const ydayUrl = buildCampaignUrl(accountId, token, dates.sinceYday, dates.untilYday);
 
-    const [mtdRows, ydayRows] = await Promise.all([
-      fetchAllPages(mtdUrl),
-      fetchAllPages(ydayUrl),
-    ]);
+    const mtdRows = await fetchAllPages(mtdUrl);
+    const ydayRows = await fetchAllPages(ydayUrl);
 
     const mtdByRegion:  Record<string, number> = {};
     const ydayByRegion: Record<string, number> = {};

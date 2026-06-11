@@ -21,10 +21,8 @@ export async function GET() {
     const mtdUrl  = buildAdsetUrl(accountId, token, dates.sinceMTD,  dates.untilMTD);
     const ydayUrl = buildAdsetUrl(accountId, token, dates.sinceYday, dates.untilYday);
 
-    const [mtdRows, ydayRows] = await Promise.all([
-      fetchAllPages(mtdUrl),
-      fetchAllPages(ydayUrl),
-    ]);
+    const mtdRows = await fetchAllPages(mtdUrl);
+    const ydayRows = await fetchAllPages(ydayUrl);
 
     type CityData = Record<string, Record<string, number>>;
     const mtdData:  CityData = {};

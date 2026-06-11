@@ -32,10 +32,8 @@ export async function GET(req: NextRequest) {
       + `&level=campaign&limit=500`
       + `&access_token=${token}`;
 
-    const [monthRows, dayRows] = await Promise.all([
-      fetchAllPages(monthUrl),
-      fetchAllPages(dayUrl),
-    ]);
+    const monthRows = await fetchAllPages(monthUrl);
+    const dayRows   = await fetchAllPages(dayUrl);
 
     const getEmptyGroup = () => ({
       TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {}
