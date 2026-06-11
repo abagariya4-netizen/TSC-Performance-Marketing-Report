@@ -82,18 +82,48 @@ export default function RegionTable({ data, plan }: { data: RegionData, plan: Re
   };
 
   const exportCSV = () => {
-    let csv = "Region,Overall (Plan),MTD,Yesterday,Est. Spends,Difference,Est - Plan,Over/Under\\n";
-    rows.forEach(r => {
-      csv += `"${r.region}",${r.plan || ''},${r.mtd},${r.yday},${r.est},${r.diffPct || ''},${r.estMinusPlan || ''},${r.overUnder || ''}\\n`;
-    });
-    csv += `"Grand Total",${gtPlan},${gtMtd},${gtYday},${gtRow.est},${gtRow.diffPct || ''},${gtRow.estMinusPlan || ''},${gtRow.overUnder || ''}\\n`;
+    const headers = [
+      'Region', 'Overall (Plan)', 'MTD', 'Yesterday',
+      'Est. Spends', 'Difference', 'Est - Plan', 'Over/Under'
+    ];
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const lines: string[] = [];
+    lines.push(headers.join(','));
+
+    rows.forEach(r => {
+      lines.push([
+        `"${r.region}"`,
+        r.plan != null ? r.plan : '',
+        r.mtd,
+        r.yday,
+        r.est,
+        r.diffPct != null ? `${r.diffPct}%` : '',
+        r.estMinusPlan != null ? r.estMinusPlan : '',
+        r.overUnder ?? ''
+      ].join(','));
+    });
+
+    lines.push([
+      '"Grand Total"',
+      gtPlan,
+      gtMtd,
+      gtYday,
+      gtRow.est,
+      gtRow.diffPct != null ? `${gtRow.diffPct}%` : '',
+      gtRow.estMinusPlan != null ? gtRow.estMinusPlan : '',
+      gtRow.overUnder ?? ''
+    ].join(','));
+
+    const csvContent = lines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `TSC_Region_Report_${new Date().getTime()}.csv`;
+    a.download = `TSC_Region_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (

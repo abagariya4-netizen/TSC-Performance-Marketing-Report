@@ -44,33 +44,62 @@ export default function CityTable({ data, plan }: { data: any, plan: Record<stri
   };
 
   const exportCSV = () => {
-    let csv = "Region,Overall (Plan),MTD,Yesterday,Est. Spends,Difference,Est - Plan,Over/Under\\n";
+    const headers = [
+      'Region', 'Overall (Plan)', 'MTD', 'Yesterday',
+      'Est. Spends', 'Difference', 'Est - Plan', 'Over/Under'
+    ];
+
+    const lines: string[] = [];
+    lines.push(headers.join(','));
+
     cities.forEach(city => {
       const cityPlan = plan[city] || {};
       const funnels = ["Top", "Mid", "Bottom"];
       if (cityPlan["RNF"] !== undefined) funnels.push("RNF");
       funnels.push("Group", "Total");
       
-      csv += `"${city}",,,,,,\\n`;
+      lines.push(`"${city}",,,,,,,`);
+      
       funnels.forEach(f => {
         const key = f.toUpperCase();
         const p = cityPlan[f] ?? null;
         const m = data.cities.mtd[city]?.[key] || 0;
         const y = data.cities.yday[city]?.[key] || 0;
         const rowData = calcRow(m, y, p, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-        csv += `"${f}",${p || ''},${m},${y},${rowData.est},${rowData.diffPct || ''},${rowData.estMinusPlan || ''},${rowData.overUnder || ''}\\n`;
+        lines.push([
+          `"${f}"`,
+          p != null ? p : '',
+          m,
+          y,
+          rowData.est,
+          rowData.diffPct != null ? `${rowData.diffPct}%` : '',
+          rowData.estMinusPlan != null ? rowData.estMinusPlan : '',
+          rowData.overUnder ?? ''
+        ].join(','));
       });
     });
     
-    const gtRow = calcRow(gtMtd, gtYday, gtPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-    csv += `"Grand Total",${gtPlan},${gtMtd},${gtYday},${gtRow.est},${gtRow.diffPct || ''},${gtRow.estMinusPlan || ''},${gtRow.overUnder || ''}\\n`;
+    lines.push([
+      '"Grand Total"',
+      gtPlan,
+      gtMtd,
+      gtYday,
+      gtRow.est,
+      gtRow.diffPct != null ? `${gtRow.diffPct}%` : '',
+      gtRow.estMinusPlan != null ? gtRow.estMinusPlan : '',
+      gtRow.overUnder ?? ''
+    ].join(','));
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csvContent = lines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `TSC_6City_Report_${new Date().getTime()}.csv`;
+    a.download = `TSC_6City_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
