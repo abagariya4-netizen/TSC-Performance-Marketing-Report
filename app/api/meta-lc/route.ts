@@ -71,15 +71,20 @@ export async function GET(req: NextRequest) {
           targetMap[funnel][period] = { spend: 0, link_clicks: 0, landing_page_views: 0 };
         }
         
-        let lc = 0;
-        let lp = 0;
+        let lc = parseInt(row.link_clicks || '0', 10);
+        let lp = parseInt(row.landing_page_views || '0', 10);
+        
+        // Sum from actions array (standard Meta API format)
         if (row.actions && Array.isArray(row.actions)) {
-          const lcAction = row.actions.find((a: any) => a.action_type === 'link_click');
-          const lpAction = row.actions.find((a: any) => a.action_type === 'landing_page_view');
-          if (lcAction) lc = parseInt(lcAction.value, 10);
-          if (lpAction) lp = parseInt(lpAction.value, 10);
+          row.actions.forEach((a: any) => {
+            if (a.action_type === 'link_click') lc += parseInt(a.value || '0', 10);
+            if (a.action_type === 'landing_page_view') lp += parseInt(a.value || '0', 10);
+          });
         }
 
+        // ADD every row — do NOT check for duplicates
+        // Meta API returns multiple rows per adset (different variations/placements)
+        // ALL must be counted
         targetMap[funnel][period].spend               += Math.round(parseFloat(row.spend || '0'));
         targetMap[funnel][period].link_clicks         += lc;
         targetMap[funnel][period].landing_page_views  += lp;

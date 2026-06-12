@@ -71,6 +71,9 @@ export async function GET(req: NextRequest) {
           targetMap[funnel][period] = { spend: 0, impressions: 0 };
         }
         
+        // ADD every row — do NOT check for duplicates
+        // Meta API returns multiple rows per adset (different variations/placements)
+        // ALL must be counted
         targetMap[funnel][period].spend       += Math.round(parseFloat(row.spend || '0'));
         targetMap[funnel][period].impressions += parseInt(row.impressions || '0', 10);
       });
