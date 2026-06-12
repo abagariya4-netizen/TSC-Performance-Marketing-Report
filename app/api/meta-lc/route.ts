@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,spend,actions`
+      + `?fields=campaign_name,adset_name,spend,actions`
       + `&time_increment=monthly`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
-      + `&level=campaign&limit=500`
+      + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
     // For day-level data, fetch only the current month (month of 'until')
@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
     const daySinceStr = `${untilDate.getFullYear()}-${String(untilDate.getMonth() + 1).padStart(2, '0')}-01`;
 
     const dayUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,spend,actions`
+      + `?fields=campaign_name,adset_name,spend,actions`
       + `&time_increment=1`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until }))}`
-      + `&level=campaign&limit=500`
+      + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
     const monthRows = await fetchAllPages(monthUrl);
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>) => {
       rows.forEach(row => {
-        if (!matchesCategory(row.campaign_name || '', category)) return;
+        if (!matchesCategory(row.campaign_name || '', row.adset_name || '', category)) return;
         const funnel = classifyFunnel(row.campaign_name || '');
         if (!funnel) return;
 

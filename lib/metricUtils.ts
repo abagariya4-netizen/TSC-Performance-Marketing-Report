@@ -3,30 +3,66 @@ import { fmtDate } from './dateUtils';
 // Standard exclusions applied to ALL categories always
 const ALWAYS_EXCLUDE = ['boost', 'growth'];
 
-export const CATEGORY_RULES: Record<string, { contains?: string; excludes: string[] }> = {
-  'All':          { excludes: ['boost','growth'] },
-  'Mattress':     { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
-  'Sofa':         { contains: 'sofa',  excludes: ['boost','growth'] },
-  'Desk':         { contains: 'desk',  excludes: ['boost','growth'] },
-  'Chair':        { contains: 'chair', excludes: ['boost','growth'] },
-  'Elite':        { contains: 'elite', excludes: ['boost','growth'] },
-  'Foot Massager':{ contains: 'foot',  excludes: ['boost','growth'] },
-  'Accessories':  { contains: 'acce',  excludes: ['boost','growth'] },
-  'Bed':          { contains: 'bed',   excludes: ['boost','growth'] },
+export const CATEGORY_RULES: Record<string, {
+  campaign: { contains?: string; excludes: string[] };
+  adset:    { excludes: string[] };
+}> = {
+  'All': {
+    campaign: { excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
+  'Mattress': {
+    campaign: { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
+    adset:    { excludes: ['sofa', 'desk', 'chair', 'boost', 'growth'] },
+  },
+  'Chair': {
+    campaign: { contains: 'chair', excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'] },
+  },
+  'Desk': {
+    campaign: { contains: 'desk', excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['mattress', 'mat', 'sofa', 'chair', 'boost', 'growth'] },
+  },
+  'Sofa': {
+    campaign: { contains: 'sofa',  excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
+  'Elite': {
+    campaign: { contains: 'elite', excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
+  'Foot Massager': {
+    campaign: { contains: 'foot',  excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
+  'Accessories': {
+    campaign: { contains: 'acce',  excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
+  'Bed': {
+    campaign: { contains: 'bed',   excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['boost', 'growth'] },
+  },
 };
 
 export const FUNNELS = ['TOP', 'MID', 'BOTTOM', 'GROWTH'] as const;
 export type Funnel = typeof FUNNELS[number];
 
-export function matchesCategory(campaignName: string, category: string): boolean {
-  const n = campaignName.toLowerCase();
-  const catRule = CATEGORY_RULES[category];
-  if (!catRule) return false;
-  
-  if (catRule.contains && !n.includes(catRule.contains)) return false;
-  for (const exc of catRule.excludes) {
-    if (n.includes(exc)) return false;
+export function matchesCategory(campaignName: string, adsetName: string, category: string): boolean {
+  const cn = (campaignName || '').toLowerCase();
+  const an = (adsetName   || '').toLowerCase();
+  const rule = CATEGORY_RULES[category];
+  if (!rule) return false;
+
+  if (rule.campaign.contains && !cn.includes(rule.campaign.contains)) return false;
+  for (const exc of rule.campaign.excludes) {
+    if (cn.includes(exc)) return false;
   }
+
+  for (const exc of rule.adset.excludes) {
+    if (an.includes(exc)) return false;
+  }
+
   return true;
 }
 
