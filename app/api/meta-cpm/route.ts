@@ -36,12 +36,16 @@ function groupRows(rows: any[], cat: string) {
         // e.g. "Chair_All_Asset" → no 'mat' → exclude from Mattress
         if (kw && !an.includes(kw)) return;
       } else {
-        // Non-product-creative: classify by campaign OR adset name
+        // Non-product-creative: classify by campaign name OR adset name
         if (kw) {
           // Include if EITHER campaign name OR adset name contains the keyword
           const campaignHasKw = cn.includes(kw);
           const adsetHasKw    = an.includes(kw);
-          if (!campaignHasKw && !adsetHasKw) return;
+          // Also catch adsets ending with _Mat, _Chair etc. (category suffix pattern)
+          // e.g. "TSC_All_Time_Purchasers_Shopify_Cross_Sell_Bottom_Funnel_Mat"
+          const adsetEndsWith = an.endsWith(`_${kw}`) || an.endsWith(` ${kw}`);
+          
+          if (!campaignHasKw && !adsetHasKw && !adsetEndsWith) return;
         }
 
         // Campaign exclusion check (only on campaign name)
