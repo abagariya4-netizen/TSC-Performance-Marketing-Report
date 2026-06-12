@@ -32,7 +32,7 @@ export const CATEGORY_RULES: Record<string, {
   },
   'Sofa': {
     campaign: { contains: 'sofa',  excludes: ['boost', 'growth'] },
-    adset:    { excludes: ['boost', 'growth'] },
+    adset:    { excludes: ['mattress', 'mat', 'desk', 'chair', 'boost', 'growth'] },
   },
   'Elite': {
     campaign: { contains: 'elite', excludes: ['boost', 'growth'] },
@@ -98,29 +98,32 @@ export function matchesCategoryForMetrics(
   const rule = CATEGORY_RULES[category];
   if (!rule) return false;
 
-  const isProductCreative = an.includes('_all_asset') || an.includes('_video');
-
-  // STEP 1 — Campaign exclusions are ALWAYS applied
+  // STEP 1: Campaign exclusions are ALWAYS applied
   for (const exc of rule.campaign.excludes) {
     if (cn.includes(exc)) return false;
   }
 
-  // STEP 2 — Product Creative vs Non-Product Creative
-  if (isProductCreative && category !== 'All') {
-    // If it's a product creative adset, we look at the adset name to determine category.
-    // We bypass the campaign `contains` rule here because "All_Products" campaigns 
-    // might not contain the product keyword (like 'mat') in their name.
-    const keyword = getCategoryKeyword(category);
-    if (keyword && !an.includes(keyword)) {
-      return false;
-    }
-  } else {
-    // For plain adsets (non-product-creative) or "All" category, 
-    // the campaign name MUST pass the `contains` rule.
-    if (rule.campaign.contains && !cn.includes(rule.campaign.contains)) return false;
+  // STEP 2: Adset exclusions are ALWAYS applied
+  for (const exc of rule.adset.excludes) {
+    if (an.includes(exc)) return false;
   }
 
-  return true;
+  if (category === 'All') return true;
+
+  // STEP 3: Does the adset explicitly contain the product keyword?
+  const keyword = getCategoryKeyword(category);
+  if (keyword && an.includes(keyword)) {
+    // If the adset EXPLICITLY says "Mattress" (or "mat"), it belongs to Mattress!
+    // We bypass the campaign `contains` check to support "All Products" campaigns.
+    return true;
+  }
+
+  // STEP 4: If the adset does NOT explicitly contain the keyword, it inherits from the Campaign
+  if (rule.campaign.contains && cn.includes(rule.campaign.contains)) {
+    return true;
+  }
+
+  return false;
 }
 
 export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' | 'GROWTH' | null {
