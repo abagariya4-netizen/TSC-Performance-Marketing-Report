@@ -132,13 +132,13 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
               </tr>
               <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
                 {periodList.map(p => (
-                  <th key={`g1-${p}`} style={{ padding: '10px 12px', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                  <th key={`g1-${p}`} style={{ padding: '10px 12px' }}>
                     {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
                   </th>
                 ))}
                 {extraColumns.map(c => (
                   periodList.map(p => (
-                    <th key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                    <th key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px' }}>
                       {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
                     </th>
                   ))
@@ -163,7 +163,7 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
                       {funnel.charAt(0).toUpperCase() + funnel.slice(1).toLowerCase()}
                     </td>
                     {periodList.map(p => (
-                      <td key={`g1-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                      <td key={`g1-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
                         {formatVal(metricByPeriod[p])}
                       </td>
                     ))}
@@ -171,7 +171,7 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
                       periodList.map(p => {
                         const val = rowData[p] ? rowData[p][c.key] : 0;
                         return (
-                          <td key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', background: p === currentPeriod ? '#1e3a5f' : 'transparent' }}>
+                          <td key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
                             {c.format ? c.format(val) : val?.toLocaleString('en-IN') || 0}
                           </td>
                         );
