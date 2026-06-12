@@ -1,6 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { matchesCategoryForMetrics, classifyFunnel, FUNNELS, Funnel, CATEGORY_RULES } from '@/lib/metricUtils';
+import { classifyFunnel } from '@/lib/metricUtils';
+
+function groupRows(rows: any[], cat: string) {
+  const result: Record<string, Record<string, {
+    spend: number; impressions: number;
+  }>> = {};
+
+  const keywordMap: Record<string, string> = {
+    'Mattress': 'mat', 'Chair': 'chair', 'Sofa': 'sofa',
+    'Desk': 'desk', 'Foot Massager': 'foot', 'Elite': 'elite',
+    'Accessories': 'acce', 'Bed': 'bed',
+  };
+
+  rows.forEach(row => {
+    const cn = (row.campaign_name || '').toLowerCase();
+    const an = (row.adset_name   || '').toLowerCase();
+
+    // Always skip growth and boost
+    if (cn.includes('growth') || cn.includes('boost')) return;
+
+    // Category filter
+    if (cat !== 'All') {
+      const kw = keywordMap[cat];
+      // Check if adset is a product creative (has _all_asset or _video)
+      const isProductCreative = an.includes('_all_asset') || an.includes('_video');
+
+      if (isProductCreative) {
+        // Classify by ADSET name keyword (not campaign name)
+        // e.g. "Mattress_All_Asset" → 'mat' → include for Mattress
+        // e.g. "Chair_All_Asset" → no 'mat' → exclude from Mattress
+        if (kw && !an.includes(kw)) return;
+      } else {
+        // Classify by CAMPAIGN name
+        // Campaign must contain the category keyword
+        if (kw && !cn.includes(kw)) return;
+
+        // Campaign must not contain other product words
+        const catExcludes: Record<string, string[]> = {
+          'Mattress': ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'],
+          'Chair':    ['mattress','sofa','desk'],
+          'Sofa':     ['mattress','chair','desk'],
+          'Desk':     ['mattress','chair','sofa'],
+          'Foot Massager': ['mattress','chair','sofa','desk'],
+          'Elite':    ['mattress'],
+          'Accessories': ['mattress'],
+          'Bed':      ['mattress'],
+        };
+        const excludes = catExcludes[cat] || [];
+        for (const exc of excludes) {
+          if (cn.includes(exc)) return;
+        }
+      }
+    }
+
+    // Funnel classification by campaign name
+    const funnel = classifyFunnel(cn);
+    if (!funnel) return;
+
+    const period = row.date_start;
+    const spend  = Math.round(parseFloat(row.spend || '0'));
+    const imp    = parseInt(row.impressions || '0', 10);
+
+    if (!result[funnel]) result[funnel] = {};
+    if (!result[funnel][period]) {
+      result[funnel][period] = { spend: 0, impressions: 0 };
+    }
+    result[funnel][period].spend       += spend;
+    result[funnel][period].impressions += imp;
+  });
+
+  return result;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -35,60 +106,26 @@ export async function GET(req: NextRequest) {
     const monthRows = await fetchAllPages(monthUrl);
     const dayRows   = await fetchAllPages(dayUrl);
 
-    const getEmptyGroup = () => ({
-      TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {}
+    const monthlyData = groupRows(monthRows, category);
+    const dailyData   = groupRows(dayRows, category);
+
+    // Extract sorted periods
+    const monthPeriods = new Set<string>();
+    Object.values(monthlyData).forEach(funnelData => {
+      Object.keys(funnelData).forEach(p => monthPeriods.add(p));
     });
 
-    const monthlyData: Record<Funnel, Record<string, any>> = getEmptyGroup();
-    const dailyData: Record<Funnel, Record<string, any>>   = getEmptyGroup();
-    
-    const monthPeriods = new Set<string>();
-    const dayPeriods   = new Set<string>();
-
-    const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>) => {
-      rows.forEach(row => {
-        const campaignName = row.campaign_name || '';
-        const adsetName    = row.adset_name    || '';
-        const funnel       = classifyFunnel(campaignName);
-        if (!funnel) return;
-
-        if (funnel === 'GROWTH') {
-          if (category !== 'All') {
-            const cn = campaignName.toLowerCase();
-            const rule = CATEGORY_RULES[category];
-            if (rule?.campaign.contains && !cn.includes(rule.campaign.contains)) return;
-          }
-        } else {
-          if (!matchesCategoryForMetrics(campaignName, adsetName, category)) return;
-        }
-
-        const period = row.date_start; // YYYY-MM-DD or YYYY-MM-01
-        periodSet.add(period);
-
-        if (!targetMap[funnel][period]) {
-          targetMap[funnel][period] = { spend: 0, impressions: 0 };
-        }
-        
-        // ADD every row — do NOT check for duplicates
-        // Meta API returns multiple rows per adset (different variations/placements)
-        // ALL must be counted
-        targetMap[funnel][period].spend       += Math.round(parseFloat(row.spend || '0'));
-        targetMap[funnel][period].impressions += parseInt(row.impressions || '0', 10);
-      });
-    };
-
-    processRows(monthRows, monthlyData, monthPeriods);
-    processRows(dayRows, dailyData, dayPeriods);
-
-    const sortedMonths = Array.from(monthPeriods).sort();
-    const sortedDays   = Array.from(dayPeriods).sort();
+    const dayPeriods = new Set<string>();
+    Object.values(dailyData).forEach(funnelData => {
+      Object.keys(funnelData).forEach(p => dayPeriods.add(p));
+    });
 
     return NextResponse.json({
       monthly: monthlyData,
       daily:   dailyData,
       periods: {
-        months: sortedMonths,
-        days:   sortedDays
+        months: Array.from(monthPeriods).sort(),
+        days:   Array.from(dayPeriods).sort()
       }
     });
   } catch (err: any) {
