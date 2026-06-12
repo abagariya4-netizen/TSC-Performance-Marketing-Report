@@ -73,6 +73,21 @@ export function matchesCategory(campaignName: string, adsetName: string, categor
   return true;
 }
 
+// Maps each category to its product keyword for adset matching
+function getCategoryKeyword(category: string): string | null {
+  const map: Record<string, string> = {
+    'Mattress':     'mat',
+    'Chair':        'chair',
+    'Sofa':         'sofa',
+    'Desk':         'desk',
+    'Foot Massager':'foot',
+    'Elite':        'elite',
+    'Accessories':  'acce',
+    'Bed':          'bed',
+  };
+  return map[category] || null;
+}
+
 export function matchesCategoryForMetrics(
   campaignName: string,
   adsetName: string,
@@ -83,32 +98,31 @@ export function matchesCategoryForMetrics(
   const rule = CATEGORY_RULES[category];
   if (!rule) return false;
 
+  // STEP 1 — Campaign name filter (always applied)
   if (rule.campaign.contains && !cn.includes(rule.campaign.contains)) return false;
   for (const exc of rule.campaign.excludes) {
     if (cn.includes(exc)) return false;
   }
 
-  const isProductCreativeAdset =
-    an.endsWith('_all_asset') ||
-    an.endsWith('_video') ||
-    an.includes('_all_asset') ||
-    an.includes('_video');
+  // STEP 2 — Adset name filter (only for product creative adsets)
+  // A "product creative" adset has _All_Asset or _Video anywhere in its name
+  // e.g. "Chair_All_Asset", "Sofa_Video", "Mattress_All_Asset", "Desk_Video"
+  // Plain adsets like "Chair", "Open", "Signals", "HHI" are NOT product creatives
 
-  if (isProductCreativeAdset) {
-    if (category === 'Mattress') {
-      if (!an.includes('mat')) return false;
-    } else if (category === 'Chair') {
-      if (!an.includes('chair')) return false;
-    } else if (category === 'Sofa') {
-      if (!an.includes('sofa')) return false;
-    } else if (category === 'Desk') {
-      if (!an.includes('desk')) return false;
-    } else if (category === 'Foot Massager') {
-      if (!an.includes('foot')) return false;
-    } else if (category === 'Elite') {
-      if (!an.includes('elite')) return false;
+  const isProductCreative = an.includes('_all_asset') || an.includes('_video');
+
+  if (isProductCreative && category !== 'All') {
+    // For product creative adsets: adset name must contain the category keyword
+    const keyword = getCategoryKeyword(category);
+    if (keyword && !an.includes(keyword)) {
+      // e.g. "chair_all_asset" for Mattress category → no 'mat' → EXCLUDE
+      // e.g. "mattress_all_asset" for Mattress category → has 'mat' → INCLUDE
+      return false;
     }
   }
+  // For non-product-creative adsets (plain names like "Chair", "Open", "Signals")
+  // → no adset filter, campaign filter is enough
+  // → always include if campaign passed Step 1
 
   return true;
 }
