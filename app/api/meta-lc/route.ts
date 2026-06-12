@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { matchesCategory, classifyFunnel, FUNNELS, Funnel, CATEGORY_RULES } from '@/lib/metricUtils';
+import { matchesCategoryForMetrics, classifyFunnel, FUNNELS, Funnel, CATEGORY_RULES } from '@/lib/metricUtils';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,adset_name,spend,actions`
+      + `?fields=campaign_name,spend,actions`
       + `&time_increment=monthly`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
-      + `&level=adset&limit=500`
+      + `&level=campaign&limit=500`
       + `&access_token=${token}`;
 
     // For day-level data, fetch only the current month (month of 'until')
@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
     const daySinceStr = `${untilDate.getFullYear()}-${String(untilDate.getMonth() + 1).padStart(2, '0')}-01`;
 
     const dayUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,adset_name,spend,actions`
+      + `?fields=campaign_name,spend,actions`
       + `&time_increment=1`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until }))}`
-      + `&level=adset&limit=500`
+      + `&level=campaign&limit=500`
       + `&access_token=${token}`;
 
     const [monthRows, dayRows] = await Promise.all([
@@ -50,7 +50,6 @@ export async function GET(req: NextRequest) {
     const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>) => {
       rows.forEach(row => {
         const campaignName = row.campaign_name || '';
-        const adsetName    = row.adset_name    || '';
         const funnel       = classifyFunnel(campaignName);
         if (!funnel) return;
 
@@ -61,7 +60,7 @@ export async function GET(req: NextRequest) {
             if (rule?.campaign.contains && !cn.includes(rule.campaign.contains)) return;
           }
         } else {
-          if (!matchesCategory(campaignName, adsetName, category)) return;
+          if (!matchesCategoryForMetrics(campaignName, category)) return;
         }
 
         const period = row.date_start; // YYYY-MM-DD or YYYY-MM-01
