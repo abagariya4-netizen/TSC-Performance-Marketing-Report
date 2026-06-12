@@ -4,72 +4,68 @@ import { classifyFunnel } from '@/lib/metricUtils';
 
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
-    spend: number; link_clicks: number; landing_page_views: number;
+    spend: number;
+    link_clicks: number;
+    landing_page_views: number;
   }>> = { TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {} };
 
-  const keywordMap: Record<string, string> = {
-    'Mattress': 'mat', 'Chair': 'chair', 'Sofa': 'sofa',
-    'Desk': 'desk', 'Foot Massager': 'foot', 'Elite': 'elite',
-    'Accessories': 'acce', 'Bed': 'bed',
+  // Campaign name rules
+  const CAMPAIGN_RULES: Record<string, { contains?: string; excludes: string[] }> = {
+    'All':          { excludes: ['boost','growth'] },
+    'Mattress':     { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
+    'Chair':        { contains: 'chair',  excludes: ['boost','growth'] },
+    'Sofa':         { contains: 'sofa',   excludes: ['boost','growth'] },
+    'Desk':         { contains: 'desk',   excludes: ['boost','growth'] },
+    'Elite':        { contains: 'elite',  excludes: ['boost','growth'] },
+    'Foot Massager':{ contains: 'foot',   excludes: ['boost','growth'] },
+    'Accessories':  { contains: 'acce',   excludes: ['boost','growth'] },
+    'Bed':          { contains: 'bed',    excludes: ['boost','growth'] },
   };
+
+  // Adset name exclusion rules (no "contains" check, only exclusions)
+  const ADSET_EXCLUDES: Record<string, string[]> = {
+    'All':          ['boost','growth'],
+    'Mattress':     ['sofa','desk','chair','boost','growth'],
+    'Chair':        ['mattress','mat','desk','sofa','boost','growth'],
+    'Desk':         ['mattress','mat','sofa','chair','boost','growth'],
+    'Sofa':         ['boost','growth'],
+    'Elite':        ['boost','growth'],
+    'Foot Massager':['boost','growth'],
+    'Accessories':  ['boost','growth'],
+    'Bed':          ['boost','growth'],
+  };
+
+  function classifyFunnel(cn: string): string | null {
+    if (cn.includes('growth'))                        return 'GROWTH';
+    if (cn.includes('bot') && !cn.includes('growth')) return 'BOTTOM';
+    if (cn.includes('mid') && !cn.includes('growth')) return 'MID';
+    if (!cn.includes('mid') && !cn.includes('bot'))   return 'TOP';
+    return null;
+  }
 
   rows.forEach(row => {
     const cn = (row.campaign_name || '').toLowerCase();
-    const an = (row.adset_name   || '').toLowerCase();
+    const an = (row.adset_name    || '').toLowerCase();
 
-    // Always skip growth and boost
-    if (cn.includes('growth') || cn.includes('boost')) return;
-
-    // Category filter
-    if (cat !== 'All') {
-      const kw = keywordMap[cat];
-      // Check if adset is a product creative (has _all_asset or _video)
-      const isProductCreative =
-        an.includes('_all_asset') ||
-        an.includes(' all asset') ||  // space variant
-        an.includes('_video')     ||
-        an.includes(' video');        // space variant (just in case)
-
-      if (isProductCreative) {
-        // Classify by ADSET name keyword (not campaign name)
-        // e.g. "Mattress_All_Asset" → 'mat' → include for Mattress
-        // e.g. "Chair_All_Asset" → no 'mat' → exclude from Mattress
-        if (kw && !an.includes(kw)) return;
-      } else {
-        // Non-product-creative: classify by campaign name OR adset name
-        if (kw) {
-          // Include if EITHER campaign name OR adset name contains the keyword
-          const campaignHasKw = cn.includes(kw);
-          const adsetHasKw    = an.includes(kw);
-          // Also catch adsets ending with _Mat, _Chair etc. (category suffix pattern)
-          // e.g. "TSC_All_Time_Purchasers_Shopify_Cross_Sell_Bottom_Funnel_Mat"
-          const adsetEndsWith = an.endsWith(`_${kw}`) || an.endsWith(` ${kw}`);
-          
-          if (!campaignHasKw && !adsetHasKw && !adsetEndsWith) return;
-        }
-
-        // Campaign exclusion check (only on campaign name)
-        const catExcludes: Record<string, string[]> = {
-          'Mattress': ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'],
-          'Chair':    ['mattress','sofa','desk'],
-          'Sofa':     ['mattress','chair','desk'],
-          'Desk':     ['mattress','chair','sofa'],
-          'Foot Massager': ['mattress','chair','sofa','desk'],
-          'Elite':    ['mattress'],
-          'Accessories': ['mattress'],
-          'Bed':      ['mattress'],
-        };
-        const excludes = catExcludes[cat] || [];
-        for (const exc of excludes) {
-          if (cn.includes(exc)) return;
-        }
-      }
+    // Step 1: Campaign name filter
+    const campRule = CAMPAIGN_RULES[cat];
+    if (!campRule) return;
+    if (campRule.contains && !cn.includes(campRule.contains)) return;
+    for (const exc of campRule.excludes) {
+      if (cn.includes(exc)) return;
     }
 
-    // Funnel classification by campaign name
+    // Step 2: Adset name exclusion filter
+    const adsetExcludes = ADSET_EXCLUDES[cat] || ['boost','growth'];
+    for (const exc of adsetExcludes) {
+      if (an.includes(exc)) return;
+    }
+
+    // Step 3: Classify funnel by campaign name
     const funnel = classifyFunnel(cn);
     if (!funnel) return;
 
+    // Step 4: Accumulate
     const period = row.date_start;
     const spend  = Math.round(parseFloat(row.spend || '0'));
     
