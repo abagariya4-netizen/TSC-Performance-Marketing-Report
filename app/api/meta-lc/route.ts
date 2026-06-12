@@ -5,7 +5,7 @@ import { classifyFunnel } from '@/lib/metricUtils';
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
     spend: number; link_clicks: number; landing_page_views: number;
-  }>> = {};
+  }>> = { TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {} };
 
   const keywordMap: Record<string, string> = {
     'Mattress': 'mat', 'Chair': 'chair', 'Sofa': 'sofa',
