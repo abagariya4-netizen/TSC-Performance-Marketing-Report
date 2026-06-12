@@ -60,8 +60,16 @@ function groupRows(rows: any[], cat: string) {
 
     const period = row.date_start;
     const spend  = Math.round(parseFloat(row.spend || '0'));
-    const lc     = parseInt(row.link_clicks || '0');
-    const lp     = parseInt(row.landing_page_views || '0');
+    
+    let lc = 0;
+    let lp = 0;
+
+    if (row.actions && Array.isArray(row.actions)) {
+      row.actions.forEach((a: any) => {
+        if (a.action_type === 'link_click') lc += parseInt(a.value || '0', 10);
+        if (a.action_type === 'landing_page_view') lp += parseInt(a.value || '0', 10);
+      });
+    }
 
     if (!result[funnel]) result[funnel] = {};
     if (!result[funnel][period]) {
@@ -88,7 +96,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,adset_name,spend,link_clicks,landing_page_views`
+      + `?fields=campaign_name,adset_name,spend,actions`
       + `&time_increment=monthly`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
       + `&level=adset&limit=500`
@@ -99,7 +107,7 @@ export async function GET(req: NextRequest) {
     const daySinceStr = `${untilDate.getFullYear()}-${String(untilDate.getMonth() + 1).padStart(2, '0')}-01`;
 
     const dayUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,adset_name,spend,link_clicks,landing_page_views`
+      + `?fields=campaign_name,adset_name,spend,actions`
       + `&time_increment=1`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until }))}`
       + `&level=adset&limit=500`
