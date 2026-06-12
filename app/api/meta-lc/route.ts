@@ -24,7 +24,11 @@ function groupRows(rows: any[], cat: string) {
     if (cat !== 'All') {
       const kw = keywordMap[cat];
       // Check if adset is a product creative (has _all_asset or _video)
-      const isProductCreative = an.includes('_all_asset') || an.includes('_video');
+      const isProductCreative =
+        an.includes('_all_asset') ||
+        an.includes(' all asset') ||  // space variant
+        an.includes('_video')     ||
+        an.includes(' video');        // space variant (just in case)
 
       if (isProductCreative) {
         // Classify by ADSET name keyword (not campaign name)
@@ -32,11 +36,15 @@ function groupRows(rows: any[], cat: string) {
         // e.g. "Chair_All_Asset" → no 'mat' → exclude from Mattress
         if (kw && !an.includes(kw)) return;
       } else {
-        // Classify by CAMPAIGN name
-        // Campaign must contain the category keyword
-        if (kw && !cn.includes(kw)) return;
+        // Non-product-creative: classify by campaign OR adset name
+        if (kw) {
+          // Include if EITHER campaign name OR adset name contains the keyword
+          const campaignHasKw = cn.includes(kw);
+          const adsetHasKw    = an.includes(kw);
+          if (!campaignHasKw && !adsetHasKw) return;
+        }
 
-        // Campaign must not contain other product words
+        // Campaign exclusion check (only on campaign name)
         const catExcludes: Record<string, string[]> = {
           'Mattress': ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'],
           'Chair':    ['mattress','sofa','desk'],
