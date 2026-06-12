@@ -38,9 +38,9 @@ export async function fetchAllPages(url: string, retries = 4): Promise<any[]> {
       }
     }
     
-    // Removed artificial delay between pages to speed up adset-level fetching
-    // if (next) await delay(800);
-    if (page >= 100) break;
+    // Artificial delay between pages to prevent Meta API silent truncation
+    if (next) await delay(1000);
+    if (page >= 1000) break;
   }
   return rows;
 }
