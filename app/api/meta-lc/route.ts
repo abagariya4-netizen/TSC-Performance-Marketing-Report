@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { matchesCategory, matchesCategoryMonthly, classifyFunnel, FUNNELS, Funnel } from '@/lib/metricUtils';
+import { matchesCategory, classifyFunnel, FUNNELS, Funnel, CATEGORY_RULES } from '@/lib/metricUtils';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
-      + `?fields=campaign_name,spend,actions`
+      + `?fields=campaign_name,adset_name,spend,actions`
       + `&time_increment=monthly`
       + `&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
-      + `&level=campaign&limit=500`
+      + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
     // For day-level data, fetch only the current month (month of 'until')
@@ -47,14 +47,22 @@ export async function GET(req: NextRequest) {
     const monthPeriods = new Set<string>();
     const dayPeriods   = new Set<string>();
 
-    const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>, isMonthly: boolean) => {
+    const processRows = (rows: any[], targetMap: Record<Funnel, Record<string, any>>, periodSet: Set<string>) => {
       rows.forEach(row => {
-        const matches = isMonthly 
-          ? matchesCategoryMonthly(row.campaign_name || '', category)
-          : matchesCategory(row.campaign_name || '', row.adset_name || '', category);
-        if (!matches) return;
-        const funnel = classifyFunnel(row.campaign_name || '');
+        const campaignName = row.campaign_name || '';
+        const adsetName    = row.adset_name    || '';
+        const funnel       = classifyFunnel(campaignName);
         if (!funnel) return;
+
+        if (funnel === 'GROWTH') {
+          if (category !== 'All') {
+            const cn = campaignName.toLowerCase();
+            const rule = CATEGORY_RULES[category];
+            if (rule?.campaign.contains && !cn.includes(rule.campaign.contains)) return;
+          }
+        } else {
+          if (!matchesCategory(campaignName, adsetName, category)) return;
+        }
 
         const period = row.date_start; // YYYY-MM-DD or YYYY-MM-01
         periodSet.add(period);
@@ -78,8 +86,8 @@ export async function GET(req: NextRequest) {
       });
     };
 
-    processRows(monthRows, monthlyData, monthPeriods, true);
-    processRows(dayRows, dailyData, dayPeriods, false);
+    processRows(monthRows, monthlyData, monthPeriods);
+    processRows(dayRows, dailyData, dayPeriods);
 
     const sortedMonths = Array.from(monthPeriods).sort();
     const sortedDays   = Array.from(dayPeriods).sort();

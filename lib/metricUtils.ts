@@ -73,18 +73,6 @@ export function matchesCategory(campaignName: string, adsetName: string, categor
   return true;
 }
 
-export function matchesCategoryMonthly(campaignName: string, category: string): boolean {
-  const cn = (campaignName || '').toLowerCase();
-  const rule = CATEGORY_RULES[category];
-  if (!rule) return false;
-
-  if (rule.campaign.contains && !cn.includes(rule.campaign.contains)) return false;
-  for (const exc of rule.campaign.excludes) {
-    if (cn.includes(exc)) return false;
-  }
-
-  return true;
-}
 
 export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' | 'GROWTH' | null {
   const n = (campaignName || '').toLowerCase();
