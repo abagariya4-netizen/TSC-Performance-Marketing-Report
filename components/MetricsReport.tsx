@@ -17,7 +17,7 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
   // Formats the primary metric (LC% or CPM fraction)
   const formatVal = (v: number | null) => {
     if (v == null) return '—';
-    if (type === 'lc') return `${v}%`;
+    if (type === 'lc') return `${v.toFixed(2)}%`;
     return `₹${v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 

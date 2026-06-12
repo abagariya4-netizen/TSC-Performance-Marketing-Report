@@ -12,8 +12,15 @@ export const CATEGORY_RULES: Record<string, {
     adset:    { excludes: ['boost', 'growth'] },
   },
   'Mattress': {
-    campaign: { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
-    adset:    { excludes: ['sofa', 'desk', 'chair', 'boost', 'growth'] },
+    campaign: {
+      contains: 'mat',
+      excludes: [
+        'sofa', 'desk', 'elite', 'foot', 'bed', 'acce',
+        'chair', 'pillow', 'cushion', 'massa', 'sensai',
+        'boost', 'growth'
+      ]
+    },
+    adset: { excludes: ['sofa', 'desk', 'chair', 'boost', 'growth'] },
   },
   'Chair': {
     campaign: { contains: 'chair', excludes: ['boost', 'growth'] },
@@ -79,18 +86,27 @@ export function matchesCategoryMonthly(campaignName: string, category: string): 
   return true;
 }
 
-export function classifyFunnel(campaignName: string): Funnel | null {
-  const n = campaignName.toLowerCase();
-  if (n.includes('growth'))                         return 'GROWTH';
-  if (n.includes('bot'))                            return 'BOTTOM';
-  if (n.includes('mid') && !n.includes('growth'))  return 'MID';
-  if (!n.includes('mid') && !n.includes('bot'))    return 'TOP';
+export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' | 'GROWTH' | null {
+  const n = (campaignName || '').toLowerCase();
+
+  // GROWTH: contains 'growth' — highest priority, checked first
+  if (n.includes('growth')) return 'GROWTH';
+
+  // BOTTOM: contains 'bot', doesn't contain 'growth'
+  if (n.includes('bot') && !n.includes('growth')) return 'BOTTOM';
+
+  // MID: contains 'mid', doesn't contain 'growth'
+  if (n.includes('mid') && !n.includes('growth')) return 'MID';
+
+  // TOP: doesn't contain 'mid', doesn't contain 'bot'
+  if (!n.includes('mid') && !n.includes('bot')) return 'TOP';
+
   return null;
 }
 
 export function calcLCtoLP(lp: number, lc: number): number | null {
   if (lc === 0) return null;
-  return Math.round((lp / lc) * 1000) / 10;
+  return Math.round((lp / lc) * 10000) / 100;
 }
 
 export function calcCPM(spend: number, impressions: number): number | null {
