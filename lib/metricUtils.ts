@@ -73,14 +73,41 @@ export function matchesCategory(campaignName: string, adsetName: string, categor
   return true;
 }
 
-export function matchesCategoryForMetrics(campaignName: string, category: string): boolean {
+export function matchesCategoryForMetrics(
+  campaignName: string,
+  adsetName: string,
+  category: string
+): boolean {
   const cn = (campaignName || '').toLowerCase();
+  const an = (adsetName    || '').toLowerCase();
   const rule = CATEGORY_RULES[category];
   if (!rule) return false;
 
   if (rule.campaign.contains && !cn.includes(rule.campaign.contains)) return false;
   for (const exc of rule.campaign.excludes) {
     if (cn.includes(exc)) return false;
+  }
+
+  const isProductCreativeAdset =
+    an.endsWith('_all_asset') ||
+    an.endsWith('_video') ||
+    an.includes('_all_asset') ||
+    an.includes('_video');
+
+  if (isProductCreativeAdset) {
+    if (category === 'Mattress') {
+      if (!an.includes('mat')) return false;
+    } else if (category === 'Chair') {
+      if (!an.includes('chair')) return false;
+    } else if (category === 'Sofa') {
+      if (!an.includes('sofa')) return false;
+    } else if (category === 'Desk') {
+      if (!an.includes('desk')) return false;
+    } else if (category === 'Foot Massager') {
+      if (!an.includes('foot')) return false;
+    } else if (category === 'Elite') {
+      if (!an.includes('elite')) return false;
+    }
   }
 
   return true;
