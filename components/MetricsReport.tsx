@@ -41,67 +41,56 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
     return `${d.getDate()} ${d.toLocaleString('en-IN', { month: 'short' })}`;
   };
 
-  const exportCSV = () => {
-    let csv = '';
-    const filenamePrefix = type === 'lc' ? 'LC_to_LP' : 'CPM';
+  const exportCSV = (dataMap: Record<Funnel, Record<string, any>>, periodList: string[], isMonth: boolean, filenamePrefix: string) => {
+    if (periodList.length === 0) return;
+    const currentPeriod = periodList[periodList.length - 1];
+    
+    // Row 1: Top level groups
+    const row1 = ['Funnel', metricLabel];
+    for (let i = 1; i < periodList.length; i++) row1.push(''); // fill colspan
+    extraColumns.forEach(c => {
+      row1.push(c.label);
+      for (let i = 1; i < periodList.length; i++) row1.push('');
+    });
+    row1.push('Comparisons', '', ''); // 3 comparison columns
 
-    const buildSection = (dataMap: Record<Funnel, Record<string, any>>, periodList: string[], isMonth: boolean) => {
-      if (periodList.length === 0) return '';
-      const currentPeriod = periodList[periodList.length - 1];
-      
-      // Row 1: Top level groups
-      const row1 = ['Funnel', metricLabel];
-      for (let i = 1; i < periodList.length; i++) row1.push(''); // fill colspan
-      extraColumns.forEach(c => {
-        row1.push(c.label);
-        for (let i = 1; i < periodList.length; i++) row1.push('');
-      });
-      row1.push('Comparisons', '', ''); // 3 comparison columns
-
-      // Row 2: Sub-headers (months/days)
-      const row2 = [''];
+    // Row 2: Sub-headers (months/days)
+    const row2 = [''];
+    periodList.forEach(p => row2.push(isMonth ? formatMonthHeader(p) : formatDayHeader(p)));
+    extraColumns.forEach(c => {
       periodList.forEach(p => row2.push(isMonth ? formatMonthHeader(p) : formatDayHeader(p)));
-      extraColumns.forEach(c => {
-        periodList.forEach(p => row2.push(isMonth ? formatMonthHeader(p) : formatDayHeader(p)));
-      });
-      row2.push(`vs Last ${isMonth ? 'Month' : 'Day'}`, `vs Avg 3 ${isMonth ? 'Months' : 'Days'}`, 'Last 7 Days');
+    });
+    row2.push(`vs Last ${isMonth ? 'Month' : 'Day'}`, `vs Avg 3 ${isMonth ? 'Months' : 'Days'}`, 'Last 7 Days');
 
-      let sectionCsv = `"${row1.join('","')}"\n"${row2.join('","')}"\n`;
+    let csv = `"${row1.join('","')}"\n"${row2.join('","')}"\n`;
+    
+    FUNNELS.forEach(funnel => {
+      const rowData = dataMap[funnel];
+      const metricByPeriod: Record<string, number | null> = {};
+      periodList.forEach(p => { metricByPeriod[p] = rowData[p] ? metricFn(rowData[p]) : null; });
       
-      FUNNELS.forEach(funnel => {
-        const rowData = dataMap[funnel];
-        const metricByPeriod: Record<string, number | null> = {};
-        periodList.forEach(p => { metricByPeriod[p] = rowData[p] ? metricFn(rowData[p]) : null; });
-        
-        const { vsLastMonth, vsAvg3 } = calcComparisons(periodList, currentPeriod, metricByPeriod);
-        const last7 = calcLast7Days(dailyData[funnel] || {}, (p) => dailyData[funnel][p] ? metricFn(dailyData[funnel][p]) : null);
+      const { vsLastMonth, vsAvg3 } = calcComparisons(periodList, currentPeriod, metricByPeriod);
+      const last7 = calcLast7Days(dailyData[funnel] || {}, (p) => dailyData[funnel][p] ? metricFn(dailyData[funnel][p]) : null);
 
-        const g1Data = periodList.map(p => metricByPeriod[p] != null ? metricByPeriod[p] : '');
-        const extraData = extraColumns.flatMap(c => 
-          periodList.map(p => {
-            const val = rowData[p] ? rowData[p][c.key] : 0;
-            return val || 0; // Raw number for CSV
-          })
-        );
-        
-        const rowLine = [
-          funnel,
-          ...g1Data,
-          ...extraData,
-          vsLastMonth ?? '',
-          vsAvg3 ?? '',
-          last7 ?? ''
-        ];
-
-        sectionCsv += `"${rowLine.join('","')}"\n`;
-      });
+      const g1Data = periodList.map(p => metricByPeriod[p] != null ? metricByPeriod[p] : '');
+      const extraData = extraColumns.flatMap(c => 
+        periodList.map(p => {
+          const val = rowData[p] ? rowData[p][c.key] : 0;
+          return val || 0; // Raw number for CSV
+        })
+      );
       
-      return sectionCsv;
-    };
+      const rowLine = [
+        funnel,
+        ...g1Data,
+        ...extraData,
+        vsLastMonth ?? '',
+        vsAvg3 ?? '',
+        last7 ?? ''
+      ];
 
-    csv += buildSection(monthlyData, periods.months, true);
-    csv += '\n\n';
-    csv += buildSection(dailyData, periods.days, false);
+      csv += `"${rowLine.join('","')}"\n`;
+    });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -133,7 +122,7 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <h2 style={{ fontSize: '18px', margin: 0 }}>{title}</h2>
-          <button onClick={exportCSV} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+          <button onClick={() => exportCSV(dataMap, periodList, isMonth, filenamePrefix)} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
             📥 Export CSV
           </button>
         </div>
