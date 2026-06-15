@@ -55,13 +55,15 @@ export async function GET(req: NextRequest) {
     const timeRangeStr = encodeURIComponent(JSON.stringify({ since, until }));
 
     // STEP 1: Fetch all adsets to filter
-    const adsetUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
+    const adsetUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,adset_id&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
     const allAdsets = await fetchAllPages(adsetUrl);
 
     const validAdsetIds = new Set<string>();
     for (const row of allAdsets) {
       if (passesFilter(row.campaign_name, row.adset_name, category, funnel)) {
-        validAdsetIds.add(row.adset_id);
+        if (row.adset_id) {
+          validAdsetIds.add(row.adset_id);
+        }
       }
     }
 
