@@ -12,6 +12,7 @@ export default function NavBar() {
     { label: '6 City (Meta)',              href: '/?tab=6city' },
     { label: 'LC to LP',                   href: '/lc-to-lp' },
     { label: 'CPM',                        href: '/cpm' },
+    { label: 'Placements (Meta)',          href: '/placements' },
   ];
 
   const getIsActive = (href: string) => {

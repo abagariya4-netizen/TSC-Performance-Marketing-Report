@@ -9,6 +9,8 @@ export const CATEGORIES = [
 interface FilterBarProps {
   category: string;
   setCategory: (c: string) => void;
+  funnel?: string;
+  setFunnel?: (f: string) => void;
   since: string;
   setSince: (s: string) => void;
   until: string;
@@ -19,6 +21,7 @@ interface FilterBarProps {
 
 export default function FilterBar({
   category, setCategory,
+  funnel, setFunnel,
   since, setSince,
   until, setUntil,
   onGenerate, loading
@@ -49,6 +52,17 @@ export default function FilterBar({
       <select style={selectStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
+
+      {funnel !== undefined && setFunnel && (
+        <select style={selectStyle} value={funnel} onChange={(e) => setFunnel(e.target.value)}>
+          <option value="All">All Funnels</option>
+          <option value="TOP">Top</option>
+          <option value="MID">Mid</option>
+          <option value="BOTTOM">Bottom</option>
+          <option value="GROUP">Group</option>
+          <option value="GROWTH">Growth</option>
+        </select>
+      )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1d27', padding: '4px 12px', borderRadius: '6px', border: '1px solid #2d3748' }}>
         <label style={{ color: '#a0aec0', fontSize: '14px' }}>From:</label>
