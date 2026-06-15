@@ -45,17 +45,24 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
     if (periodList.length === 0) return;
     const currentPeriod = periodList[periodList.length - 1];
     
-    // Group 1: Primary metric headers (e.g. Mar LC to LP %, Apr LC to LP %)
-    const g1Headers = periodList.map(p => `${isMonth ? formatMonthHeader(p) : formatDayHeader(p)} ${metricLabel}`);
-    
-    // Group 2/3 headers (e.g. Mar Link Clicks, Mar Landing Page)
-    const extraHeaders = extraColumns.flatMap(c => 
-      periodList.map(p => `${isMonth ? formatMonthHeader(p) : formatDayHeader(p)} ${c.label}`)
-    );
-    
-    const headerRow = ['Funnel', ...g1Headers, ...extraHeaders, 'vs Last Period', 'vs Avg Last 3', 'Last 7 Days'];
-    
-    let csv = headerRow.join(',') + '\n';
+    // Row 1: Top level groups
+    const row1 = ['Funnel', metricLabel];
+    for (let i = 1; i < periodList.length; i++) row1.push(''); // fill colspan
+    extraColumns.forEach(c => {
+      row1.push(c.label);
+      for (let i = 1; i < periodList.length; i++) row1.push('');
+    });
+    row1.push('Comparisons', '', ''); // 3 comparison columns
+
+    // Row 2: Sub-headers (months/days)
+    const row2 = [''];
+    periodList.forEach(p => row2.push(isMonth ? formatMonthHeader(p) : formatDayHeader(p)));
+    extraColumns.forEach(c => {
+      periodList.forEach(p => row2.push(isMonth ? formatMonthHeader(p) : formatDayHeader(p)));
+    });
+    row2.push(`vs Last ${isMonth ? 'Month' : 'Day'}`, `vs Avg 3 ${isMonth ? 'Months' : 'Days'}`, 'Last 7 Days');
+
+    let csv = `"${row1.join('","')}"\n"${row2.join('","')}"\n`;
     
     FUNNELS.forEach(funnel => {
       const rowData = dataMap[funnel];
