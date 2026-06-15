@@ -55,6 +55,12 @@ function groupRows(rows: any[], cat: string) {
     const isAllProducts = cn.includes('all_products');
     const isMattress = cn.includes('mat') || cn.includes('dhoni');
   
+    // Explicitly prevent "All Products" and "Dhoni" campaigns from matching anything except Mattress
+    const isAllProductsOrDhoni = cn.includes('all_products') || cn.includes('dhoni');
+    if (category !== 'Mattress' && isAllProductsOrDhoni) {
+        return false;
+    }
+
     // STEP 1: Campaign Exclusions
     const cRules = CAMPAIGN_RULES[category];
     if (cRules && cRules.excludes) {
