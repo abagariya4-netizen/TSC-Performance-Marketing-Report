@@ -24,7 +24,7 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
     return <span style={{ color }}>{sign}{pct}%</span>;
   };
 
-  const { totalsByMonth, grandTotals } = useMemo(() => {
+  const { totalsByMonth } = useMemo(() => {
     const tbm: Record<string, any> = {};
     const gt = { spend: 0, category_purchase: 0, overall_purchase: 0, link_clicks: 0, landing_page_views: 0, impressions: 0, clicks: 0 };
     
@@ -47,7 +47,7 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
       });
     });
 
-    return { totalsByMonth: tbm };
+    return { totalsByMonth: tbm, grandTotals: gt };
   }, [data, periods]);
 
   const exportCSV = () => {
