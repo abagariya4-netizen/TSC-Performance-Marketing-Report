@@ -101,12 +101,6 @@ export function matchesCategoryForMetrics(
   const isAllProducts = cn.includes('all_products');
   const isMattress = cn.includes('mat') || cn.includes('dhoni');
 
-  // Explicitly prevent "All Products" and "Dhoni" campaigns from matching anything except Mattress
-  const isAllProductsOrDhoni = cn.includes('all_products') || cn.includes('dhoni');
-  if (category !== 'Mattress' && isAllProductsOrDhoni) {
-      return false;
-  }
-
   // STEP 1: Campaign exclusions are ALWAYS applied
   for (const exc of rule.campaign.excludes) {
     if (cn.includes(exc)) return false;
