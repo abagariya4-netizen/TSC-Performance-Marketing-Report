@@ -13,9 +13,9 @@ function groupRows(rows: any[], cat: string) {
   const CAMPAIGN_RULES: Record<string, { contains?: string; excludes: string[] }> = {
     'All':          { excludes: ['boost','growth'] },
     'Mattress':     { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
-    'Chair':        { contains: 'chair',  excludes: ['boost','growth'] },
-    'Sofa':         { contains: 'sofa',   excludes: ['boost','growth'] },
-    'Desk':         { contains: 'desk',   excludes: ['boost','growth'] },
+    'Chair':        { contains: 'chair', excludes: ['boost','growth','all_products','dhoni','desk','sofa'] },
+    'Desk':         { contains: 'desk', excludes: ['boost','growth','chair','sofa','all_products','dhoni'] },
+    'Sofa':         { contains: 'sofa', excludes: ['boost','growth','chair','desk','all_products','dhoni'] },
     'Elite':        { contains: 'elite',  excludes: ['boost','growth'] },
     'Foot Massager':{ contains: 'foot',   excludes: ['boost','growth'] },
     'Accessories':  { contains: 'acce',   excludes: ['boost','growth'] },
