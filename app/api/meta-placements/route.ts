@@ -127,7 +127,12 @@ export async function GET(req: NextRequest) {
       
       const catAction = CATEGORY_CONVERSION_ACTION[category];
       if (catAction) {
-        m.category_purchase += parseFloat(actionVals.find((a: any) => a.action_type === catAction)?.value || '0');
+        const matchVal = actionVals.find((a: any) => 
+          a.action_type === catAction || 
+          a.action_type === `offsite_conversion.custom.${catAction}` ||
+          a.action_type === `custom.${catAction}`
+        );
+        m.category_purchase += parseFloat(matchVal?.value || '0');
       }
     }
 
