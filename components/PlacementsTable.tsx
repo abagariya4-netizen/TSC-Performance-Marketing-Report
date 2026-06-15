@@ -47,7 +47,15 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
       });
     });
 
-    return { totalsByMonth: tbm, grandTotals: gt };
+    return { totalsByMonth: tbm };
+  }, [data, periods]);
+
+  const sortedPlacements = useMemo(() => {
+    return Object.keys(data).sort((a, b) => {
+      const spendA = periods.reduce((sum, p) => sum + (data[a][p]?.spend || 0), 0);
+      const spendB = periods.reduce((sum, p) => sum + (data[b][p]?.spend || 0), 0);
+      return spendB - spendA;
+    });
   }, [data, periods]);
 
   const exportCSV = () => {
@@ -62,8 +70,6 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
     };
 
     addGroup('Amount Spent');
-    row1.push('Comparisons', '');
-    row2.push('vs Last Month', 'vs Avg 3M');
     
     addGroup('Amount Spent Salience (%)');
 
@@ -83,6 +89,8 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
     addGroup('LC to LP (%)');
     addGroup('Landing Page Views');
     addGroup('Impressions');
+    row1.push('Comparisons', '');
+    row2.push('vs Last Month', 'vs Avg 3M');
 
     let csv = `"${row1.join('","')}"\n"${row2.join('","')}"\n`;
 
@@ -104,9 +112,6 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
 
       const vsLast = pctChange(currentSpend, prevSpend);
       const vsAvg = pctChange(currentSpend, avg3);
-
-      line.push(vsLast != null ? `${vsLast}%` : '');
-      line.push(vsAvg != null ? `${vsAvg}%` : '');
 
       // Salience Spend
       periods.forEach(p => {
@@ -178,10 +183,14 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
       periods.forEach(p => line.push(rowMap[p]?.landing_page_views || 0));
       periods.forEach(p => line.push(rowMap[p]?.impressions || 0));
 
+      // Comparisons
+      line.push(vsLast != null ? `${vsLast}%` : '');
+      line.push(vsAvg != null ? `${vsAvg}%` : '');
+
       return line.join(',');
     };
 
-    Object.keys(data).sort().forEach(placement => {
+    sortedPlacements.forEach(placement => {
       csv += getRowData(placement, data[placement]) + '\n';
     });
 
@@ -226,7 +235,6 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
             <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
               <th rowSpan={2} style={{ padding: '10px 12px', textAlign: 'left', verticalAlign: 'bottom' }}>Placement</th>
               <th colSpan={periods.length} style={thStyle}>Amount Spent</th>
-              <th colSpan={2} style={thStyle}>Comparisons</th>
               <th colSpan={periods.length} style={thStyle}>Amount Spent Salience (%)</th>
               
               {hasCategoryAction && category !== 'All' && (
@@ -247,21 +255,23 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
               <th colSpan={periods.length} style={thStyle}>LC to LP (%)</th>
               <th colSpan={periods.length} style={thStyle}>Landing Page Views</th>
               <th colSpan={periods.length} style={thStyle}>Impressions</th>
+              <th colSpan={2} style={thStyle}>Comparisons</th>
             </tr>
             <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
               {/* Amount Spent */}
               {periods.map(p => <th key={`sp-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)}
-              <th style={thSubStyle}>vs Last Month</th>
-              <th style={thSubStyle}>vs Avg 3M</th>
               
               {/* Other columns */}
               {[...Array((hasCategoryAction && category !== 'All' ? 12 : 9))].map((_, i) => (
                 periods.map(p => <th key={`sub-${i}-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)
               ))}
+              
+              <th style={thSubStyle}>vs Last Month</th>
+              <th style={thSubStyle}>vs Avg 3M</th>
             </tr>
           </thead>
           <tbody>
-            {[...Object.keys(data).sort(), 'TOTAL'].map((placement, i) => {
+            {[...sortedPlacements, 'TOTAL'].map((placement, i) => {
               const isTotal = placement === 'TOTAL';
               const rowMap = isTotal ? totalsByMonth : data[placement];
               const bg = isTotal ? '#0d2137' : (i % 2 === 0 ? '#1a1d27' : '#1f2333');
@@ -281,8 +291,6 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
                   
                   {/* Amount Spent */}
                   {periods.map(p => <td key={p} style={tdStyle}>{formatINR(rowMap[p]?.spend || 0)}</td>)}
-                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, prevSpend))}</td>
-                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, avg3))}</td>
 
                   {/* Salience Spend */}
                   {periods.map(p => {
@@ -364,6 +372,10 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
 
                   {/* Impressions */}
                   {periods.map(p => <td key={p} style={tdStyle}>{Math.round(rowMap[p]?.impressions || 0).toLocaleString('en-IN')}</td>)}
+
+                  {/* Comparisons */}
+                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, prevSpend))}</td>
+                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, avg3))}</td>
 
                 </tr>
               );
