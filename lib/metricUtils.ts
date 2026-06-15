@@ -98,14 +98,33 @@ export function matchesCategoryForMetrics(
   const rule = CATEGORY_RULES[category];
   if (!rule) return false;
 
+  const isAllProducts = cn.includes('all_products');
+  const isMattress = cn.includes('mat') || cn.includes('dhoni');
+
   // STEP 1: Campaign exclusions are ALWAYS applied
   for (const exc of rule.campaign.excludes) {
     if (cn.includes(exc)) return false;
   }
 
-  // STEP 2: Adset exclusions are ALWAYS applied
-  for (const exc of rule.adset.excludes) {
-    if (an.includes(exc)) return false;
+  // STEP 2: Adset exclusions (bypassed if campaign explicitly claims the category)
+  let skipAdsetExcludes = false;
+  if (category === 'Mattress' && (isAllProducts || cn.includes('dhoni'))) {
+      skipAdsetExcludes = true;
+  }
+  if (category === 'Chair' && cn.includes('chair')) {
+      skipAdsetExcludes = true;
+  }
+  if (category === 'Desk' && cn.includes('desk')) {
+      skipAdsetExcludes = true;
+  }
+  if (category === 'Sofa' && cn.includes('sofa')) {
+      skipAdsetExcludes = true;
+  }
+
+  if (!skipAdsetExcludes) {
+    for (const exc of rule.adset.excludes) {
+      if (an.includes(exc)) return false;
+    }
   }
 
   if (category === 'All') return true;
@@ -113,13 +132,14 @@ export function matchesCategoryForMetrics(
   // STEP 3: Does the adset explicitly contain the product keyword?
   const keyword = getCategoryKeyword(category);
   if (keyword && an.includes(keyword)) {
-    // If the adset EXPLICITLY says "Mattress" (or "mat"), it belongs to Mattress!
-    // We bypass the campaign `contains` check to support "All Products" campaigns.
     return true;
   }
 
-  // STEP 4: If the adset does NOT explicitly contain the keyword, it inherits from the Campaign
-  if (rule.campaign.contains && cn.includes(rule.campaign.contains)) {
+  // STEP 4: Does the campaign explicitly contain the category keyword?
+  if (category === 'Mattress' && isMattress) {
+    return true;
+  }
+  if (category !== 'Mattress' && rule.campaign.contains && cn.includes(rule.campaign.contains)) {
     return true;
   }
 

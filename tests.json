@@ -1,0 +1,968 @@
+[
+  {
+    "campaign": "TSC_Retargeting_Chair_Bot_Funnel_NST",
+    "adset": "Core",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Retargeting_Chair_Bot_Funnel_NST",
+    "adset": "Non Core",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Retargeting_Chair_Page_Visits_Non_Mattress_Bottom_Funnel_Offer_Creatives_Walkin_NST",
+    "adset": "All_Chair_Video_Viewers",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Retargeting_Chair_Page_Visits_Non_Mattress_Bottom_Funnel_Offer_Creatives_Walkin_NST",
+    "adset": "All_Chairs_Visitors",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "ASC_Chair_Mid_Funnel_Core_NST",
+    "adset": "Open",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "ASC_Chair_Mid_Funnel_Core_NST",
+    "adset": "Signals",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "ASC_Chair_Mid_Funnel_Non_Core_NST",
+    "adset": "Open",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "ASC_Chair_Mid_Funnel_Non_Core_NST",
+    "adset": "Signals",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Test_Chair_Mid_Funnel_NST",
+    "adset": "Advantage+ C+D_Lazy_Tech_New_Desk_Mid_Funnel_7day",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "Desk_ASC_Bot_Funnel_Retargeting_Pan_India_Walkin_NST",
+    "adset": "Visitors",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "Desk_ASC_Mid_Funnel_Pan_India_Walkin_NST",
+    "adset": "Open",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "Desk_ASC_Mid_Funnel_Pan_India_Walkin_NST",
+    "adset": "Signal",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Conversion_Interest_Bottom_Funnel_Elite_Top_3",
+    "adset": "Elite_Video_Viewers_Top_3_walkin",
+    "expectedCategory": "Elite",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_Interest_Bottom_Funnel_Elite_Top_3",
+    "adset": "Elite_Visitors_Top_3",
+    "expectedCategory": "Elite",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_ASC_Con_Mid_Funnel_Elite_Walkin_Top_3",
+    "adset": "Top 3 Cities - 7 Day Attr",
+    "expectedCategory": "Elite",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_ASC_Con_Mid_Funnel_Elite_Walkin_Top_3",
+    "adset": "Top 3 Cities - Signals - 7 Day Attr",
+    "expectedCategory": "Elite",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_ASC_Foot_Massager_Bot_Funnel_Walkin_NST",
+    "adset": "Foot_Massager_Visitors",
+    "expectedCategory": "FM",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_ASC_Foot_Massager_Mid_Funnel_Walkin_NST",
+    "adset": "Foot_Massager_Open",
+    "expectedCategory": "FM",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_ASC_Foot_Massager_Mid_Funnel_Walkin_NST",
+    "adset": "Foot_Massager_Signal",
+    "expectedCategory": "FM",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Time_Purchasers_CrossSell_Bottom_Funnel",
+    "adset": "TSC_All_Time_Purchasers_Shopify_Cross_Sell_Bottom_Funnel_Mat",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Actions_Bottom_Mat",
+    "adset": "All Mattress Visitors + ATC +Checkout + NB",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Actions_Bottom_Mat",
+    "adset": "Luxe_Range_Mattress_PGV_14D",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Actions_Bottom_Mat",
+    "adset": "Ortho_Range_Mattress_PGV_14D",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_AK_Only_Bottom_Mat",
+    "adset": "Pan India",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Bottom_Mat_Offers",
+    "adset": "Bangalore",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Bottom_Mat_Offers",
+    "adset": "Hyderabad",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Bottom_Mat_Offers",
+    "adset": "Mumbai",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Pan India Mattress All Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Next_Day_Bottom_Mat",
+    "adset": "Hyderabad",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_Mattress_Bottom_Funnel_Ortho_Grid",
+    "adset": "TSC_Conversion_Mattress_Bottom_Funnel_Ortho_Grid_AdSet",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Mat_Bottom_Weekend_Spike_Retargeting_Opt_Mattress_Overall",
+    "adset": "TSC_Mattress_Retarget_all_Mattress_PV_L90_Actual_Bottom",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Mat_Bottom_Weekend_Spike_Retargeting_Opt_Mattress_Overall",
+    "adset": "TSC_Mattress_Retarget_all_Mattress_PV_L90_Bottom",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Mat_Bottom_Weekend_Spike_Retargeting_Opt_Mattress_Overall",
+    "adset": "TSC_Mattress_Retarget_all_Mattress_Webengage_Bottom",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Mattress_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Mattress_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Hyderabad_Walkin_Mat",
+    "adset": "Chair",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Hyderabad_Walkin_Mat",
+    "adset": "Desk",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Hyderabad_Walkin_Mat",
+    "adset": "Mattress",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Hyderabad_Walkin_Mat",
+    "adset": "Sofa",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_O_Cities_Purchase_Mat",
+    "adset": "Chair",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_O_Cities_Purchase_Mat",
+    "adset": "Desk",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_O_Cities_Purchase_Mat",
+    "adset": "Mattress",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_O_Cities_Purchase_Mat",
+    "adset": "Sofa",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Amazon_Mid_Orhto_Pro_Mat_walkin - Copy",
+    "adset": "Top 5 Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_ASC_Mid_Funnel_AK_Only Pan_India_Walkin - Refreshed Campaign",
+    "adset": "TSC_Mattress_ASC_Mid_Funnel_AK_Only Pan_India_Walkin - Refreshed Ad set",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_ASC_Mid_Funnel_Karnataka_Walkin",
+    "adset": "TSC_Mattress_ASC_Mid_Funnel_Karnataka_Walkin Ad set",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_ASC_Mid_Funnel_Maharashtra_Walkin",
+    "adset": "TSC_Mattress_ASC_Mid_Funnel_Maharashtra_Walkin Ad set",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_ASC_Mid_Funnel_SnowTech_Beat_The_Heat_Walkin Campaign",
+    "adset": "TSC_Mattress_ASC_Mid_Funnel_SnowTech_Beat_The_Heat_Walkin Ad set",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_ASC_Mid_Funnel_Tamil_Nadu_Walkin",
+    "adset": "TSC_Mattress_ASC_Mid_Funnel_Tamil_Nadu_Walkin Ad set",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Feed_Reel_New_Test",
+    "adset": "TSC_Mattress_Mid_Feed_New",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Feed_Reel_New_Test",
+    "adset": "TSC_Mattress_Mid_Feed_Old",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Feed_Reel_New_Test",
+    "adset": "TSC_Mattress_Mid_Reel_New",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Feed_Reel_New_Test",
+    "adset": "TSC_Mattress_Mid_Reel_Old",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Funnel_AK_Video_Walkin_Top_Cities",
+    "adset": "Bangalore - Attr",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Funnel_AK_Video_Walkin_Top_Cities",
+    "adset": "Chennai - Attr",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Funnel_AK_Video_Walkin_Top_Cities",
+    "adset": "Hyderabad - Attr",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_Funnel_AK_Video_Walkin_Top_Cities",
+    "adset": "Mumbai - Attr",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_Mid_TEST_NewASC_Walkin",
+    "adset": "Priyanka_New - Maharashtra",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Hubballi",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Karimnagar",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Kozhikode",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Sambhaji Nagar",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Sangli",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Tiruchirappalli",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupA",
+    "adset": "Tirupur",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Ballari",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Belgaum",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Guntur",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Kakinada",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Kolhapur",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Mangalore",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Rajahmundry",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Thrissur",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Tirupati",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Cities_Walkin_GroupB",
+    "adset": "Warangal",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Andhra + Telangana Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Karnataka Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Maharashtra CIties",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Open Targeting - Goa + Rajasthan",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Punjab-Haryana Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Singal - Goa, North & West",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "Tamil Nadu Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Club_Walkin",
+    "adset": "UP + Bihar + East + Central - Cities",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Andra_Pradesh_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Andra_Pradesh_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Chennai_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Chennai_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_DNCR_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_DNCR_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_East_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_East_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Gujarat_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Gujarat_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Karnataka_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Karnataka_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Kerala_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Kerala_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Kolkata_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Kolkata_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Maharashtra_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Maharashtra_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Pune_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Pune_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_SnowTec_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_SnowTec_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Store_Cities_Walkin",
+    "adset": "Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Store_Cities_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Telangana_Walkin",
+    "adset": "Open Targeting",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Telangana_Walkin",
+    "adset": "Signals",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Chennai_Combined_Mat",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Chennai_Mat",
+    "adset": "Core Premium Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Pune_Combined_Audiences_Mat",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Traffic_Mattress_Interest_LAL_Top_Funnel_5_Jan_2023",
+    "adset": "TSC_Traffic_Mattress_LAL_IC_&_Web_Visitor_Audience",
+    "expectedCategory": "Top Funnel",
+    "expectedFunnel": "Mat"
+  },
+  {
+    "campaign": "TSC_Retargeting_Sofa_Bottom_Funnel_India_NST",
+    "adset": "ATC&Checkout",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Retargeting_Sofa_Bottom_Funnel_India_NST",
+    "adset": "Visitors",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Sofa_ASC_Mid_Funnel_Walkin_NST",
+    "adset": "Open_Targeting",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Sofa_ASC_Mid_Funnel_Walkin_NST",
+    "adset": "Signals",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Sofa_ASC_Top_Funnel__Walkin_NST",
+    "adset": "Open_Targeting",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "ASC_Chair_Mid_Funnel_Test_NST",
+    "adset": "Open",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "ASC_Chair_Top_Funnel_Core_NST",
+    "adset": "Open",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "Desk_ASC_Top_Funnel_Pan_India_Walkin_NST",
+    "adset": "Open",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Chair_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Desk_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Mattress_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Pan India Mattress All Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Dhoni_Only_Bottom",
+    "adset": "Sofa_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Next_Day_Bottom_Mat",
+    "adset": "Bangalore",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Chair_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Chair_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Desk_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Desk_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Mattress_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Mattress_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Sofa_All_Asset",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_All_Products_ASC_Mid_Funnel_Dhoni_Walkin_NST",
+    "adset": "Sofa_Video",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Chennai_Walkin",
+    "adset": "HHI - Tamil Nadu Minus Chennai",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Gujarat_Walkin",
+    "adset": "Ahmedabad",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Karnataka_Walkin",
+    "adset": "HHI",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Chennai_Mat_Apr'26_Phase_2",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Pune_Mat_Apr26_Phase_2",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Pune_Mat_May26_Phase_3",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "Desk_ASC_Mid_Funnel_Pan_India_Walkin_NST - More",
+    "adset": "Open",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "Desk_ASC_Mid_Funnel_Pan_India_Walkin_NST_Test",
+    "adset": "Open",
+    "expectedCategory": "Desk",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Conversion_All_Website_Visitors_Next_Day_Bottom_Mat",
+    "adset": "Bangalore - Engagement+",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Mat_Bottom_Weekend_Spike_Retargeting_Opt_Mattress_Overall",
+    "adset": "Mattress_PV_L90 - Comfort Tuesday",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Luxury_Mattress_NST_Mid_Walkin",
+    "adset": "AI Mattress",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Luxury_Mattress_NST_Mid_Walkin",
+    "adset": "AI Mattress - 7 Day Click",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Luxury_Mattress_NST_Mid_Walkin",
+    "adset": "Luxe Recliner Mattress",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Luxury_Mattress_NST_Mid_Walkin",
+    "adset": "Luxe Recliner Mattress - 7 Day Click",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Top_Funnel_RNF_Reserved_Chennai_Mat_May'26_Phase_3",
+    "adset": "Combined Audiences",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Top"
+  },
+  {
+    "campaign": "TSC_Retargeting_Chair_Bot_Funnel_NST_Test",
+    "adset": "Core",
+    "expectedCategory": "Chair",
+    "expectedFunnel": "Bot"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "Banashankari - 560085, 560050",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "Basveshwar Nagar - 560086",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "BelRoad - 560094",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "Indiranagar - 560075",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "Jayanagar-560041, 560018",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "KRPuram - 560036",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "Koramangala - 560047",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Bangalore_Pincode_Mattress_NST_Mid_Walkin",
+    "adset": "RR Nagar - 560098",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Mattress_NST_Mid_Funnel_Chennai_Walkin",
+    "adset": "Tamil Nadu- Open",
+    "expectedCategory": "Mat",
+    "expectedFunnel": "Mid"
+  },
+  {
+    "campaign": "TSC_Sofa_ASC_Mid_Funnel_Walkin_NST_More",
+    "adset": "Open_Targeting",
+    "expectedCategory": "Sofa",
+    "expectedFunnel": "Mid"
+  }
+]
