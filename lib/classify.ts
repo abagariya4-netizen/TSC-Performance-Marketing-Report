@@ -2,9 +2,10 @@ const EXCLUDE_WORDS = ['chair', 'desk', 'sofa', 'elite', 'foot'];
 
 export type Funnel = 'TOP' | 'MID' | 'BOTTOM' | 'RNF' | 'GROUP' | 'EXCLUDED';
 
-// For Region Level — only exclude growth
+// For Region Level — only exclude growth and boost
 export function includeInRegion(campaignName: string): boolean {
-  return !campaignName.toLowerCase().includes('growth');
+  const cn = campaignName.toLowerCase();
+  return !cn.includes('growth') && !cn.includes('boost');
 }
 
 // For 6 City — filter by BOTH campaign name AND adset name
@@ -17,8 +18,8 @@ export function classifyAdset(campaignName: string, adsetName: string): Funnel {
     if (cn.includes(word) || an.includes(word)) return 'EXCLUDED';
   }
 
-  // Exclude growth campaigns
-  if (cn.includes('growth')) return 'EXCLUDED';
+  // Exclude growth and boost campaigns
+  if (cn.includes('growth') || cn.includes('boost')) return 'EXCLUDED';
 
   // Classify by campaign name (first match wins)
   if (cn.includes('top') && !cn.includes('mid') && !cn.includes('bot')) return 'TOP';
