@@ -23,15 +23,15 @@ export const CATEGORY_RULES: Record<string, {
     adset: { excludes: ['sofa', 'desk', 'chair', 'boost', 'growth'] },
   },
   'Chair': {
-    campaign: { contains: 'chair', excludes: ['boost', 'growth', 'all_products', 'dhoni', 'desk', 'sofa'] },
+    campaign: { contains: 'chair', excludes: ['boost', 'growth', 'desk', 'sofa'] },
     adset:    { excludes: ['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'] },
   },
   'Desk': {
-    campaign: { contains: 'desk', excludes: ['boost', 'growth', 'chair', 'sofa', 'all_products', 'dhoni'] },
+    campaign: { contains: 'desk', excludes: ['boost', 'growth', 'chair', 'sofa'] },
     adset:    { excludes: ['mattress', 'mat', 'sofa', 'chair', 'boost', 'growth'] },
   },
   'Sofa': {
-    campaign: { contains: 'sofa',  excludes: ['boost', 'growth', 'chair', 'desk', 'all_products', 'dhoni'] },
+    campaign: { contains: 'sofa',  excludes: ['boost', 'growth', 'chair', 'desk'] },
     adset:    { excludes: ['mattress', 'mat', 'desk', 'chair', 'boost', 'growth'] },
   },
   'Elite': {
