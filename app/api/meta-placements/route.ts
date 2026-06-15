@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
         { field: 'adset.id', operator: 'IN', value: chunk }
       ]));
       
-      const breakdownUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=spend,impressions,clicks,ctr,cpc,cpm,actions,action_values&level=adset&breakdowns=publisher_platform,platform_position&time_range=${timeRangeStr}&filtering=${filteringStr}&limit=500&time_increment=1&access_token=${token}`;
+      const breakdownUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=spend,impressions,clicks,ctr,cpc,cpm,actions,action_values&level=adset&breakdowns=publisher_platform,platform_position&time_range=${timeRangeStr}&filtering=${filteringStr}&limit=500&time_increment=monthly&access_token=${token}`;
       
       const chunkData = await fetchAllPages(breakdownUrl);
       allBreakdowns = allBreakdowns.concat(chunkData);
