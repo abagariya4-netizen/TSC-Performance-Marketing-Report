@@ -88,6 +88,7 @@ export async function GET() {
     'GOOGLE_REFRESH_TOKEN',
     'GOOGLE_ADS_DEVELOPER_TOKEN',
     'GOOGLE_ADS_CUSTOMER_ID',
+    'GOOGLE_ADS_LOGIN_CUSTOMER_ID',
   ].filter(v => !process.env[v]);
 
   if (missingVars.length > 0) {
