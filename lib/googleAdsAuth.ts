@@ -20,13 +20,19 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
 
   const url = `https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`;
 
+  const headers: Record<string, string> = {
+    'Authorization':   `Bearer ${token}`,
+    'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+    'Content-Type':    'application/json',
+  };
+
+  if (process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) {
+    headers['login-customer-id'] = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID;
+  }
+
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization':   `Bearer ${token}`,
-      'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
-      'Content-Type':    'application/json',
-    },
+    headers,
     body: JSON.stringify({ query: gaql }),
   });
 
