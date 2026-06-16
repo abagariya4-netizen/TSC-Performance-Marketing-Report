@@ -108,7 +108,7 @@ export async function GET() {
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
         FROM geographic_view
         WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
-        AND geographic_view.location_type = 'CITY_OF_PRESENCE'
+        AND geographic_view.location_type = 'LOCATION_OF_PRESENCE'
       `),
 
       // Call 2: Yesterday spend by city
@@ -116,7 +116,7 @@ export async function GET() {
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
         FROM geographic_view
         WHERE segments.date = '${yesterdayStr}'
-        AND geographic_view.location_type = 'CITY_OF_PRESENCE'
+        AND geographic_view.location_type = 'LOCATION_OF_PRESENCE'
       `),
 
       // Call 3: MTD total account spend (no geo breakdown) — for Unknown
