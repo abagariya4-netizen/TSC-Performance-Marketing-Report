@@ -18,27 +18,28 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
   const token      = await getGoogleAdsAccessToken();
   const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID!;
 
-  const res = await fetch(
-    `https://googleads.googleapis.com/v17/customers/${customerId}/googleAds:searchStream`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization':   `Bearer ${token}`,
-        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
-        'Content-Type':    'application/json',
-      },
-      body: JSON.stringify({ query: gaql }),
-    }
-  );
+  const url = `https://googleads.googleapis.com/v19/customers/${customerId}/googleAds:searchStream`;
 
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization':   `Bearer ${token}`,
+      'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+      'Content-Type':    'application/json',
+    },
+    body: JSON.stringify({ query: gaql }),
+  });
+
+  // Get the raw text first
+  const text = await res.text();
+
+  // If response is not OK, throw with the actual response body
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Google Ads API error: ${err}`);
+    throw new Error(`Google Ads API error ${res.status}: ${text.substring(0, 500)}`);
   }
 
-  const text    = await res.text();
+  // Parse the streaming JSON response
   const results: any[] = [];
-
   for (const line of text.split('\n')) {
     const trimmed = line.trim();
     if (!trimmed || trimmed === '[' || trimmed === ']') continue;
@@ -46,7 +47,9 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
       const cleaned = trimmed.replace(/^,/, '');
       const parsed  = JSON.parse(cleaned);
       if (parsed.results) results.push(...parsed.results);
-    } catch {}
+    } catch {
+      // skip unparseable lines
+    }
   }
 
   return results;

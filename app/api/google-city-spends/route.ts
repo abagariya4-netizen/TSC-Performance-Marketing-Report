@@ -81,6 +81,21 @@ function getGoogleDateHelpers() {
 }
 
 export async function GET() {
+  // Check all required env vars exist
+  const missingVars = [
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_REFRESH_TOKEN',
+    'GOOGLE_ADS_DEVELOPER_TOKEN',
+    'GOOGLE_ADS_CUSTOMER_ID',
+  ].filter(v => !process.env[v]);
+
+  if (missingVars.length > 0) {
+    return NextResponse.json({
+      error: `Missing environment variables: ${missingVars.join(', ')}`
+    }, { status: 500 });
+  }
+
   try {
     const { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining } = getGoogleDateHelpers();
     const geoMap = await getGeoMap();
@@ -148,6 +163,11 @@ export async function GET() {
     return NextResponse.json({ rows, yesterdayStr, monthStart, mtdTotal, ydayTotal, daysPassed, totalDays, daysRemaining });
 
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Google Ads API error:', error);
+    return NextResponse.json({
+      error: error.message || 'Unknown error',
+      stack: error.stack || '',
+      details: error.toString()
+    }, { status: 500 });
   }
 }
