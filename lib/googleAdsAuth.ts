@@ -18,7 +18,7 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
   const token      = await getGoogleAdsAccessToken();
   const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID!;
 
-  const url = `https://googleads.googleapis.com/v19/customers/${customerId}/googleAds:searchStream`;
+  const url = `https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`;
 
   const res = await fetch(url, {
     method: 'POST',
