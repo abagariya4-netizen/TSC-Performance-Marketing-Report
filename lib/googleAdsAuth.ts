@@ -26,8 +26,9 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
     'Content-Type':    'application/json',
   };
 
-  if (process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) {
-    headers['login-customer-id'] = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID;
+  const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '8012280596';
+  if (loginCustomerId) {
+    headers['login-customer-id'] = loginCustomerId;
   }
 
   const res = await fetch(url, {
