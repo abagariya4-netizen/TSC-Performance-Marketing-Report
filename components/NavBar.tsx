@@ -13,6 +13,7 @@ export default function NavBar() {
     { label: 'LC to LP',                   href: '/lc-to-lp' },
     { label: 'CPM',                        href: '/cpm' },
     { label: 'Placements (Meta)',          href: '/placements' },
+    { label: 'City Level Spends (Google)', href: '/google-city-spends' },
   ];
 
   const getIsActive = (href: string) => {
