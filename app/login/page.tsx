@@ -16,8 +16,8 @@ export default function LoginPage() {
       return;
     }
     if (password === 'TSC@2026') {
-      // Set cookie for 7 days
-      document.cookie = 'tsc_auth=true; path=/; max-age=604800; samesite=strict';
+      // Set session cookie (expires when browser is closed)
+      document.cookie = 'tsc_auth=true; path=/; samesite=strict';
       router.push('/');
       router.refresh(); // Refresh to clear any cached states
     } else {
