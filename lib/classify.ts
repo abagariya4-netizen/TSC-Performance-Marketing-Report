@@ -1,4 +1,4 @@
-const EXCLUDE_WORDS = ['chair', 'desk', 'sofa', 'elite', 'foot'];
+const EXCLUDE_WORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'dhoni', 'all product', 'all_products'];
 
 export type Funnel = 'TOP' | 'MID' | 'BOTTOM' | 'RNF' | 'GROUP' | 'EXCLUDED';
 
