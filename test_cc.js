@@ -7,21 +7,15 @@ var tokenMatch = env.match(/META_ACCESS_TOKEN=(.*)/);
 var token = tokenMatch ? tokenMatch[1].trim() : '';
 var idMatch = env.match(/META_AD_ACCOUNT_ID=(.*)/);
 var accountId = idMatch ? idMatch[1].trim() : '';
-var timeRangeStr = encodeURIComponent(JSON.stringify({ since: '2026-05-01', until: '2026-06-15' }));
-var url = "https://graph.facebook.com/v19.0/".concat(accountId, "/insights?fields=campaign_name,spend,actions,action_values&level=adset&time_range=").concat(timeRangeStr, "&limit=50&access_token=").concat(token);
+var url = "https://graph.facebook.com/v19.0/".concat(accountId, "/customconversions?fields=name,id&limit=100&access_token=").concat(token);
 https.get(url, function (res) {
     var data = '';
     res.on('data', function (chunk) { return data += chunk; });
     res.on('end', function () {
         var json = JSON.parse(data);
         if (json.data) {
-            var types_1 = new Set();
-            json.data.forEach(function (d) {
-                if (d.action_values) {
-                    d.action_values.forEach(function (a) { return types_1.add(a.action_type); });
-                }
-            });
-            console.log('Unique Action Types:', Array.from(types_1));
+            console.log('Custom Conversions:');
+            json.data.forEach(function (cc) { return console.log("".concat(cc.name, ": ").concat(cc.id)); });
         }
         else {
             console.log('Error:', json);

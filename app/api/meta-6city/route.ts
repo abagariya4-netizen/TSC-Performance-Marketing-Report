@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages, buildAdsetUrl } from '@/lib/metaApi';
 import { classifyAdset } from '@/lib/classify';
 import { getDateParams } from '@/lib/dateUtils';
@@ -12,9 +12,10 @@ const SIX_CITIES: Record<string, string[]> = {
   "Gujarat":     ["Gujarat"],
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const token     = process.env.META_ACCESS_TOKEN!;
+    const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
+    if (!token) return NextResponse.json({ error: 'META_ACCESS_TOKEN not set' }, { status: 500 });
     const accountId = process.env.META_AD_ACCOUNT_ID!;
     const dates     = getDateParams();
 

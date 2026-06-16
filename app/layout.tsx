@@ -8,6 +8,8 @@ export const metadata = {
 import { Suspense } from 'react';
 import NavBar from '@/components/NavBar';
 
+import TokenInput from '@/components/TokenInput';
+
 export default function RootLayout({
   children,
 }: {
@@ -22,7 +24,10 @@ export default function RootLayout({
       </head>
       <body style={{ background: '#0f1117', margin: 0 }}>
         <div style={{ padding: '24px 24px 0 24px', background: '#0f1117' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 16px 0', color: 'white', fontFamily: 'Inter, sans-serif' }}>🛏 TSC Performance Report</h1>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0, color: 'white', fontFamily: 'Inter, sans-serif' }}>🛏 TSC Performance Report</h1>
+            <TokenInput />
+          </div>
           <Suspense fallback={<div style={{ height: '40px' }} />}>
             <NavBar />
           </Suspense>

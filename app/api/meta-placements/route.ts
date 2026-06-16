@@ -40,7 +40,7 @@ function passesFilter(campaignName: string, adsetName: string, category: string,
 }
 
 export async function GET(req: NextRequest) {
-  const token = process.env.META_ACCESS_TOKEN;
+  const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
   if (!token) return NextResponse.json({ error: 'META_ACCESS_TOKEN not set' }, { status: 500 });
 
   const { searchParams } = new URL(req.url);

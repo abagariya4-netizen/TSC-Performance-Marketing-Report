@@ -7,8 +7,7 @@ const token = tokenMatch ? tokenMatch[1].trim() : '';
 const idMatch = env.match(/META_AD_ACCOUNT_ID=(.*)/);
 const accountId = idMatch ? idMatch[1].trim() : '';
 
-const timeRangeStr = encodeURIComponent(JSON.stringify({ since: '2026-05-01', until: '2026-06-15' }));
-const url = `https://graph.facebook.com/v19.0/${accountId}/insights?fields=campaign_name,spend,actions,action_values&level=adset&time_range=${timeRangeStr}&limit=50&access_token=${token}`;
+const url = `https://graph.facebook.com/v19.0/${accountId}/customconversions?fields=name,id&limit=100&access_token=${token}`;
 
 https.get(url, (res) => {
   let data = '';
@@ -16,13 +15,8 @@ https.get(url, (res) => {
   res.on('end', () => {
     const json = JSON.parse(data);
     if (json.data) {
-      const types = new Set<string>();
-      json.data.forEach((d: any) => {
-        if (d.action_values) {
-          d.action_values.forEach((a: any) => types.add(a.action_type));
-        }
-      });
-      console.log('Unique Action Types:', Array.from(types));
+      console.log('Custom Conversions:');
+      json.data.forEach((cc: any) => console.log(`${cc.name}: ${cc.id}`));
     } else {
       console.log('Error:', json);
     }

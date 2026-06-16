@@ -163,7 +163,8 @@ export async function GET(req: NextRequest) {
     const since    = searchParams.get('since')    || '';
     const until    = searchParams.get('until')    || '';
 
-    const token     = process.env.META_ACCESS_TOKEN!;
+  const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
+  if (!token) return NextResponse.json({ error: 'META_ACCESS_TOKEN not set' }, { status: 500 });
     const accountId = process.env.META_AD_ACCOUNT_ID!;
     const BASE      = 'https://graph.facebook.com/v19.0';
 
