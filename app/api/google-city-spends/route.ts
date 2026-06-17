@@ -1,4 +1,4 @@
-import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
+import { queryGoogleAds, queryAllGoogleAdsAccounts, getGoogleAdsAccessToken } from '@/lib/googleAdsAuth';
 import { mapGoogleCity, TSC_CITIES, GOOGLE_CITY_MAP } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
@@ -116,6 +116,84 @@ function aggregateTotalSpend(rows: any[]): number {
   return total;
 }
 
+async function fetchCampaignTotal(startDate: string, endDate: string): Promise<number> {
+  const token = await getGoogleAdsAccessToken();
+  const loginCustomerId = '8012280596';
+  
+  // 1. Fetch all child account IDs
+  const accountsRes = await fetch(`https://googleads.googleapis.com/v24/customers/${loginCustomerId}/googleAds:searchStream`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+      'Content-Type': 'application/json',
+      'login-customer-id': loginCustomerId,
+    },
+    body: JSON.stringify({
+      query: `SELECT customer_client.client_customer FROM customer_client WHERE customer_client.level <= 1 AND customer_client.status = 'ENABLED' AND customer_client.hidden = false`
+    })
+  });
+  
+  if (!accountsRes.ok) return 0;
+  const accountsJson = await accountsRes.json();
+  const accountsToQuery: string[] = [];
+  
+  if (Array.isArray(accountsJson)) {
+    for (const chunk of accountsJson) {
+      if (chunk.results) {
+        for (const row of chunk.results) {
+          if (row.customerClient?.clientCustomer) {
+            const id = row.customerClient.clientCustomer.split('/')[1];
+            if (id !== loginCustomerId) accountsToQuery.push(id);
+          }
+        }
+      }
+    }
+  }
+
+  // 2 & 3. For each child account ID, fetch campaign spend
+  const uniqueAccounts = Array.from(new Set(accountsToQuery));
+  let grandTotal = 0;
+  
+  await Promise.all(uniqueAccounts.map(async (acc) => {
+    try {
+      const res = await fetch(`https://googleads.googleapis.com/v24/customers/${acc}/googleAds:searchStream`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+          'Content-Type': 'application/json',
+          'login-customer-id': loginCustomerId,
+        },
+        body: JSON.stringify({
+          query: `SELECT metrics.cost_micros FROM campaign WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'`
+        })
+      });
+      
+      if (!res.ok) return;
+      
+      const parsed = await res.json();
+      if (Array.isArray(parsed)) {
+        for (const chunk of parsed) {
+          if (chunk.results) {
+            for (const row of chunk.results) {
+              grandTotal += Math.round((row.metrics?.costMicros || 0) / 1_000_000);
+            }
+          }
+        }
+      } else if (parsed.results) {
+        for (const row of parsed.results) {
+          grandTotal += Math.round((row.metrics?.costMicros || 0) / 1_000_000);
+        }
+      }
+    } catch (e) {
+      console.error(`Error querying account ${acc} for campaign total:`, e);
+    }
+  }));
+
+  return grandTotal;
+}
+
 export async function GET() {
   const missingVars = [
     'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN',
@@ -132,7 +210,7 @@ export async function GET() {
     const { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining } = getGoogleDateHelpers();
     const geoMap = await getGeoMap();
 
-    const [mtdGeoRows, ydayGeoRows, mtdCampRows, ydayCampRows] = await Promise.all([
+    const [mtdGeoRows, ydayGeoRows, mtdGrandTotal, ydayGrandTotal] = await Promise.all([
       // 1. MTD mapped cities (geographic_view)
       queryAllGoogleAdsAccounts(`
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
@@ -146,21 +224,10 @@ export async function GET() {
         WHERE segments.date = '${yesterdayStr}'
       `),
       // 3. MTD Campaign Total
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, metrics.cost_micros
-        FROM campaign
-        WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
-      `),
+      fetchCampaignTotal(monthStart, yesterdayStr),
       // 4. Yesterday Campaign Total
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, metrics.cost_micros
-        FROM campaign
-        WHERE segments.date = '${yesterdayStr}'
-      `)
+      fetchCampaignTotal(yesterdayStr, yesterdayStr)
     ]);
-
-    const mtdGrandTotal = aggregateTotalSpend(mtdCampRows);
-    const ydayGrandTotal = aggregateTotalSpend(ydayCampRows);
 
     const mtdGeoTotal = aggregateTotalSpend(mtdGeoRows);
     const ydayGeoTotal = aggregateTotalSpend(ydayGeoRows);
