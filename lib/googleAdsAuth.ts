@@ -14,9 +14,9 @@ export async function getGoogleAdsAccessToken(): Promise<string> {
   return json.access_token;
 }
 
-export async function queryGoogleAds(gaql: string): Promise<any[]> {
+export async function queryGoogleAds(gaql: string, overrideCustomerId?: string): Promise<any[]> {
   const token      = await getGoogleAdsAccessToken();
-  const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID!;
+  const customerId = overrideCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID!;
 
   const url = `https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`;
 
@@ -63,4 +63,22 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
   }
 
   return results;
+}
+
+export async function queryAllGoogleAdsAccounts(gaql: string): Promise<any[]> {
+  const account1 = process.env.GOOGLE_ADS_CUSTOMER_ID;
+  const account2 = process.env.Google_Ads_Customer;
+  
+  const accountsToQuery = [];
+  if (account1) accountsToQuery.push(account1);
+  if (account2) accountsToQuery.push(account2);
+
+  const allResults = await Promise.all(
+    accountsToQuery.map(acc => queryGoogleAds(gaql, acc).catch(e => {
+      console.error(`Error querying account ${acc}:`, e);
+      return [];
+    }))
+  );
+
+  return allResults.flat();
 }

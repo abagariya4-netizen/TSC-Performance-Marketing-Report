@@ -1,4 +1,4 @@
-import { queryGoogleAds } from '@/lib/googleAdsAuth';
+import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
 import { mapGoogleCity, TSC_CITIES } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
 import { getDateParams } from '@/lib/dateUtils';
@@ -110,29 +110,29 @@ export async function GET() {
     // Run all 4 fetches in parallel
     const [mtdGeoRows, ydayGeoRows, mtdTotalRows, ydayTotalRows] = await Promise.all([
 
-      // Call 1: MTD spend by city (geographic_view)
-      queryGoogleAds(`
+      // Call 1: MTD spend by city (user_location_view)
+      queryAllGoogleAdsAccounts(`
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
         FROM user_location_view
         WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
       `),
 
       // Call 2: Yesterday spend by city
-      queryGoogleAds(`
+      queryAllGoogleAdsAccounts(`
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
         FROM user_location_view
         WHERE segments.date = '${yesterdayStr}'
       `),
 
       // Call 3: MTD total account spend (no geo breakdown) — for Unknown
-      queryGoogleAds(`
+      queryAllGoogleAdsAccounts(`
         SELECT campaign.name, metrics.cost_micros
         FROM campaign
         WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
       `),
 
       // Call 4: Yesterday total account spend (no geo breakdown) — for Unknown
-      queryGoogleAds(`
+      queryAllGoogleAdsAccounts(`
         SELECT campaign.name, metrics.cost_micros
         FROM campaign
         WHERE segments.date = '${yesterdayStr}'
