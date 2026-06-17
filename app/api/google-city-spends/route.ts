@@ -52,12 +52,38 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     // (This rescues missing spend from PMax campaigns that don't report locations)
     // EXCEPTION: NCR cities share campaigns, so we skip campaign name matching for them
     // and rely entirely on Step 2 (physical user location).
+    // Step 1: Campaign name matching using CITY-LEVEL keywords only (not suburb aliases)
+    // NCR cities are excluded — they share campaigns so we rely on GPS only
+    const CAMPAIGN_CITY_KEYWORDS: Record<string, string> = {
+      'mumbai': 'Mumbai', 'hyderabad': 'Hyderabad', 'chennai': 'Chennai',
+      'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'pune': 'Pune',
+      'ahmedabad': 'Ahmedabad', 'kolkata': 'Kolkata', 'lucknow': 'Lucknow',
+      'bhubaneswar': 'Bhubaneswar', 'surat': 'Surat', 'indore': 'Indore',
+      'jaipur': 'Jaipur', 'visakhapatnam': 'Visakhapatnam', 'vizag': 'Visakhapatnam',
+      'vijayawada': 'Vijayawada', 'guntur': 'Guntur',
+      'thiruvananthapuram': 'Thiruvananthapuram', 'trivandrum': 'Thiruvananthapuram',
+      'guwahati': 'Guwahati', 'vadodara': 'Vadodara', 'baroda': 'Vadodara',
+      'ludhiana': 'Ludhiana', 'rajkot': 'Rajkot', 'nashik': 'Nashik',
+      'faridabad': 'Faridabad', 'mangaluru': 'Mangaluru', 'mangalore': 'Mangaluru',
+      'ghaziabad': 'Ghaziabad', 'warangal': 'Warangal', 'kochi': 'Kochi',
+      'cochin': 'Kochi', 'coimbatore': 'Coimbatore', 'mysore': 'Mysore',
+      'mysuru': 'Mysore', 'nagpur': 'Nagpur', 'goa': 'Goa', 'mohali': 'Mohali',
+      'chandigarh': 'Chandigarh', 'patna': 'Patna', 'dehradun': 'Dehradun',
+      'thrissur': 'Thrissur', 'hubballi': 'Hubballi', 'hubli': 'Hubballi',
+      'salem': 'Salem', 'aurangabad': 'Sambhaji Nagar', 'sambhajinagar': 'Sambhaji Nagar',
+      'belgaum': 'Belgaum', 'belagavi': 'Belgaum', 'kakinada': 'Kakinada',
+      'bhopal': 'Bhopal', 'kolhapur': 'Kolhapur', 'kozhikode': 'Kozhikode',
+      'calicut': 'Kozhikode', 'madurai': 'Madurai', 'kanpur': 'Kanpur',
+      'tiruchirappalli': 'Tiruchirappalli', 'trichy': 'Tiruchirappalli',
+      'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
+      'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
+      'karimnagar': 'KarimNagar', 'bellary': 'Ballari', 'ballari': 'Ballari',
+      'hosur': 'Hosur', 'raipur': 'Raipur',
+    };
     const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
-    const allCityAliases = Object.keys(GOOGLE_CITY_MAP);
-    
-    for (const alias of allCityAliases) {
-      const targetCity = GOOGLE_CITY_MAP[alias];
-      if (!ncrCities.has(targetCity) && cn.includes(alias)) {
+
+    for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
+      if (!ncrCities.has(targetCity) && cn.includes(keyword)) {
         bucket = targetCity;
         break;
       }
