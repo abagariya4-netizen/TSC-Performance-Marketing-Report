@@ -186,6 +186,10 @@ function PageContent() {
       if (json.error) throw new Error(json.error);
       setData(json);
       setLastUpdated(new Date().toLocaleString('en-IN'));
+      if (json.debug && json.debug.length > 0) {
+        console.warn('⚠️ MISSING SPEND TRACKER: These are the top places where spend went to Unknown or Rest:');
+        console.table(json.debug);
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {

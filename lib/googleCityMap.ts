@@ -35,7 +35,7 @@ export const GOOGLE_CITY_MAP: Record<string, string> = {
   'injambakkam': 'Chennai', 'korattur': 'Chennai', 'madambakkam': 'Chennai',
   'george town': 'Chennai',
 
-  'bengaluru': 'Bengaluru', 'mahadevapura': 'Bengaluru', 'jayanagar': 'Bengaluru',
+  'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'mahadevapura': 'Bengaluru', 'jayanagar': 'Bengaluru',
   'brookefield': 'Bengaluru', 'krishnarajapura': 'Bengaluru',
   'krishnarajapuram': 'Bengaluru', 'c v raman nagar': 'Bengaluru',
   'koramangala': 'Bengaluru', 'balagere': 'Bengaluru',

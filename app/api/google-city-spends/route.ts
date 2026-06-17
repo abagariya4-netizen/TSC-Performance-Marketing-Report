@@ -36,7 +36,7 @@ async function getGeoMap(): Promise<Record<string, string>> {
   return map;
 }
 
-function aggregateByCity(rows: any[], geoMap: Record<string, string>): Record<string, number> {
+function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTracker?: Record<string, number>): Record<string, number> {
   const result: Record<string, number> = {};
   for (const row of rows) {
     const campaignName = row.campaign?.name || '';
@@ -51,6 +51,13 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>): Record<st
     const bucket = mapGoogleCity(cityDisplay);
     const spend  = Math.round((row.metrics?.costMicros || 0) / 1_000_000);
     result[bucket] = (result[bucket] || 0) + spend;
+    
+    if (debugTracker && spend > 0) {
+      const debugKey = cityDisplay ? `Unmapped: ${cityDisplay} (${geoResource})` : `No City: Campaign ${campaignName}`;
+      if (bucket === 'Rest' || bucket === 'Unknown') {
+        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
+      }
+    }
   }
   return result;
 }
@@ -133,7 +140,8 @@ export async function GET() {
     ]);
 
     // Aggregate city-level spend
-    const mtdByCity   = aggregateByCity(mtdGeoRows,  geoMap);
+    const unmappedSpends: Record<string, number> = {};
+    const mtdByCity   = aggregateByCity(mtdGeoRows,  geoMap, unmappedSpends);
     const ydayByCity  = aggregateByCity(ydayGeoRows, geoMap);
 
     // Total account spend (for Unknown calculation)
@@ -158,7 +166,12 @@ export async function GET() {
       })
       .filter(r => r.mtd > 0 || r.yesterday > 0);
 
-    return NextResponse.json({ rows, yesterdayStr, monthStart, mtdTotal, ydayTotal, daysPassed, totalDays, daysRemaining });
+    // Sort debug tracker to find top unmapped spends
+    const topUnmapped = Object.entries(unmappedSpends)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 50);
+
+    return NextResponse.json({ rows, yesterdayStr, monthStart, mtdTotal, ydayTotal, daysPassed, totalDays, daysRemaining, debug: topUnmapped });
 
   } catch (error: any) {
     console.error('Google Ads API error:', error);
