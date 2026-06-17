@@ -257,7 +257,6 @@ export const GOOGLE_CITY_MAP: Record<string, string> = {
   'cuttack': 'Bhubaneswar',
   'kommaghatta': 'Bengaluru',
   'kazhakkoottam': 'Thiruvananthapuram',
-  'madgaon': 'Goa',
 };
 
 export const TSC_CITIES = [

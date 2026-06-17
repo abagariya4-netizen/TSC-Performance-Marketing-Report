@@ -11,11 +11,7 @@ if (match) {
     map.set(pairMatch[1], pairMatch[2]);
   }
   
-  map.delete('panchkula');
-  map.delete('kakkanad');
-  
-  map.set('kazhakkoottam', 'Thiruvananthapuram');
-  map.set('madgaon', 'Goa');
+  map.delete('madgaon');
   
   let newInnerContent = '\n';
   for (const [k, v] of map.entries()) {
