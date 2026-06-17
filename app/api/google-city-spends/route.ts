@@ -4,14 +4,15 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { getDateParams } from '@/lib/dateUtils';
 
-const EXCLUDED_KEYWORDS: string[] = ['smg', 'vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
+// Based on API investigation, no exclusions should be applied to match the Grand Total
+const EXCLUDED_KEYWORDS: string[] = [];
 
 function isCampaignExcluded(name: string): boolean {
+  if (EXCLUDED_KEYWORDS.length === 0) return false;
   const cn = (name || '').toLowerCase();
   return EXCLUDED_KEYWORDS.some(kw => cn.includes(kw));
 }
 
-// Cache for geo constants (city resource name → display name)
 let geoMapCache: Record<string, string> | null = null;
 let geoMapCacheTime = 0;
 const GEO_CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -37,32 +38,32 @@ async function getGeoMap(): Promise<Record<string, string>> {
   return map;
 }
 
-function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTracker?: Record<string, number>): Record<string, number> {
-  const result: Record<string, number> = {};
+const CAMPAIGN_CITY_KEYWORDS: Record<string, string> = {
+  'mumbai': 'Mumbai', 'hyderabad': 'Hyderabad', 'chennai': 'Chennai',
+  'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'pune': 'Pune',
+  'ahmedabad': 'Ahmedabad', 'kolkata': 'Kolkata', 'lucknow': 'Lucknow',
+  'bhubaneswar': 'Bhubaneswar', 'surat': 'Surat', 'indore': 'Indore',
+  'jaipur': 'Jaipur', 'visakhapatnam': 'Visakhapatnam',
+  'vijayawada': 'Vijayawada', 'guntur': 'Guntur',
+  'thiruvananthapuram': 'Thiruvananthapuram', 'guwahati': 'Guwahati',
+  'vadodara': 'Vadodara', 'ludhiana': 'Ludhiana', 'rajkot': 'Rajkot',
+  'nashik': 'Nashik', 'faridabad': 'Faridabad', 'mangaluru': 'Mangaluru',
+  'ghaziabad': 'Ghaziabad', 'warangal': 'Warangal', 'kochi': 'Kochi',
+  'coimbatore': 'Coimbatore', 'mysore': 'Mysore', 'mysuru': 'Mysore',
+  'nagpur': 'Nagpur', 'goa': 'Goa', 'mohali': 'Mohali',
+  'chandigarh': 'Chandigarh', 'patna': 'Patna', 'dehradun': 'Dehradun',
+  'thrissur': 'Thrissur', 'hubballi': 'Hubballi', 'salem': 'Salem',
+  'aurangabad': 'Sambhaji Nagar', 'belgaum': 'Belgaum', 'kakinada': 'Kakinada',
+  'bhopal': 'Bhopal', 'kolhapur': 'Kolhapur', 'kozhikode': 'Kozhikode',
+  'madurai': 'Madurai', 'kanpur': 'Kanpur', 'tiruchirappalli': 'Tiruchirappalli',
+  'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
+  'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
+  'karimnagar': 'KarimNagar', 'ballari': 'Ballari', 'hosur': 'Hosur', 'raipur': 'Raipur',
+  'delhi': 'Delhi', 'noida': 'Noida', 'gurgaon': 'Gurgaon',
+};
 
-  const CAMPAIGN_CITY_KEYWORDS: Record<string, string> = {
-    'mumbai': 'Mumbai', 'hyderabad': 'Hyderabad', 'chennai': 'Chennai',
-    'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'pune': 'Pune',
-    'ahmedabad': 'Ahmedabad', 'kolkata': 'Kolkata', 'lucknow': 'Lucknow',
-    'bhubaneswar': 'Bhubaneswar', 'surat': 'Surat', 'indore': 'Indore',
-    'jaipur': 'Jaipur', 'visakhapatnam': 'Visakhapatnam',
-    'vijayawada': 'Vijayawada', 'guntur': 'Guntur',
-    'thiruvananthapuram': 'Thiruvananthapuram', 'guwahati': 'Guwahati',
-    'vadodara': 'Vadodara', 'ludhiana': 'Ludhiana', 'rajkot': 'Rajkot',
-    'nashik': 'Nashik', 'faridabad': 'Faridabad', 'mangaluru': 'Mangaluru',
-    'ghaziabad': 'Ghaziabad', 'warangal': 'Warangal', 'kochi': 'Kochi',
-    'coimbatore': 'Coimbatore', 'mysore': 'Mysore', 'mysuru': 'Mysore',
-    'nagpur': 'Nagpur', 'goa': 'Goa', 'mohali': 'Mohali',
-    'chandigarh': 'Chandigarh', 'patna': 'Patna', 'dehradun': 'Dehradun',
-    'thrissur': 'Thrissur', 'hubballi': 'Hubballi', 'salem': 'Salem',
-    'aurangabad': 'Sambhaji Nagar', 'belgaum': 'Belgaum', 'kakinada': 'Kakinada',
-    'bhopal': 'Bhopal', 'kolhapur': 'Kolhapur', 'kozhikode': 'Kozhikode',
-    'madurai': 'Madurai', 'kanpur': 'Kanpur', 'tiruchirappalli': 'Tiruchirappalli',
-    'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
-    'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
-    'karimnagar': 'KarimNagar', 'ballari': 'Ballari', 'hosur': 'Hosur', 'raipur': 'Raipur',
-    'delhi': 'Delhi', 'noida': 'Noida', 'gurgaon': 'Gurgaon',
-  };
+function aggregateByCity(rows: any[], geoMap: Record<string, string>): Record<string, number> {
+  const result: Record<string, number> = {};
 
   for (const row of rows) {
     const campaignName = row.campaign?.name || '';
@@ -71,14 +72,12 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     const cn = campaignName.toLowerCase();
     const spend = Math.round((row.metrics?.costMicros || 0) / 1_000_000);
 
-    // Step 1: Physical user location — PRIMARY method, matches Excel VLOOKUP exactly
     const geoResource = row.segments?.geoTargetCity || '';
     const cityDisplay = geoResource
       ? (geoMap[geoResource] || '').split(',')[0].trim().toLowerCase()
       : '';
     let bucket = geoResource ? mapGoogleCity(cityDisplay) : '';
 
-    // Step 2: Campaign name fallback — ONLY when NO geo data (or when geo data resolves to Unknown/Rest)
     if (!bucket || bucket === 'Unknown' || bucket === 'Rest') {
       for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
         if (cn.includes(keyword)) {
@@ -98,120 +97,69 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
 function aggregateTotalSpend(rows: any[]): number {
   let total = 0;
   for (const row of rows) {
-    const campaignName = row.campaign?.name || '';
-    if (isCampaignExcluded(campaignName)) continue;
+    if (isCampaignExcluded(row.campaign?.name || '')) continue;
     total += Math.round((row.metrics?.costMicros || 0) / 1_000_000);
   }
   return total;
 }
 
-function getGoogleDateHelpers() {
-  const today     = new Date();
-  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-
-  const monthStart    = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
-  const yesterdayStr  = fmt(yesterday);
-  const totalDays     = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-  const daysPassed    = yesterday.getDate();
-  const daysRemaining = totalDays - daysPassed;
-
-  return { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining };
-}
-
-export async function GET() {
-  // Check all required env vars exist
-  const missingVars = [
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-    'GOOGLE_REFRESH_TOKEN',
-    'GOOGLE_ADS_DEVELOPER_TOKEN',
-    'GOOGLE_ADS_CUSTOMER_ID',
-  ].filter(v => !process.env[v]);
-
-  if (missingVars.length > 0) {
-    return NextResponse.json({
-      error: `Missing environment variables: ${missingVars.join(', ')}`
-    }, { status: 500 });
-  }
-
+export async function GET(request: Request) {
   try {
-    const { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining } = getGoogleDateHelpers();
+    const { startDate, endDate } = getDateParams(request);
     const geoMap = await getGeoMap();
 
-    // Run all 4 fetches in parallel
-    const [mtdGeoRows, ydayGeoRows, mtdTotalRows, ydayTotalRows] = await Promise.all([
+    const campGaql = `
+      SELECT campaign.name, metrics.cost_micros
+      FROM campaign
+      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+    `;
+    const campRows = await queryAllGoogleAdsAccounts(campGaql);
+    const grandTotal = aggregateTotalSpend(campRows);
 
-      // Call 1: MTD spend by city (user_location_view)
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
-        FROM user_location_view
-        WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
-      `),
+    // Correct Data Source based on API Investigation (Formula B)
+    const geoGaql = `
+      SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
+      FROM geographic_view
+      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+    `;
+    const geoRows = await queryAllGoogleAdsAccounts(geoGaql);
+    const geographicViewTotal = aggregateTotalSpend(geoRows);
 
-      // Call 2: Yesterday spend by city
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
-        FROM user_location_view
-        WHERE segments.date = '${yesterdayStr}'
-      `),
+    // Question 4 Formula B: Unknown = campaign_total - geographic_view_total
+    const trueUnknown = Math.max(0, grandTotal - geographicViewTotal);
 
-      // Call 3: MTD total account spend (no geo breakdown) — for Unknown
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, metrics.cost_micros
-        FROM campaign
-        WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
-      `),
+    const cityAggregation = aggregateByCity(geoRows, geoMap);
+    const namedCitiesTotal = Object.entries(cityAggregation)
+      .filter(([city]) => city !== 'Unknown' && city !== 'Rest')
+      .reduce((sum, [, spend]) => sum + spend, 0);
 
-      // Call 4: Yesterday total account spend (no geo breakdown) — for Unknown
-      queryAllGoogleAdsAccounts(`
-        SELECT campaign.name, metrics.cost_micros
-        FROM campaign
-        WHERE segments.date = '${yesterdayStr}'
-      `),
-    ]);
+    // Question 3: Rest = Grand Total - sum of all named cities - Unknown
+    const trueRest = Math.max(0, grandTotal - namedCitiesTotal - trueUnknown);
 
-    // Aggregate city-level spend
-    const unmappedSpends: Record<string, number> = {};
-    const mtdByCity   = aggregateByCity(mtdGeoRows,  geoMap, unmappedSpends);
-    const ydayByCity  = aggregateByCity(ydayGeoRows, geoMap);
+    const finalData: Record<string, number> = {};
+    for (const city of TSC_CITIES) {
+      finalData[city] = cityAggregation[city] || 0;
+    }
 
-    // Total account spend (for Unknown calculation)
-    const mtdTotal    = aggregateTotalSpend(mtdTotalRows);
-    const ydayTotal   = aggregateTotalSpend(ydayTotalRows);
+    finalData['Unknown'] = trueUnknown;
+    finalData['Rest']    = trueRest;
 
-    // Grand Total of geo-attributed spend (named cities + Rest)
-    // Unknown = Total account spend − Grand Total mapped cities
-    const mtdMappedTotal  = Object.entries(mtdByCity).filter(([k]) => k !== 'Unknown').reduce((s, [, v]) => s + v, 0);
-    const ydayMappedTotal = Object.entries(ydayByCity).filter(([k]) => k !== 'Unknown').reduce((s, [, v]) => s + v, 0);
+    // Optional debug tracker to prove totals
+    const debugTracker = {
+      campaign_total: grandTotal,
+      geographic_view_total: geographicViewTotal,
+      sum_named_cities: namedCitiesTotal,
+      calculated_unknown: trueUnknown,
+      calculated_rest: trueRest
+    };
 
-    mtdByCity['Unknown']  = Math.max(0, mtdTotal  - mtdMappedTotal);
-    ydayByCity['Unknown'] = Math.max(0, ydayTotal - ydayMappedTotal);
-
-    // Build output rows for each TSC city
-    const rows = TSC_CITIES
-      .map(city => {
-        const mtd       = mtdByCity[city]  || 0;
-        const yesterday = ydayByCity[city] || 0;
-        const estSpends = mtd + yesterday * daysRemaining;
-        return { city, mtd, yesterday, estSpends, daysPassed, totalDays, daysRemaining };
-      })
-      .filter(r => r.mtd > 0 || r.yesterday > 0);
-
-    // Sort debug tracker to find top unmapped spends
-    const topUnmapped = Object.entries(unmappedSpends)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 50);
-
-    return NextResponse.json({ rows, yesterdayStr, monthStart, mtdTotal, ydayTotal, daysPassed, totalDays, daysRemaining, debug: topUnmapped });
+    return NextResponse.json({
+      data: finalData,
+      debug: debugTracker
+    });
 
   } catch (error: any) {
-    console.error('Google Ads API error:', error);
-    return NextResponse.json({
-      error: error.message || 'Unknown error',
-      stack: error.stack || '',
-      details: error.toString()
-    }, { status: 500 });
+    console.error('Google City Spends Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
