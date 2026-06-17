@@ -78,8 +78,8 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
       : '';
     let bucket = geoResource ? mapGoogleCity(cityDisplay) : '';
 
-    // Step 2: Campaign name fallback — ONLY when NO geo data
-    if (!bucket) {
+    // Step 2: Campaign name fallback — ONLY when NO geo data (or when geo data resolves to Unknown/Rest)
+    if (!bucket || bucket === 'Unknown' || bucket === 'Rest') {
       for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
         if (cn.includes(keyword)) {
           bucket = targetCity;
