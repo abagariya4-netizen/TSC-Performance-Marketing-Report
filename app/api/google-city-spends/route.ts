@@ -1,5 +1,5 @@
 import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
-import { mapGoogleCity, TSC_CITIES } from '@/lib/googleCityMap';
+import { mapGoogleCity, TSC_CITIES, GOOGLE_CITY_MAP } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
 import { getDateParams } from '@/lib/dateUtils';
 
@@ -49,10 +49,10 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
 
     // Step 1: Forcefully check if the campaign name explicitly states the city
     // (This rescues missing spend from PMax campaigns that don't report locations)
-    const allCities = Object.keys(geoMap);
-    for (const city of allCities) {
-      if (cn.includes(city)) {
-        bucket = mapGoogleCity(city);
+    const allCityAliases = Object.keys(GOOGLE_CITY_MAP);
+    for (const alias of allCityAliases) {
+      if (cn.includes(alias)) {
+        bucket = GOOGLE_CITY_MAP[alias];
         break;
       }
     }
