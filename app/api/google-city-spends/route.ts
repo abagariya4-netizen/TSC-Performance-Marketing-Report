@@ -164,12 +164,12 @@ export async function GET() {
     const ydayTotal   = aggregateTotalSpend(ydayTotalRows);
 
     // Grand Total of geo-attributed spend (named cities + Rest)
-    // Unknown = Total account spend − Grand Total geo-attributed
-    const mtdGeoTotal  = Object.values(mtdByCity).reduce((s, v) => s + v, 0);
-    const ydayGeoTotal = Object.values(ydayByCity).reduce((s, v) => s + v, 0);
+    // Unknown = Total account spend − Grand Total mapped cities
+    const mtdMappedTotal  = Object.entries(mtdByCity).filter(([k]) => k !== 'Unknown').reduce((s, [, v]) => s + v, 0);
+    const ydayMappedTotal = Object.entries(ydayByCity).filter(([k]) => k !== 'Unknown').reduce((s, [, v]) => s + v, 0);
 
-    mtdByCity['Unknown']  = Math.max(0, mtdTotal  - mtdGeoTotal);
-    ydayByCity['Unknown'] = Math.max(0, ydayTotal - ydayGeoTotal);
+    mtdByCity['Unknown']  = Math.max(0, mtdTotal  - mtdMappedTotal);
+    ydayByCity['Unknown'] = Math.max(0, ydayTotal - ydayMappedTotal);
 
     // Build output rows for each TSC city
     const rows = TSC_CITIES

@@ -1,0 +1,1 @@
+fetch('https://tsc-performance-marketing-report.vercel.app/api/debug-campaigns', { headers: { Cookie: 'tsc_auth=true' } }).then(r=>r.json()).then(d=>{ if(d.error) console.log(d.error); else { console.log('Total Spend:', d.total); const camps = d.campaigns.slice(0,10); console.table(camps); } }).catch(e=>console.log(e));
