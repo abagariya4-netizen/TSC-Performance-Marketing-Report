@@ -1,0 +1,1 @@
+fetch('https://raw.githubusercontent.com/abagariya4-netizen/TSC-Performance-Marketing-Report/main/app/api/google-city-spends/route.ts').then(r=>r.text()).then(t => console.log(t.substring(1300, 2000)));

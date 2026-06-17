@@ -1,6 +1,7 @@
 import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
 import { mapGoogleCity, TSC_CITIES, GOOGLE_CITY_MAP } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { getDateParams } from '@/lib/dateUtils';
 
 const EXCLUDED_KEYWORDS: string[] = [];
