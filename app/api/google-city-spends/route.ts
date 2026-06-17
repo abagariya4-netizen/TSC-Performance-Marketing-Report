@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { getDateParams } from '@/lib/dateUtils';
 
-const EXCLUDED_KEYWORDS: string[] = [];
+const EXCLUDED_KEYWORDS: string[] = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
 function isCampaignExcluded(name: string): boolean {
   const cn = (name || '').toLowerCase();
@@ -61,8 +61,8 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
     'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
     'karimnagar': 'KarimNagar', 'ballari': 'Ballari', 'hosur': 'Hosur', 'raipur': 'Raipur',
-    'delhi': 'Delhi', 'noida': 'Noida', 'gurgaon': 'Gurgaon',
   };
+  const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
 
   for (const row of rows) {
     const campaignName = row.campaign?.name || '';
@@ -78,32 +78,16 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
       : '';
     let bucket = geoResource ? mapGoogleCity(cityDisplay) : '';
 
-    // Debug tracking for unmapped physical locations
-    if (debugTracker && spend > 0 && geoResource) {
-      if (bucket === 'Rest' || bucket === 'Unknown') {
-        const debugKey = cityDisplay
-          ? `Unmapped: ${cityDisplay} (${geoResource})`
-          : `No City: Campaign ${campaignName}`;
-        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
-      }
-    }
-
-    // Step 2: Campaign name fallback — ONLY when NO geo data at all (PMax hidden spend)
+    // Step 2: Campaign name fallback — ONLY when NO geo data
     if (!bucket) {
       for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
-        if (cn.includes(keyword)) {
+        if (!ncrCities.has(targetCity) && cn.includes(keyword)) {
           bucket = targetCity;
           break;
         }
       }
-      // Track no-geo campaigns for debug
-      if (debugTracker && spend > 0) {
-        const debugKey = `No City: Campaign ${campaignName}`;
-        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
-      }
     }
 
-    // If still no bucket, goes to Unknown (will be captured by math subtraction)
     if (!bucket) bucket = 'Unknown';
 
     result[bucket] = (result[bucket] || 0) + spend;
