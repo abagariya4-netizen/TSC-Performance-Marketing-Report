@@ -1,0 +1,1 @@
+fetch('https://tsc-performance-marketing-report.vercel.app/api/google-city-spends', { headers: { Cookie: 'tsc_auth=true' } }).then(r=>r.json()).then(d=>{ console.table(d.rows.map(r=>({city: r.city, mtd: r.mtd})).sort((a,b)=>b.mtd-a.mtd)); }).catch(e=>console.log(e));
