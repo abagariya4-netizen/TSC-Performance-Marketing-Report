@@ -2,9 +2,22 @@ import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
 import { mapGoogleCity, TSC_CITIES, GOOGLE_CITY_MAP } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { getDateParams } from '@/lib/dateUtils';
 
-// Based on API investigation, no exclusions should be applied to match the Grand Total
+function getGoogleDateHelpers() {
+  const today     = new Date();
+  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  const monthStart    = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+  const yesterdayStr  = fmt(yesterday);
+  const totalDays     = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysPassed    = yesterday.getDate();
+  const daysRemaining = totalDays - daysPassed;
+
+  return { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining }
+}
+
 const EXCLUDED_KEYWORDS: string[] = [];
 
 function isCampaignExcluded(name: string): boolean {
@@ -103,63 +116,105 @@ function aggregateTotalSpend(rows: any[]): number {
   return total;
 }
 
-export async function GET(request: Request) {
+export async function GET() {
+  const missingVars = [
+    'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN',
+    'GOOGLE_ADS_DEVELOPER_TOKEN', 'GOOGLE_ADS_CUSTOMER_ID',
+  ].filter(v => !process.env[v]);
+
+  if (missingVars.length > 0) {
+    return NextResponse.json({
+      error: `Missing environment variables: ${missingVars.join(', ')}`
+    }, { status: 500 });
+  }
+
   try {
-    const { startDate, endDate } = getDateParams(request);
+    const { monthStart, yesterdayStr, totalDays, daysPassed, daysRemaining } = getGoogleDateHelpers();
     const geoMap = await getGeoMap();
 
-    const campGaql = `
-      SELECT campaign.name, metrics.cost_micros
-      FROM campaign
-      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
-    `;
-    const campRows = await queryAllGoogleAdsAccounts(campGaql);
-    const grandTotal = aggregateTotalSpend(campRows);
+    const [mtdGeoRows, ydayGeoRows, mtdCampRows, ydayCampRows] = await Promise.all([
+      // 1. MTD mapped cities (geographic_view)
+      queryAllGoogleAdsAccounts(`
+        SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
+        FROM geographic_view
+        WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
+      `),
+      // 2. Yesterday mapped cities (geographic_view)
+      queryAllGoogleAdsAccounts(`
+        SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
+        FROM geographic_view
+        WHERE segments.date = '${yesterdayStr}'
+      `),
+      // 3. MTD Campaign Total
+      queryAllGoogleAdsAccounts(`
+        SELECT campaign.name, metrics.cost_micros
+        FROM campaign
+        WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
+      `),
+      // 4. Yesterday Campaign Total
+      queryAllGoogleAdsAccounts(`
+        SELECT campaign.name, metrics.cost_micros
+        FROM campaign
+        WHERE segments.date = '${yesterdayStr}'
+      `)
+    ]);
 
-    // Correct Data Source based on API Investigation (Formula B)
-    const geoGaql = `
-      SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
-      FROM geographic_view
-      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
-    `;
-    const geoRows = await queryAllGoogleAdsAccounts(geoGaql);
-    const geographicViewTotal = aggregateTotalSpend(geoRows);
+    const mtdGrandTotal = aggregateTotalSpend(mtdCampRows);
+    const ydayGrandTotal = aggregateTotalSpend(ydayCampRows);
 
-    // Question 4 Formula B: Unknown = campaign_total - geographic_view_total
-    const trueUnknown = Math.max(0, grandTotal - geographicViewTotal);
+    const mtdGeoTotal = aggregateTotalSpend(mtdGeoRows);
+    const ydayGeoTotal = aggregateTotalSpend(ydayGeoRows);
 
-    const cityAggregation = aggregateByCity(geoRows, geoMap);
-    const namedCitiesTotal = Object.entries(cityAggregation)
+    const mtdUnknown = Math.max(0, mtdGrandTotal - mtdGeoTotal);
+    const ydayUnknown = Math.max(0, ydayGrandTotal - ydayGeoTotal);
+
+    const mtdCityAggregation = aggregateByCity(mtdGeoRows, geoMap);
+    const ydayCityAggregation = aggregateByCity(ydayGeoRows, geoMap);
+
+    const mtdNamedCitiesTotal = Object.entries(mtdCityAggregation)
+      .filter(([city]) => city !== 'Unknown' && city !== 'Rest')
+      .reduce((sum, [, spend]) => sum + spend, 0);
+      
+    const ydayNamedCitiesTotal = Object.entries(ydayCityAggregation)
       .filter(([city]) => city !== 'Unknown' && city !== 'Rest')
       .reduce((sum, [, spend]) => sum + spend, 0);
 
-    // Question 3: Rest = Grand Total - sum of all named cities - Unknown
-    const trueRest = Math.max(0, grandTotal - namedCitiesTotal - trueUnknown);
+    const mtdRest = Math.max(0, mtdGrandTotal - mtdNamedCitiesTotal - mtdUnknown);
+    const ydayRest = Math.max(0, ydayGrandTotal - ydayNamedCitiesTotal - ydayUnknown);
 
-    const finalData: Record<string, number> = {};
+    const rows: { city: string; mtd: number; yesterday: number }[] = [];
+
     for (const city of TSC_CITIES) {
-      finalData[city] = cityAggregation[city] || 0;
+      rows.push({
+        city,
+        mtd: mtdCityAggregation[city] || 0,
+        yesterday: ydayCityAggregation[city] || 0
+      });
     }
 
-    finalData['Unknown'] = trueUnknown;
-    finalData['Rest']    = trueRest;
-
-    // Optional debug tracker to prove totals
-    const debugTracker = {
-      campaign_total: grandTotal,
-      geographic_view_total: geographicViewTotal,
-      sum_named_cities: namedCitiesTotal,
-      calculated_unknown: trueUnknown,
-      calculated_rest: trueRest
-    };
+    rows.push({ city: 'Unknown', mtd: mtdUnknown, yesterday: ydayUnknown });
+    rows.push({ city: 'Rest', mtd: mtdRest, yesterday: ydayRest });
 
     return NextResponse.json({
-      data: finalData,
-      debug: debugTracker
+      rows,
+      yesterdayStr,
+      monthStart,
+      mtdTotal: mtdGrandTotal,
+      ydayTotal: ydayGrandTotal,
+      daysPassed,
+      totalDays,
+      daysRemaining,
+      debug: {
+        mtdGrandTotal, mtdGeoTotal, mtdNamedCitiesTotal, mtdUnknown, mtdRest
+      }
     });
 
   } catch (error: any) {
     console.error('Google City Spends Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({
+      error: error.message || 'Unknown error',
+      stack: error.stack || '',
+      details: error.toString()
+    }, { status: 500 });
   }
 }
