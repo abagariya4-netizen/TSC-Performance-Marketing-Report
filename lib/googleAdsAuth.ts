@@ -45,18 +45,21 @@ export async function queryGoogleAds(gaql: string): Promise<any[]> {
     throw new Error(`Google Ads API error ${res.status}: ${text.substring(0, 500)}`);
   }
 
-  // Parse the streaming JSON response
+  // Parse the JSON response
+  let parsedJson;
+  try {
+    parsedJson = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`Google Ads API returned invalid JSON: ${text.substring(0, 500)}`);
+  }
+
   const results: any[] = [];
-  for (const line of text.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed === '[' || trimmed === ']') continue;
-    try {
-      const cleaned = trimmed.replace(/^,/, '');
-      const parsed  = JSON.parse(cleaned);
-      if (parsed.results) results.push(...parsed.results);
-    } catch {
-      // skip unparseable lines
+  if (Array.isArray(parsedJson)) {
+    for (const chunk of parsedJson) {
+      if (chunk.results) results.push(...chunk.results);
     }
+  } else if (parsedJson.results) {
+    results.push(...parsedJson.results);
   }
 
   return results;
