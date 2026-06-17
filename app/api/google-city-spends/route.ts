@@ -39,70 +39,72 @@ async function getGeoMap(): Promise<Record<string, string>> {
 
 function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTracker?: Record<string, number>): Record<string, number> {
   const result: Record<string, number> = {};
+
+  const CAMPAIGN_CITY_KEYWORDS: Record<string, string> = {
+    'mumbai': 'Mumbai', 'hyderabad': 'Hyderabad', 'chennai': 'Chennai',
+    'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'pune': 'Pune',
+    'ahmedabad': 'Ahmedabad', 'kolkata': 'Kolkata', 'lucknow': 'Lucknow',
+    'bhubaneswar': 'Bhubaneswar', 'surat': 'Surat', 'indore': 'Indore',
+    'jaipur': 'Jaipur', 'visakhapatnam': 'Visakhapatnam',
+    'vijayawada': 'Vijayawada', 'guntur': 'Guntur',
+    'thiruvananthapuram': 'Thiruvananthapuram', 'guwahati': 'Guwahati',
+    'vadodara': 'Vadodara', 'ludhiana': 'Ludhiana', 'rajkot': 'Rajkot',
+    'nashik': 'Nashik', 'faridabad': 'Faridabad', 'mangaluru': 'Mangaluru',
+    'ghaziabad': 'Ghaziabad', 'warangal': 'Warangal', 'kochi': 'Kochi',
+    'coimbatore': 'Coimbatore', 'mysore': 'Mysore', 'mysuru': 'Mysore',
+    'nagpur': 'Nagpur', 'goa': 'Goa', 'mohali': 'Mohali',
+    'chandigarh': 'Chandigarh', 'patna': 'Patna', 'dehradun': 'Dehradun',
+    'thrissur': 'Thrissur', 'hubballi': 'Hubballi', 'salem': 'Salem',
+    'aurangabad': 'Sambhaji Nagar', 'belgaum': 'Belgaum', 'kakinada': 'Kakinada',
+    'bhopal': 'Bhopal', 'kolhapur': 'Kolhapur', 'kozhikode': 'Kozhikode',
+    'madurai': 'Madurai', 'kanpur': 'Kanpur', 'tiruchirappalli': 'Tiruchirappalli',
+    'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
+    'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
+    'karimnagar': 'KarimNagar', 'ballari': 'Ballari', 'hosur': 'Hosur', 'raipur': 'Raipur',
+  };
+  const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
+
   for (const row of rows) {
     const campaignName = row.campaign?.name || '';
     if (isCampaignExcluded(campaignName)) continue;
 
     const cn = campaignName.toLowerCase();
-    let bucket = '';
+    const spend = Math.round((row.metrics?.costMicros || 0) / 1_000_000);
 
-    const spend  = Math.round((row.metrics?.costMicros || 0) / 1_000_000);
+    // Step 1: Physical user location — PRIMARY method, matches Excel VLOOKUP exactly
+    const geoResource = row.segments?.geoTargetCity || '';
+    const cityDisplay = geoResource
+      ? (geoMap[geoResource] || '').split(',')[0].trim().toLowerCase()
+      : '';
+    let bucket = geoResource ? mapGoogleCity(cityDisplay) : '';
 
-    // Step 1: Forcefully check if the campaign name explicitly states the city
-    // (This rescues missing spend from PMax campaigns that don't report locations)
-    // EXCEPTION: NCR cities share campaigns, so we skip campaign name matching for them
-    // and rely entirely on Step 2 (physical user location).
-    // Step 1: Campaign name matching using CITY-LEVEL keywords only (not suburb aliases)
-    // NCR cities are excluded — they share campaigns so we rely on GPS only
-    const CAMPAIGN_CITY_KEYWORDS: Record<string, string> = {
-      'mumbai': 'Mumbai', 'hyderabad': 'Hyderabad', 'chennai': 'Chennai',
-      'bengaluru': 'Bengaluru', 'bangalore': 'Bengaluru', 'pune': 'Pune',
-      'ahmedabad': 'Ahmedabad', 'kolkata': 'Kolkata', 'lucknow': 'Lucknow',
-      'bhubaneswar': 'Bhubaneswar', 'surat': 'Surat', 'indore': 'Indore',
-      'jaipur': 'Jaipur', 'visakhapatnam': 'Visakhapatnam', 'vizag': 'Visakhapatnam',
-      'vijayawada': 'Vijayawada', 'guntur': 'Guntur',
-      'thiruvananthapuram': 'Thiruvananthapuram', 'trivandrum': 'Thiruvananthapuram',
-      'guwahati': 'Guwahati', 'vadodara': 'Vadodara', 'baroda': 'Vadodara',
-      'ludhiana': 'Ludhiana', 'rajkot': 'Rajkot', 'nashik': 'Nashik',
-      'faridabad': 'Faridabad', 'mangaluru': 'Mangaluru', 'mangalore': 'Mangaluru',
-      'ghaziabad': 'Ghaziabad', 'warangal': 'Warangal', 'kochi': 'Kochi',
-      'cochin': 'Kochi', 'coimbatore': 'Coimbatore', 'mysore': 'Mysore',
-      'mysuru': 'Mysore', 'nagpur': 'Nagpur', 'goa': 'Goa', 'mohali': 'Mohali',
-      'chandigarh': 'Chandigarh', 'patna': 'Patna', 'dehradun': 'Dehradun',
-      'thrissur': 'Thrissur', 'hubballi': 'Hubballi', 'hubli': 'Hubballi',
-      'salem': 'Salem', 'aurangabad': 'Sambhaji Nagar', 'sambhajinagar': 'Sambhaji Nagar',
-      'belgaum': 'Belgaum', 'belagavi': 'Belgaum', 'kakinada': 'Kakinada',
-      'bhopal': 'Bhopal', 'kolhapur': 'Kolhapur', 'kozhikode': 'Kozhikode',
-      'calicut': 'Kozhikode', 'madurai': 'Madurai', 'kanpur': 'Kanpur',
-      'tiruchirappalli': 'Tiruchirappalli', 'trichy': 'Tiruchirappalli',
-      'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
-      'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
-      'karimnagar': 'KarimNagar', 'bellary': 'Ballari', 'ballari': 'Ballari',
-      'hosur': 'Hosur', 'raipur': 'Raipur',
-    };
-    const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
-
-    for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
-      if (!ncrCities.has(targetCity) && cn.includes(keyword)) {
-        bucket = targetCity;
-        break;
+    // Debug tracking for unmapped physical locations
+    if (debugTracker && spend > 0 && geoResource) {
+      if (bucket === 'Rest' || bucket === 'Unknown') {
+        const debugKey = cityDisplay
+          ? `Unmapped: ${cityDisplay} (${geoResource})`
+          : `No City: Campaign ${campaignName}`;
+        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
       }
     }
 
-    // Step 2: If the campaign name didn't have a city, rely on Google's physical tracker
+    // Step 2: Campaign name fallback — ONLY when NO geo data at all (PMax hidden spend)
     if (!bucket) {
-      const geoResource = row.segments?.geoTargetCity || '';
-      const cityDisplay = (geoMap[geoResource] || '').split(',')[0].trim().toLowerCase();
-      bucket = mapGoogleCity(cityDisplay);
-      
-      // Update debug info only for unmapped physical locations
-      if (debugTracker && spend > 0) {
-        const debugKey = cityDisplay ? `Unmapped: ${cityDisplay} (${geoResource})` : `No City: Campaign ${campaignName}`;
-        if (bucket === 'Rest' || bucket === 'Unknown') {
-          debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
+      for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
+        if (!ncrCities.has(targetCity) && cn.includes(keyword)) {
+          bucket = targetCity;
+          break;
         }
       }
+      // Track no-geo campaigns for debug
+      if (debugTracker && spend > 0) {
+        const debugKey = `No City: Campaign ${campaignName}`;
+        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
+      }
     }
+
+    // If still no bucket, goes to Unknown (will be captured by math subtraction)
+    if (!bucket) bucket = 'Unknown';
 
     result[bucket] = (result[bucket] || 0) + spend;
   }
