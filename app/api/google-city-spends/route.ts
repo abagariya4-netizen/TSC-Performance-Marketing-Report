@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { getDateParams } from '@/lib/dateUtils';
 
-const EXCLUDED_KEYWORDS: string[] = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
+const EXCLUDED_KEYWORDS: string[] = ['smg', 'vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
 function isCampaignExcluded(name: string): boolean {
   const cn = (name || '').toLowerCase();
