@@ -465,16 +465,12 @@ export const GOOGLE_CITY_MAP: Record<string, string> = {
   'mahabubabad': 'Warangal',
   'kondapur': 'Hyderabad',
   'nallagandla': 'Hyderabad',
-  'hubli-dharwad': 'Hubballi',
   'adai': 'Mumbai',
-  'hanamkonda': 'Warangal',
   'kelambakkam': 'Chennai',
   'guduvancheri': 'Chennai',
-  'malappuram': 'Kozhikode',
   'kakkanad': 'Kochi',
   'new town': 'Kolkata',
   'madgaon': 'Goa',
-  'panchkula': 'Mohali',
 };
 
 export const TSC_CITIES = [
