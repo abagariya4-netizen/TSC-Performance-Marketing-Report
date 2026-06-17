@@ -155,6 +155,19 @@ export const GOOGLE_CITY_MAP: Record<string, string> = {
   'hosur': 'Hosur',
   // Raipur
   'atal nagar-nava raipur': 'Raipur', 'raipur': 'Raipur',
+  // Final explicit strings from Google Ads
+  'kondapur': 'Hyderabad',
+  'nallagandla': 'Hyderabad',
+  'panchkula': 'Chandigarh',
+  'adai': 'Mumbai',
+  'badlapur': 'Mumbai',
+  'nilaje': 'Mumbai',
+  'kelambakkam': 'Chennai',
+  'guduvancheri': 'Chennai',
+  'kakkanad': 'Kochi',
+  'new town': 'Kolkata',
+  'cuttack': 'Bhubaneswar',
+  'kommaghatta': 'Bengaluru',
 };
 
 export const TSC_CITIES = [
