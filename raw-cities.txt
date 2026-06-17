@@ -1,0 +1,246 @@
+Mumbai	Mumbai
+Navi Mumbai	Mumbai
+Thane	Mumbai
+Dombivli	Mumbai
+Kalyan	Mumbai
+Vasai-Virar	Mumbai
+Virar	Mumbai
+Mira Bhayandar	Mumbai
+Bhiwandi	Mumbai
+Ambernath	Mumbai
+Nala Sopara	Mumbai
+Palghar	Mumbai
+Panvel	Mumbai
+Vasai	Mumbai
+Hyderabad	Hyderabad
+Secunderabad	Hyderabad
+Sangareddy	Hyderabad
+Serilingampalli	Hyderabad
+Malkajgiri	Hyderabad
+Balanagar	Hyderabad
+Patan Cheruvu	Hyderabad
+Qutubullapur	Hyderabad
+Saroornagar	Hyderabad
+Chennai	Chennai
+Shollinganallur	Chennai
+Mylapore	Chennai
+Aminjikarai	Chennai
+Tambaram	Chennai
+Pallavaram	Chennai
+Egmore	Chennai
+Bengaluru	Bengaluru
+Coimbatore	Coimbatore
+Pune	Pune
+Pimpri-Chinchwad	Pune
+Haveli	Pune
+New Delhi	Delhi
+Delhi	Delhi
+Civil Lines	Delhi
+Punjabi Bagh	Delhi
+Kalkaji	Delhi
+Saket	Delhi
+Defence Colony	Delhi
+Saraswati Vihar	Delhi
+Mayur Vihar	Delhi
+Dwarka	Delhi
+Rajouri Garden	Delhi
+Preet Vihar	Delhi
+Hauz Khas	Delhi
+Visakhapatnam	Visakhapatnam
+Ahmedabad	Ahmedabad
+Gandhinagar	Ahmedabad
+Edappal	Kochi
+Ernakulam	Kochi
+Kochi	Kochi
+Kanayannur	Kochi
+Noida	Noida
+Greater Noida	Noida
+Dadri	Noida
+Gurgaon	Gurgaon
+Gurugram	Gurgaon
+Lucknow	Lucknow
+Bhubaneswar	Bhubaneswar
+Khordha	Bhubaneswar
+KARIMGANJ	Bhubaneswar
+Jajapur	Bhubaneswar
+Jajpur	Bhubaneswar
+BARGARH	Bhubaneswar
+Bhubaneshwar	Bhubaneswar
+Surat	Surat
+Indore	Indore
+Kolkata	Kolkata
+Jaipur	Jaipur
+Vijayawada	Vijayawada
+Guntur	Guntur
+Thiruvananthapuram	Thiruvananthapuram
+Guwahati	Guwahati
+Vadodara	Vadodara
+Ludhiana	Ludhiana
+Rajkot	Rajkot
+Nashik	Nashik
+Ahmadabad	Ahmedabad
+Faridabad	Faridabad
+Mangalore	Mangaluru
+Mangaluru	Mangaluru
+Ghaziabad	Ghaziabad
+Warangal	Warangal
+Mahadevapura	Bengaluru
+Jayanagar	Bengaluru
+Pimpri Colony	Pune
+Howrah	Kolkata
+Nigdi	Pune
+Vashi	Mumbai
+Ghansoli	Mumbai
+Sanpada	Mumbai
+Chinchwad	Pune
+Ravet	Pune
+Kanchipuram	CHennai
+Thiruvallur	Chennai
+Mahape	Mumbai
+Brookefield	bengaluru
+Krishnarajapura	Bengaluru
+Malad East	Mumbai
+Wakad	Pune
+Kandivali East	Mumbai
+C V Raman Nagar	Bengaluru
+Nizampet	Hyderabad
+Velachery	Chennai
+Mira Road East	Mumbai
+Koramangala	Bengaluru
+Balagere	Bengaluru
+Indirapuram	Bengaluru
+Seawoods	Mumbai
+Jubilee Hills	Hyderabad
+Worli	Mumbai
+Ulhasnagar	Mumbai
+Tharamani	CHennai
+Rajajinagar	Bengaluru
+Alwal	Hyderabad
+Amrapali Leisure Valley	Noida
+Wagholi	Pune
+Pimple Nilakh	Pune
+Mulund West	Mumbai
+Bhandup West	Mumbai
+Madipakkam	Chennai
+Medavakkam	Chennai
+Vasant Vihar	Delhi
+Kondhwa	Pune
+Banjara Hills	Hyderabad
+Sholinganallur	CHennai
+Mundhwa	Pune
+Bellandur	Bengaluru
+Tangra	Kolkata
+Manapakkam	Chennai
+Virar East	Mumbai
+Vasant Kunj	Delhi
+Sector 62	Noida
+Nayanda Halli	Bengaluru
+Rayasandra	Bengaluru
+Lajpat Nagar	Delhi
+Fort	Mumbai
+Viman Nagar	Pune
+Khairtabad	Hyderabad
+Sholinganallur	Pune
+Greater Kailash	Delhi
+Jogeshwari East	Mumbai
+Bhayandar East	Mumbai
+CBD Belapur	Mumbai
+Panaji	Goa
+Mysuru	Mysore
+Sahibzada Ajit Singh Nagar	mohali
+Chandigarh	Chandigarh
+Krishnarajapuram	Bengaluru
+Rabale	Mumbai
+Cherlapalli	Hyderabad
+Badarpur	Delhi
+Mazgaon	Mumbai
+George Town	Chennai
+Ashok Vihar	Delhi
+Nagpur	Nagpur
+old goa	Goa
+Indiranagar	bengaluru
+Bachupally	hyderabad
+Subramanyapura	bengaluru
+Meenambakkam	Chennai
+Manchirevula	hyderabad
+Bolarum	hyderabad
+Sector 18	Noida
+Rama Krishna Puram	Delhi
+Narayanapura	Bengaluru
+Thrissur	Thrissur
+Bandra West	Mumbai
+Byculla	Mumbai
+Juhu	Mumbai
+Dahisar West	Mumbai
+Parel	Mumbai
+Sector 54	Gurgaon
+Amrapali Dream Valley	Noida
+Wadgaon Sheri	Pune
+Khadakpada	Mumbai
+Mukherjee Nagar	Delhi
+Bodakdev	Ahmedabad
+Yerawada	Pune
+Dhanori	Pune
+Mehrauli	Delhi
+Athwa	Surat
+Sector 62A	Noida
+Bopal	Ahmedabad
+Kudlu	Bengaluru
+Saravanampatti	Coimbatore
+Madambakkam	Chennai
+Pratap Vihar	Ghaziabad
+Nungambakkam	Chennai
+Malviya Nagar	Delhi
+Bhakti Nagar	Rajkot
+Shalimar Bagh	Delhi
+Akurdi	Pune
+Nayapalli	Bhubaneswar
+Paldi	Ahmedabad
+Pammal	Chennai
+Kodungaiyur	Chennai
+Kovilambakkam	Chennai
+Elamakkara	Kochi
+Thiruverkadu	Chennai
+Injambakkam	Chennai
+Yamuna Bank	Delhi
+Maninagar	Ahmedabad
+Akshayanagar	Bengaluru
+Jagathgiri Gutta	Hyderabad
+Shankar Vihar	Delhi
+Dilshad Garden	Delhi
+Chikkakannalli	Bengaluru
+Korattur	Chennai
+Hastinapuram	Hyderabad
+Nikol	Ahmedabad
+Ghorpadi	Pune
+Wanowrie	Pune
+Patna	Patna
+Dehradun	Dehradun
+Nizamabad, Telangana	Hyderabad
+Hubballi	Hubballi
+Salem	Salem
+Chhatrapati SambhajiNagar	Sambhaji Nagar
+Aurangabad	Sambhaji Nagar
+Belgaum	Belgaum
+Belagavi	Belgaum
+Kakinada	Kakinada
+Bhopal	Bhopal
+Kolhapur	Kolhapur
+Kozhikode	Kozhikode
+Madurai	Madurai
+Kanpur	Kanpur
+Sambhaji Nagar	Sambhaji Nagar
+Tiruchirappalli	Tiruchirappalli
+Kota	Kota
+Tiruppur	Tiruppur
+Tirupati	Tirupati
+Rajahmundry	Rajahmundry
+Rajamahendravaram	Rajahmundry
+Udaipur	Udaipur
+Sangli	Sangli
+KarimNagar	KarimNagar
+Bellari	Ballari
+Ballari	Ballari
+Hosur	Hosur
+Atal Nagar-Nava Raipur	Raipur
+Raipur	Raipur

@@ -61,8 +61,8 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     'kota': 'Kota', 'tiruppur': 'Tiruppur', 'tirupati': 'Tirupati',
     'rajahmundry': 'Rajahmundry', 'udaipur': 'Udaipur', 'sangli': 'Sangli',
     'karimnagar': 'KarimNagar', 'ballari': 'Ballari', 'hosur': 'Hosur', 'raipur': 'Raipur',
+    'delhi': 'Delhi', 'noida': 'Noida', 'gurgaon': 'Gurgaon',
   };
-  const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
 
   for (const row of rows) {
     const campaignName = row.campaign?.name || '';
@@ -81,7 +81,7 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     // Step 2: Campaign name fallback — ONLY when NO geo data
     if (!bucket) {
       for (const [keyword, targetCity] of Object.entries(CAMPAIGN_CITY_KEYWORDS)) {
-        if (!ncrCities.has(targetCity) && cn.includes(keyword)) {
+        if (cn.includes(keyword)) {
           bucket = targetCity;
           break;
         }
