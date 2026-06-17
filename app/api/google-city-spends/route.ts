@@ -50,10 +50,15 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
 
     // Step 1: Forcefully check if the campaign name explicitly states the city
     // (This rescues missing spend from PMax campaigns that don't report locations)
+    // EXCEPTION: NCR cities share campaigns, so we skip campaign name matching for them
+    // and rely entirely on Step 2 (physical user location).
+    const ncrCities = new Set(['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad']);
     const allCityAliases = Object.keys(GOOGLE_CITY_MAP);
+    
     for (const alias of allCityAliases) {
-      if (cn.includes(alias)) {
-        bucket = GOOGLE_CITY_MAP[alias];
+      const targetCity = GOOGLE_CITY_MAP[alias];
+      if (!ncrCities.has(targetCity) && cn.includes(alias)) {
+        bucket = targetCity;
         break;
       }
     }
