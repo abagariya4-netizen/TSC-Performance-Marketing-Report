@@ -3,7 +3,7 @@ import { mapGoogleCity, TSC_CITIES } from '@/lib/googleCityMap';
 import { NextResponse } from 'next/server';
 import { getDateParams } from '@/lib/dateUtils';
 
-const EXCLUDED_KEYWORDS = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf', 'dhoni', 'all_products', 'all product'];
+const EXCLUDED_KEYWORDS = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
 function isCampaignExcluded(name: string): boolean {
   const cn = (name || '').toLowerCase();
