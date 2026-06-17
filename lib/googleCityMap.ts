@@ -185,6 +185,130 @@ export const GOOGLE_CITY_MAP: Record<string, string> = {
   'bellari': 'Ballari', 'ballari': 'Ballari',
   'hosur': 'Hosur',
   'atal nagar-nava raipur': 'Raipur', 'raipur': 'Raipur',
+
+// Gurgaon suburbs
+'dlf city phase 1': 'Gurgaon', 'dlf city phase 2': 'Gurgaon',
+'dlf city phase 3': 'Gurgaon', 'dlf city phase 4': 'Gurgaon',
+'dlf city phase 5': 'Gurgaon', 'sohna': 'Gurgaon',
+'manesar': 'Gurgaon', 'palam vihar': 'Gurgaon',
+'udyog vihar': 'Gurgaon', 'cyber city': 'Gurgaon',
+'golf course road': 'Gurgaon', 'nirvana country': 'Gurgaon',
+'ardee city': 'Gurgaon', 'south city 1': 'Gurgaon',
+'south city 2': 'Gurgaon', 'huda city centre': 'Gurgaon',
+'badshahpur': 'Gurgaon', 'bhondsi': 'Gurgaon',
+'wazirabad gurugram': 'Gurgaon',
+
+// Ghaziabad suburbs
+'vaishali': 'Ghaziabad', 'kaushambi': 'Ghaziabad',
+'raj nagar extension': 'Ghaziabad', 'crossings republik': 'Ghaziabad',
+'mohan nagar': 'Ghaziabad', 'vasundhara': 'Ghaziabad',
+'govindpuram': 'Ghaziabad', 'dundahera': 'Ghaziabad',
+'loni': 'Ghaziabad', 'tronica city': 'Ghaziabad',
+'sahibabad': 'Ghaziabad', 'hindon': 'Ghaziabad',
+
+// Noida suburbs
+'bisrakh': 'Noida', 'noida extension': 'Noida',
+'knowledge park': 'Noida', 'techzone': 'Noida',
+'surajpur': 'Noida', 'jewar': 'Noida',
+
+// Faridabad suburbs
+'ballabhgarh': 'Faridabad', 'old faridabad': 'Faridabad',
+'neharpar': 'Faridabad', 'greater faridabad': 'Faridabad',
+'mujesar': 'Faridabad', 'tigaon': 'Faridabad',
+'nit faridabad': 'Faridabad',
+
+// Kolkata suburbs
+'salt lake city': 'Kolkata', 'bidhannagar': 'Kolkata',
+'dum dum': 'Kolkata', 'barasat': 'Kolkata',
+'barrackpore': 'Kolkata', 'madhyamgram': 'Kolkata',
+'rajarhat': 'Kolkata', 'new town kolkata': 'Kolkata',
+'garia': 'Kolkata', 'jadavpur': 'Kolkata',
+'behala': 'Kolkata', 'tollygunge': 'Kolkata',
+'ballygunge': 'Kolkata', 'alipore': 'Kolkata',
+'serampore': 'Kolkata', 'uttarpara': 'Kolkata',
+'bally': 'Kolkata', 'uluberia': 'Kolkata',
+
+// Lucknow suburbs
+'gomti nagar': 'Lucknow', 'hazratganj': 'Lucknow',
+'alambagh': 'Lucknow', 'aliganj lucknow': 'Lucknow',
+'indira nagar lucknow': 'Lucknow', 'mahanagar lucknow': 'Lucknow',
+'vikas nagar lucknow': 'Lucknow', 'rajajipuram': 'Lucknow',
+'chinhat': 'Lucknow', 'faizabad road': 'Lucknow',
+'kanpur road lucknow': 'Lucknow', 'kursi road': 'Lucknow',
+
+// Jaipur suburbs
+'sanganer': 'Jaipur', 'mansarovar': 'Jaipur',
+'jagatpura': 'Jaipur', 'sitapura': 'Jaipur',
+'jhotwara': 'Jaipur', 'murlipura': 'Jaipur',
+'vidhyadhar nagar': 'Jaipur', 'sodala': 'Jaipur',
+'durgapura': 'Jaipur', 'raja park': 'Jaipur',
+'c scheme': 'Jaipur', 'bani park': 'Jaipur',
+'gopalpura': 'Jaipur', 'chomu': 'Jaipur',
+'amber': 'Jaipur', 'amer': 'Jaipur',
+'bagru': 'Jaipur', 'kalwar': 'Jaipur',
+
+// Indore suburbs
+'vijay nagar indore': 'Indore', 'bhawarkuan': 'Indore',
+'nipania': 'Indore', 'super corridor': 'Indore',
+'rau': 'Indore', 'pithampur': 'Indore',
+'mhow': 'Indore', 'dewas': 'Indore',
+'sanwer': 'Indore', 'khajrana': 'Indore',
+'kanadiya': 'Indore', 'pardeshipura': 'Indore',
+'lasudia mori': 'Indore', 'aerodrome road': 'Indore',
+
+// Visakhapatnam suburbs
+'vizag': 'Visakhapatnam', 'gajuwaka': 'Visakhapatnam',
+'mvp colony': 'Visakhapatnam', 'madhurawada': 'Visakhapatnam',
+'kommadi': 'Visakhapatnam', 'pendurthi': 'Visakhapatnam',
+'bheemunipatnam': 'Visakhapatnam', 'anakapalle': 'Visakhapatnam',
+'gopalapatnam': 'Visakhapatnam', 'dwaraka nagar': 'Visakhapatnam',
+'ukkunagaram': 'Visakhapatnam', 'simhachalam': 'Visakhapatnam',
+'yendada': 'Visakhapatnam', 'vizianagaram': 'Visakhapatnam',
+'srikakulam': 'Visakhapatnam',
+
+// Chandigarh suburbs
+'panchkula': 'Chandigarh', 'zirakpur': 'Chandigarh',
+'derabassi': 'Chandigarh', 'kharar': 'Chandigarh',
+'mullanpur': 'Chandigarh',
+
+// Thiruvananthapuram suburbs
+'trivandrum': 'Thiruvananthapuram', 'kazhakkoottam': 'Thiruvananthapuram',
+'peroorkada': 'Thiruvananthapuram', 'sreekaryam': 'Thiruvananthapuram',
+'neyyattinkara': 'Thiruvananthapuram', 'attingal': 'Thiruvananthapuram',
+'vattiyoorkavu': 'Thiruvananthapuram',
+
+// Coimbatore suburbs
+'peelamedu': 'Coimbatore', 'singanallur': 'Coimbatore',
+'ganapathy': 'Coimbatore', 'podanur': 'Coimbatore',
+'vadavalli': 'Coimbatore', 'sulur': 'Coimbatore',
+'mettupalayam': 'Coimbatore', 'rs puram': 'Coimbatore',
+
+// Bhubaneswar suburbs
+'cuttack': 'Bhubaneswar', 'patia': 'Bhubaneswar',
+'chandrasekharpur': 'Bhubaneswar', 'rasulgarh': 'Bhubaneswar',
+'mancheswar': 'Bhubaneswar', 'jaydev vihar': 'Bhubaneswar',
+'baramunda': 'Bhubaneswar', 'sambalpur': 'Bhubaneswar',
+'berhampur': 'Bhubaneswar', 'balasore': 'Bhubaneswar',
+'rourkela': 'Bhubaneswar',
+
+// Goa suburbs
+'margao': 'Goa', 'vasco da gama': 'Goa',
+'mapusa': 'Goa', 'ponda': 'Goa',
+'porvorim': 'Goa', 'calangute': 'Goa',
+'pernem': 'Goa', 'bicholim': 'Goa',
+
+// Tiruchirappalli suburbs
+'trichy': 'Tiruchirappalli', 'tiruchi': 'Tiruchirappalli',
+'tiruchirapalli': 'Tiruchirappalli',
+'srirangam': 'Tiruchirappalli', 'woraiyur': 'Tiruchirappalli',
+'thillai nagar': 'Tiruchirappalli',
+
+// Hubballi suburbs
+'dharwad': 'Hubballi', 'hubli': 'Hubballi',
+
+// Warangal suburbs
+'narsampet': 'Warangal', 'parkal': 'Warangal',
+'mahabubabad': 'Warangal',
 };
 
 export const TSC_CITIES = [
