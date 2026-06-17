@@ -11,37 +11,11 @@ if (match) {
     map.set(pairMatch[1], pairMatch[2]);
   }
   
-  // 1. DELETE gandhinagar
-  map.delete('gandhinagar');
+  map.delete('panchkula');
+  map.delete('kakkanad');
   
-  // 2. DELETE wrong entries
-  const toDelete = [
-    'dharwad', 'hubli', 'margao', 'vasco da gama', 'mapusa',
-    'ponda', 'porvorim', 'calangute', 'pernem', 'bicholim', 'panchkula'
-  ];
-  for (const k of toDelete) {
-    map.delete(k);
-  }
-  
-  // 3. ADD exact entries
-  const toAdd = {
-    'kondapur': 'Hyderabad',
-    'nallagandla': 'Hyderabad',
-    'hubli-dharwad': 'Hubballi',
-    'adai': 'Mumbai',
-    'hanamkonda': 'Warangal',
-    'kelambakkam': 'Chennai',
-    'guduvancheri': 'Chennai',
-    'malappuram': 'Kozhikode',
-    'kakkanad': 'Kochi',
-    'new town': 'Kolkata',
-    'madgaon': 'Goa',
-    'panchkula': 'Mohali'
-  };
-  
-  for (const [k, v] of Object.entries(toAdd)) {
-    map.set(k, v);
-  }
+  map.set('kazhakkoottam', 'Thiruvananthapuram');
+  map.set('madgaon', 'Goa');
   
   let newInnerContent = '\n';
   for (const [k, v] of map.entries()) {
