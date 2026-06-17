@@ -132,7 +132,6 @@ export async function GET() {
 
     finalData.push({ city: 'Rest', mtd: Rest_MTD, yesterday: Rest_Yday });
     finalData.push({ city: 'Unknown', mtd: Unknown_MTD, yesterday: Unknown_Yday });
-    finalData.push({ city: 'Grand Total', mtd: campaign_total_mtd, yesterday: campaign_total_yday });
 
     return NextResponse.json({
       rows: finalData,
