@@ -66,15 +66,59 @@ export async function queryGoogleAds(gaql: string, overrideCustomerId?: string):
 }
 
 export async function queryAllGoogleAdsAccounts(gaql: string): Promise<any[]> {
-  const account1 = process.env.GOOGLE_ADS_CUSTOMER_ID;
-  const account2 = process.env.Google_Ads_Customer;
+  const token = await getGoogleAdsAccessToken();
+  const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '8012280596';
+
+  // 1. Dynamically fetch all active child accounts
+  const accountsRes = await fetch(`https://googleads.googleapis.com/v24/customers/${loginCustomerId}/googleAds:searchStream`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+      'Content-Type': 'application/json',
+      'login-customer-id': loginCustomerId,
+    },
+    body: JSON.stringify({
+      query: `SELECT customer_client.client_customer FROM customer_client WHERE customer_client.level <= 1 AND customer_client.status = 'ENABLED' AND customer_client.hidden = false`
+    })
+  });
+
+  if (!accountsRes.ok) {
+    const txt = await accountsRes.text();
+    console.error("Failed to fetch child accounts:", txt);
+    return [];
+  }
+
+  const accountsJson = await accountsRes.json();
+  const accountsToQuery: string[] = [];
   
-  const accountsToQuery = [];
-  if (account1) accountsToQuery.push(account1);
-  if (account2) accountsToQuery.push(account2);
+  if (Array.isArray(accountsJson)) {
+    for (const chunk of accountsJson) {
+      if (chunk.results) {
+        for (const row of chunk.results) {
+          if (row.customerClient?.clientCustomer) {
+            // Extract the numerical ID from 'customers/1234567890'
+            const id = row.customerClient.clientCustomer.split('/')[1];
+            if (id !== loginCustomerId) {
+              accountsToQuery.push(id);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback to env vars if API fails to return children for some reason
+  if (accountsToQuery.length === 0) {
+    if (process.env.GOOGLE_ADS_CUSTOMER_ID) accountsToQuery.push(process.env.GOOGLE_ADS_CUSTOMER_ID);
+    if (process.env.Google_Ads_Customer) accountsToQuery.push(process.env.Google_Ads_Customer);
+  }
+
+  // Ensure unique IDs to prevent accidental duplication
+  const uniqueAccounts = Array.from(new Set(accountsToQuery));
 
   const allResults = await Promise.all(
-    accountsToQuery.map(acc => queryGoogleAds(gaql, acc).catch(e => {
+    uniqueAccounts.map(acc => queryGoogleAds(gaql, acc).catch(e => {
       console.error(`Error querying account ${acc}:`, e);
       return [];
     }))
