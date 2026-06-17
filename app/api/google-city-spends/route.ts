@@ -42,22 +42,37 @@ function aggregateByCity(rows: any[], geoMap: Record<string, string>, debugTrack
     const campaignName = row.campaign?.name || '';
     if (isCampaignExcluded(campaignName)) continue;
 
-    const geoResource = row.segments?.geoTargetCity || '';
-    const cityDisplay = (geoMap[geoResource] || '').split(',')[0].trim();
+    const cn = campaignName.toLowerCase();
+    let bucket = '';
 
-    // Empty city name → Unknown (handled separately via total - geo sum)
-    // Non-empty but not in map → Rest
-    // In map → named bucket
-    const bucket = mapGoogleCity(cityDisplay);
     const spend  = Math.round((row.metrics?.costMicros || 0) / 1_000_000);
-    result[bucket] = (result[bucket] || 0) + spend;
-    
-    if (debugTracker && spend > 0) {
-      const debugKey = cityDisplay ? `Unmapped: ${cityDisplay} (${geoResource})` : `No City: Campaign ${campaignName}`;
-      if (bucket === 'Rest' || bucket === 'Unknown') {
-        debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
+
+    // Step 1: Forcefully check if the campaign name explicitly states the city
+    // (This rescues missing spend from PMax campaigns that don't report locations)
+    const allCities = Object.keys(geoMap);
+    for (const city of allCities) {
+      if (cn.includes(city)) {
+        bucket = mapGoogleCity(city);
+        break;
       }
     }
+
+    // Step 2: If the campaign name didn't have a city, rely on Google's physical tracker
+    if (!bucket) {
+      const geoResource = row.segments?.geoTargetCity || '';
+      const cityDisplay = (geoMap[geoResource] || '').split(',')[0].trim().toLowerCase();
+      bucket = mapGoogleCity(cityDisplay);
+      
+      // Update debug info only for unmapped physical locations
+      if (debugTracker && spend > 0) {
+        const debugKey = cityDisplay ? `Unmapped: ${cityDisplay} (${geoResource})` : `No City: Campaign ${campaignName}`;
+        if (bucket === 'Rest' || bucket === 'Unknown') {
+          debugTracker[debugKey] = (debugTracker[debugKey] || 0) + spend;
+        }
+      }
+    }
+
+    result[bucket] = (result[bucket] || 0) + spend;
   }
   return result;
 }
