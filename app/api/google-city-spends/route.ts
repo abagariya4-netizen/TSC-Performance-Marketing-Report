@@ -112,8 +112,8 @@ export async function GET() {
     let named_cities_total_MTD = 0;
     let named_cities_total_Yday = 0;
 
-    for (const val of cityBucketsMtd.values()) named_cities_total_MTD += val;
-    for (const val of cityBucketsYday.values()) named_cities_total_Yday += val;
+    cityBucketsMtd.forEach(val => named_cities_total_MTD += val);
+    cityBucketsYday.forEach(val => named_cities_total_Yday += val);
 
     const Rest_MTD = campaign_total_mtd - named_cities_total_MTD - Unknown_MTD;
     const Rest_Yday = campaign_total_yday - named_cities_total_Yday - Unknown_Yday;
