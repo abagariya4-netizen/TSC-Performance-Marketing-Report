@@ -106,14 +106,14 @@ export async function GET() {
       // Call 1: MTD spend by city (geographic_view)
       queryGoogleAds(`
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
-        FROM geographic_view
+        FROM user_location_view
         WHERE segments.date BETWEEN '${monthStart}' AND '${yesterdayStr}'
       `),
 
       // Call 2: Yesterday spend by city
       queryGoogleAds(`
         SELECT campaign.name, segments.geo_target_city, metrics.cost_micros
-        FROM geographic_view
+        FROM user_location_view
         WHERE segments.date = '${yesterdayStr}'
       `),
 
