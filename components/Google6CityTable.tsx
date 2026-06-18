@@ -7,8 +7,8 @@ type RowData = {
 };
 
 type CityData = {
-  'Search Non-Brand (New)'?: RowData;
-  'Search Non-Brand (Old)'?: RowData;
+  'Search Non-Brand (New)': RowData;
+  'Search Non-Brand (Old)': RowData;
   'Search': RowData;
   'Branded Search': RowData;
   'Demand Gen Clicks': RowData;
@@ -144,8 +144,9 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
               <React.Fragment key={cityName}>
                 {renderRow(cityName, cityName, cityData.total, totalPlan, true, 0)}
                 {expandedCities[cityName] && getCampaignTypes(cityName).map(type => {
-                  const typePlan = cityPlan[type] || 0;
-                  return renderRow(cityName, type, cityData[type], typePlan, false, 1);
+                  const typePlan = cityPlan[type as string] || 0;
+                  const rowData = cityData[type] || { mtd: 0, yesterday: 0 };
+                  return renderRow(cityName, type as string, rowData, typePlan, false, 1);
                 })}
               </React.Fragment>
             );
