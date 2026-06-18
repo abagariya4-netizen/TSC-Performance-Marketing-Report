@@ -50,12 +50,13 @@ function PageContent() {
 
       {!plan ? (
         <div style={{ background: '#1a1d27', borderRadius: '12px', padding: '32px', maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ marginBottom: '24px', color: '#90cdf4' }}>Upload your 6 City Google Plan CSV to get started</p>
+          <p style={{ marginBottom: '24px', color: '#90cdf4' }}>Upload your 6 City Google Plan CSV to get started (v2.1)</p>
           <PlanUpload label="6 City Google Plan" onLoad={handlePlanUpload} loaded={false} count={0} unit="cities" />
         </div>
       ) : (
         <>
           <div style={{ background: '#1a3a2a', borderRadius: '8px', padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{color: '#48bb78', fontWeight: 'bold', fontSize: '14px'}}>v2.1</span>
             <PlanUpload label="6 City Google Plan" onLoad={handlePlanUpload} loaded={true} count={Object.keys(plan).length} unit="cities" compact />
             
             <button onClick={generateReport} disabled={loading}
