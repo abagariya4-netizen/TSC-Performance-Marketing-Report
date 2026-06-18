@@ -23,16 +23,16 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('paldi') || n.includes('athwa') ||
       n.includes('bhakti nagar')) return 'Gujarat';
 
-  if (c.includes('mumbai') || c.includes('thane') ||
-      c.includes('navi mumbai') || c.includes('kalyan') ||
-      c.includes('dombivali') || c.includes('dombivli') ||
-      c.includes('vasai') || c.includes('virar') ||
-      c.includes('mira bhayandar') || c.includes('bhiwandi') ||
-      c.includes('ambernath') || c.includes('ulhasnagar') ||
-      c.includes('panvel') || c.includes('nala sopara') ||
-      c.includes('palghar') || c.includes('boisar') ||
-      c.includes('badlapur')) return 'Mumbai';
+  // 1. MUMBAI (Strict formatting to avoid Haryana/WB leaks, dropped Badlapur/Palghar/Boisar)
+  if (c.includes('mumbai') || c.includes('thane,') ||
+      c.includes('kalyan,maharashtra') || c.includes('dombivali') ||
+      c.includes('dombivli') || c.includes('vasai') || 
+      c.includes('virar') || c.includes('mira bhayandar') || 
+      c.includes('bhiwandi') || c.includes('ambernath') || 
+      c.includes('ulhasnagar') || c.includes('panvel') || 
+      c.includes('nala sopara')) return 'Mumbai';
 
+  // 2. BENGALURU (Added Nijagal & Kudlu)
   if (n.includes('bengaluru') || n.includes('bangalore') ||
       n.includes('koramangala') || n.includes('indiranagar') ||
       n.includes('whitefield') || n.includes('jayanagar') ||
@@ -49,39 +49,42 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('mahadevapura') || n.includes('rr nagar') ||
       n.includes('rajajinagar') || n.includes('chikkakannalli') ||
       n.includes('subramanyapura') || n.includes('narayanapura') ||
-      n.includes('indirapuram')) return 'Bengaluru';
+      n.includes('indirapuram') || c.includes('nijagal') || 
+      c.includes('kudlu')) return 'Bengaluru';
 
-  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
+  // 3. CHENNAI (Added Padianallur)
+  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai') || c.includes('padianallur')) {
       if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
           !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
           return 'Chennai';
       }
   }
 
+  // 4. HYDERABAD (Removed Kondapur and Nallagandla)
   if (c.includes('hyderabad') || c.includes('secunderabad') ||
       c.includes('jubilee hills') || c.includes('banjara hills') ||
       c.includes('madhapur') || c.includes('gachibowli') ||
-      c.includes('kondapur') || c.includes('hitec city') ||
-      c.includes('kukatpally') || c.includes('miyapur') ||
-      c.includes('lb nagar') || c.includes('dilsukhnagar') ||
-      c.includes('uppal') || c.includes('nacharam') ||
-      c.includes('alwal,') || c.includes('malkajgiri') ||
-      c.includes('balanagar, telangana') || c.includes('qutubullapur') ||
-      c.includes('saroornagar') || c.includes('nizampet') ||
-      c.includes('serilingampalli') || c.includes('cherlapalli') ||
-      c.includes('bachupally') || c.includes('manchirevula') ||
-      c.includes('bolarum') || c.includes('hastinapuram') ||
-      c.includes('jagathgiri') || c.includes('patan cheruvu') ||
-      c.includes('nallagandla')) {
+      c.includes('hitec city') || c.includes('kukatpally') || 
+      c.includes('miyapur') || c.includes('lb nagar') || 
+      c.includes('dilsukhnagar') || c.includes('uppal') || 
+      c.includes('nacharam') || c.includes('alwal,') || 
+      c.includes('malkajgiri') || c.includes('balanagar, telangana') || 
+      c.includes('qutubullapur') || c.includes('saroornagar') || 
+      c.includes('nizampet') || c.includes('serilingampalli') || 
+      c.includes('cherlapalli') || c.includes('bachupally') || 
+      c.includes('manchirevula') || c.includes('bolarum') || 
+      c.includes('hastinapuram') || c.includes('jagathgiri') || 
+      c.includes('patan cheruvu')) {
       if (!c.includes('palwal') && !c.includes('choutuppal') && !c.includes('punjab')) {
          return 'Hyderabad';
       }
   }
 
+  // 5. DELHI+NCR (Ensure Baprola/Mundka are dropped, Greater Noida is kept since it's 45k)
   if (c.includes('delhi') || c.includes('gurugram') || c.includes('gurgaon') ||
       c.includes('noida') || c.includes('ghaziabad') ||
       c.includes('faridabad')) {
-      if (!c.includes('baprola') && !c.includes('mundka') && !c.includes('greater noida')) {
+      if (!c.includes('baprola') && !c.includes('mundka')) {
          return 'Delhi+NCR';
       }
   }
