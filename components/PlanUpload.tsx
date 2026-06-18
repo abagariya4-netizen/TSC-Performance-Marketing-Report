@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 interface Props {
   label: string;
   onLoad: (text: string) => void;
