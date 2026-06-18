@@ -26,20 +26,34 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('paldi') || n.includes('athwa') ||
       n.includes('bhakti nagar')) return 'Gujarat';
 
-  // MUMBAI — use canonicalName (c) to avoid false matches from other states
+  // MUMBAI — canonical_name based, Maharashtra state qualified for outer suburbs
   if (c.includes('mumbai') || c.includes('thane') ||
       c.includes('kalyan') || c.includes('dombivali') ||
       c.includes('dombivli') || c.includes('vasai') ||
       c.includes('virar') || c.includes('mira bhayandar') ||
       c.includes('bhiwandi') || c.includes('ambernath') ||
       c.includes('ulhasnagar') || c.includes('panvel') ||
-      c.includes('nala sopara')) return 'Mumbai';
+      c.includes('nala sopara') || c.includes('badlapur') ||
+      c.includes('titvala') || c.includes('khopoli') ||
+      c.includes('rasayani') || c.includes('khalapur')) return 'Mumbai';
 
-  // BENGALURU — strict canonical_name check using bengaluru/bangalore only
-  if (c.includes('bengaluru') || c.includes('bangalore')) return 'Bengaluru';
+  // BENGALURU — canonical_name based, Karnataka state qualified for outer suburbs
+  if (c.includes('bengaluru') || c.includes('bangalore') ||
+      (c.includes('karnataka') && (
+        c.includes('anekal') || c.includes('devanahalli') ||
+        c.includes('nelamangala') || c.includes('ramanagara') ||
+        c.includes('hoskote') || c.includes('doddaballapur') ||
+        c.includes('kengeri') || c.includes('magadi')))) return 'Bengaluru';
 
-  // CHENNAI — strict canonical_name check only
-  if (c.includes('chennai')) {
+  // CHENNAI — canonical_name based, include Chengalpattu district suburbs
+  if (c.includes('chennai') ||
+      (c.includes('tamil nadu') && (
+        c.includes('kelambakkam') || c.includes('guduvancheri') ||
+        c.includes('sholinganallur') || c.includes('perungudi') ||
+        c.includes('tambaram') || c.includes('pallavaram') ||
+        c.includes('chromepet') || c.includes('mudichur') ||
+        c.includes('vandalur') || c.includes('padianallur') ||
+        c.includes('poonamallee') || c.includes('sriperumbudur')))) {
     return 'Chennai';
   }
 
