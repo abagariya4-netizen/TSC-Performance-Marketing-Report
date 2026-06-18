@@ -23,31 +23,13 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('paldi') || n.includes('athwa') ||
       n.includes('bhakti nagar')) return 'Gujarat';
 
-  // Individual cities
-  if (n.includes('mumbai') || n.includes('navi mumbai') ||
-      n.includes('thane') || n.includes('kalyan') ||
-      n.includes('dombivli') || n.includes('vasai') ||
-      n.includes('virar') || n.includes('bhiwandi') ||
-      n.includes('panvel') || n.includes('vashi') ||
-      n.includes('ghansoli') || n.includes('sanpada') ||
-      n.includes('mahape') || n.includes('seawoods') ||
-      n.includes('cbd belapur') || n.includes('rabale') ||
-      n.includes('ulhasnagar') || n.includes('ambernath') ||
-      n.includes('mira') || n.includes('bhayandar') ||
-      n.includes('nalasopara') || n.includes('palghar') ||
-      n.includes('bhandup') || n.includes('mulund') ||
-      n.includes('worli') || n.includes('bandra') ||
-      n.includes('juhu') || n.includes('andheri') ||
-      n.includes('malad') || n.includes('kandivali') ||
-      n.includes('borivali') || n.includes('dahisar') ||
-      n.includes('parel') || n.includes('mazgaon') ||
-      n.includes('byculla') || n.includes('fort') ||
-      n.includes('jogeshwari') || n.includes('khadakpada') ||
-      c.includes('maharashtra') && !n.includes('pune') &&
-      !n.includes('nashik') && !n.includes('nagpur') &&
-      !n.includes('aurangabad') && !n.includes('sambhaji') &&
-      !n.includes('kolhapur') && !n.includes('sangli') &&
-      !n.includes('solapur')) return 'Mumbai';
+  if (c.includes('mumbai') || c.includes('thane') ||
+      c.includes('navi mumbai') || c.includes('kalyan') ||
+      c.includes('dombivali') || c.includes('dombivli') ||
+      c.includes('vasai') || c.includes('virar') ||
+      c.includes('mira bhayandar') || c.includes('bhiwandi') ||
+      c.includes('ambernath') || c.includes('ulhasnagar') ||
+      c.includes('panvel')) return 'Mumbai';
 
   if (n.includes('bengaluru') || n.includes('bangalore') ||
       n.includes('koramangala') || n.includes('indiranagar') ||
