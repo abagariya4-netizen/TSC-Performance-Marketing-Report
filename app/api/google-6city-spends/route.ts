@@ -119,7 +119,7 @@ export async function GET() {
       }
     }
 
-    const campaignTypes = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    const campaignTypes = ['Search Non-Brand (New)', 'Search Non-Brand (Old)', 'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
     const cities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad', 'Gujarat', 'Delhi+NCR'];
 
     const createCityObject = () => {
@@ -165,12 +165,20 @@ export async function GET() {
 
         // 5. Run classifyCampaign
         const channelType = row.campaign?.advertisingChannelType || '';
-        const campType = classifyCampaign(channelType, campaignName);
+        let campType = classifyCampaign(channelType, campaignName);
         if (!campType) continue; // Discard invalid types
+
+        // 6. For Search Non-Brand, split into New/Old for Mumbai/Bengaluru/Chennai/Hyderabad
+        const newOldCities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad'];
+        if (campType === 'Search' && newOldCities.includes(cityBucket)) {
+          const isNew = nameLower.includes('mum') || nameLower.includes('beng') ||
+                        nameLower.includes('chen') || nameLower.includes('hyd');
+          campType = isNew ? 'Search Non-Brand (New)' : 'Search Non-Brand (Old)';
+        }
 
         const cost = parseFloat(row.metrics?.costMicros || '0') / 1000000;
 
-        // 6. Add spend
+        // 7. Add spend
         result.cities[cityBucket][campType][timePeriod] += cost;
         result.cities[cityBucket].total[timePeriod] += cost;
         result.grandTotal[timePeriod] += cost;

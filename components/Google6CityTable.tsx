@@ -7,6 +7,8 @@ type RowData = {
 };
 
 type CityData = {
+  'Search Non-Brand (New)'?: RowData;
+  'Search Non-Brand (Old)'?: RowData;
   'Search': RowData;
   'Branded Search': RowData;
   'Demand Gen Clicks': RowData;
@@ -110,9 +112,13 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
     );
   };
 
-  const campaignTypes: (keyof CityData)[] = [
-    'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'
-  ];
+  const newOldCities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad'];
+  const getCampaignTypes = (cityName: string): (keyof CityData)[] => {
+    if (newOldCities.includes(cityName)) {
+      return ['Search Non-Brand (New)', 'Search Non-Brand (Old)', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    }
+    return ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+  };
 
   return (
     <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
@@ -137,7 +143,7 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
             return (
               <React.Fragment key={cityName}>
                 {renderRow(cityName, cityName, cityData.total, totalPlan, true, 0)}
-                {expandedCities[cityName] && campaignTypes.map(type => {
+                {expandedCities[cityName] && getCampaignTypes(cityName).map(type => {
                   const typePlan = cityPlan[type] || 0;
                   return renderRow(cityName, type, cityData[type], typePlan, false, 1);
                 })}
