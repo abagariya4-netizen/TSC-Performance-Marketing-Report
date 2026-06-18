@@ -5,33 +5,41 @@ import * as dates from '@/lib/dateUtils';
 export const dynamic = 'force-dynamic';
 
 function classifyCampaign(channelType: string, campaignName: string): string {
-  const name = campaignName.toLowerCase();
+  const n = campaignName.toLowerCase();
+  if (channelType === 'SEARCH' && !n.includes('brand')) {
+    const isNew = n.includes('mum') || n.includes('hyd') || n.includes('chen') || n.includes('beng') || n.includes('del') || n.includes('ncr') || n.includes('ahm') || n.includes('guj') || n.includes('surat') || n.includes('rajkot');
+    return isNew ? 'Search Non-Brand New' : 'Search Non-Brand Old';
+  }
+  if (channelType === 'SEARCH' && n.includes('brand')) return 'Search Brand';
+  if (channelType === 'DEMAND_GEN' || channelType === 'DISCOVERY') {
+    return n.includes('click') ? 'Demand Gen Clicks' : 'Demand Gen Video';
+  }
   if (channelType === 'PERFORMANCE_MAX') return 'Performance Max';
   if (channelType === 'SHOPPING') return 'Shopping';
   if (channelType === 'DISPLAY') return 'Display';
-  if (channelType === 'DEMAND_GEN' || channelType === 'DISCOVERY') {
-    return name.includes('clicks') ? 'Demand Gen Clicks' : 'Demand Gen Video';
-  }
-  if (channelType === 'SEARCH') {
-    return name.includes('brand') ? 'Branded Search' : 'Search';
-  }
   return 'Other';
 }
 
-function getState(canonicalName: string): string | null {
+function getGeoCityGroup(canonicalName: string): string | null {
   const c = canonicalName.toLowerCase();
-  if (c.includes('delhi') || c.includes('gurugram') || c.includes('noida') || c.includes('ghaziabad') || c.includes('faridabad')) return 'Delhi+NCR';
-  if (c.includes('maharashtra')) return 'Maharashtra';
-  if (c.includes('karnataka')) return 'Karnataka';
-  if (c.includes('tamil nadu')) return 'Tamil Nadu';
-  if (c.includes('telangana')) return 'Telangana';
-  if (c.includes('gujarat')) return 'Gujarat';
+  if (c.includes('mumbai')) return 'Mumbai';
+  if (c.includes('bengaluru')) return 'Bengaluru';
+  if (c.includes('chennai')) return 'Chennai';
+  if (c.includes('hyderabad')) return 'Hyderabad';
+  if (c.includes('ahmedabad') || c.includes('surat') || c.includes('rajkot') || c.includes('vadodara')) return 'Gujarat';
+  if (c.includes('delhi') || c.includes('noida') || c.includes('gurugram') || c.includes('ghaziabad') || c.includes('faridabad')) return 'Delhi+NCR';
   return null;
 }
 
+const exclusions = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf', 'chair', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
+
 const isExcluded = (name: string) => {
   const n = name.toLowerCase();
-  return n.includes('vvc') || n.includes('r&f') || n.includes('foc') || n.includes('growth') || n.includes('vrc') || n.includes('rnf');
+  if (!n.includes('mat')) return true; // Only mattress campaigns
+  for (const ex of exclusions) {
+    if (n.includes(ex)) return true;
+  }
+  return false;
 };
 
 export async function GET() {
@@ -83,8 +91,8 @@ export async function GET() {
       }
     }
 
-    const states = ["Maharashtra", "Karnataka", "Tamil Nadu", "Telangana", "Delhi+NCR", "Gujarat"];
-    const types = ["Search", "Branded Search", "Demand Gen Clicks", "Demand Gen Video", "Performance Max", "Shopping", "Display"];
+    const states = ["Mumbai", "Bengaluru", "Chennai", "Hyderabad", "Gujarat", "Delhi+NCR"];
+    const types = ["Search Non-Brand New", "Search Non-Brand Old", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
 
     const result: any = {
       geo_total_mtd: 0,
@@ -109,7 +117,7 @@ export async function GET() {
         const canonical = constMap.get(rName);
         if (!canonical) continue;
         
-        const state = getState(canonical);
+        const state = getGeoCityGroup(canonical);
         if (state) {
           const type = classifyCampaign(r.campaign.advertisingChannelType, r.campaign.name);
           if (types.includes(type)) {

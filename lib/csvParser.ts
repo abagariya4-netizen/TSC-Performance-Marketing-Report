@@ -93,11 +93,14 @@ export function parseCityPlanCSV(text: string): Record<string, Record<string, nu
   return cityPlan;
 }
 
+const GOOGLE_6CITY_HEADERS = ["mumbai", "bengaluru", "chennai", "hyderabad", "gujarat"];
+
 const GOOGLE_FUNNEL_MAP: Record<string, string> = {
-  search: 'Search',
-  'branded search': 'Branded Search',
-  'demand gen clicks': 'Demand Gen Clicks',
+  'search non-brand new': 'Search Non-Brand New',
+  'search non-brand old': 'Search Non-Brand Old',
+  'search brand': 'Search Brand',
   'demand gen video': 'Demand Gen Video',
+  'demand gen clicks': 'Demand Gen Clicks',
   'performance max': 'Performance Max',
   pmax: 'Performance Max',
   shopping: 'Shopping',
@@ -123,12 +126,18 @@ export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<str
       continue;
     }
 
-    const isCity = CITY_HEADERS.includes(col0) || DELHI_KEYWORDS.some(k => col0.includes(k));
-    if (isCity) {
-      currentCity = col0.includes('delhi')
-        ? 'Delhi+NCR'
-        : row[0].trim().replace(/\r/g, '').split(' ')
-            .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const isCity = GOOGLE_6CITY_HEADERS.includes(col0) || DELHI_KEYWORDS.some(k => col0.includes(k));
+    const isSpecial = col0 === 'unknown' || col0 === 'rest of india';
+
+    if (isCity || isSpecial) {
+      if (isSpecial) {
+        currentCity = col0 === 'unknown' ? 'Unknown' : 'Rest';
+      } else {
+        currentCity = col0.includes('delhi')
+          ? 'Delhi+NCR'
+          : row[0].trim().replace(/\r/g, '').split(' ')
+              .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
       cityPlan[currentCity] = {};
     }
   }

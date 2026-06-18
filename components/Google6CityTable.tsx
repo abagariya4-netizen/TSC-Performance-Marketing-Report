@@ -12,8 +12,8 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
     setCollapsed(newCol);
   };
 
-  const cities = ["Maharashtra", "Karnataka", "Tamil Nadu", "Telangana", "Delhi+NCR", "Gujarat"];
-  const funnels = ["Search", "Branded Search", "Demand Gen Clicks", "Demand Gen Video", "Performance Max", "Shopping", "Display"];
+  const cities = ["Mumbai", "Bengaluru", "Chennai", "Hyderabad", "Gujarat", "Delhi+NCR"];
+  const funnels = ["Search Non-Brand New", "Search Non-Brand Old", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
 
   let gtMtd = 0, gtYday = 0, gtPlan = 0;
 
