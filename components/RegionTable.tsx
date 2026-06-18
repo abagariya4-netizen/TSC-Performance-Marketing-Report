@@ -15,11 +15,14 @@ interface RegionData {
 }
 
 export default function RegionTable({ data, plan }: { data: RegionData, plan: Record<string, number> }) {
-  const allRegions = Array.from(new Set([
-    ...Object.keys(data.regions.mtd),
-    ...Object.keys(data.regions.yday),
-    ...Object.keys(plan)
-  ]));
+  // Only show regions that exist in plan CSV — hide regions with no plan entry
+  const planKeys = Object.keys(plan);
+  const allRegions = planKeys.length > 0
+    ? Array.from(new Set([...planKeys, 'Unknown']))
+    : Array.from(new Set([
+        ...Object.keys(data.regions.mtd),
+        ...Object.keys(data.regions.yday),
+      ]));
 
   let gtMtd = 0, gtYday = 0, gtPlan = 0;
 
