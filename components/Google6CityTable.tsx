@@ -115,8 +115,10 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
   const newOldCities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad'];
   const getCampaignTypes = (cityName: string): (keyof CityData)[] => {
     if (newOldCities.includes(cityName)) {
-      return ['Search Non-Brand (New)', 'Search Non-Brand (Old)', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+      // Search Non-Brand (New) and (Old) at bottom, after Display
+      return ['Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display', 'Search Non-Brand (New)', 'Search Non-Brand (Old)'];
     }
+    // Gujarat and Delhi+NCR keep Search as normal row
     return ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
   };
 
