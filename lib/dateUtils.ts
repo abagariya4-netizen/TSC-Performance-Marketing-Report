@@ -6,7 +6,9 @@ export function fmtDate(d: Date): string {
 }
 
 export function getDateParams() {
-  const today      = new Date();
+  // Get current time in IST timezone
+  const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  const today = new Date(istString);
   const yesterday  = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
   const monthStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), 1);
   const daysPassed    = yesterday.getDate();
