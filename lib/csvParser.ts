@@ -101,6 +101,7 @@ const GOOGLE_6CITY_HEADERS = ["mumbai", "bengaluru", "chennai", "hyderabad", "gu
 const GOOGLE_FUNNEL_MAP: Record<string, string> = {
   'search non-brand new': 'Search Non-Brand New',
   'search non-brand old': 'Search Non-Brand Old',
+  'search non-brand': 'Search Non-Brand',
   'search brand': 'Search Brand',
   'demand gen video': 'Demand Gen Video',
   'demand gen clicks': 'Demand Gen Clicks',
