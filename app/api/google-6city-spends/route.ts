@@ -35,20 +35,8 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('ulhasnagar') || c.includes('panvel') ||
       c.includes('nala sopara')) return 'Mumbai';
 
-  // BENGALURU — use canonicalName (c) with Karnataka qualifier to avoid false matches
-  if (c.includes('karnataka') && (
-      c.includes('bengaluru') || c.includes('bangalore') ||
-      c.includes('koramangala') || c.includes('indiranagar') ||
-      c.includes('whitefield') || c.includes('jayanagar') ||
-      c.includes('marathahalli') || c.includes('malleswaram') ||
-      c.includes('electronic city') || c.includes('hsr layout') ||
-      c.includes('bellandur') || c.includes('btm layout') ||
-      c.includes('kr puram') || c.includes('yelahanka') ||
-      c.includes('banashankari') || c.includes('hebbal') ||
-      c.includes('basavanagudi') || c.includes('mahadevapura') ||
-      c.includes('rajajinagar') || c.includes('chikkakannalli') ||
-      c.includes('subramanyapura') || c.includes('narayanapura') ||
-      c.includes('kommaghatta'))) return 'Bengaluru';
+  // BENGALURU — strict canonical_name check using bengaluru/bangalore only
+  if (c.includes('bengaluru') || c.includes('bangalore')) return 'Bengaluru';
 
   // CHENNAI — strict canonical_name check only
   if (c.includes('chennai')) {
