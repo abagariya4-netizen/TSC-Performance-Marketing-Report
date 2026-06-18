@@ -99,10 +99,8 @@ export function parseCityPlanCSV(text: string): Record<string, Record<string, nu
 const GOOGLE_6CITY_HEADERS = ["mumbai", "bengaluru", "chennai", "hyderabad", "gujarat"];
 
 const GOOGLE_FUNNEL_MAP: Record<string, string> = {
-  'search non-brand new': 'Search Non-Brand New',
-  'search non-brand old': 'Search Non-Brand Old',
-  'search non-brand': 'Search Non-Brand',
-  'search brand': 'Search Brand',
+  'search': 'Search',
+  'branded search': 'Branded Search',
   'demand gen video': 'Demand Gen Video',
   'demand gen clicks': 'Demand Gen Clicks',
   'performance max': 'Performance Max',
@@ -110,11 +108,7 @@ const GOOGLE_FUNNEL_MAP: Record<string, string> = {
   shopping: 'Shopping',
   display: 'Display',
   total: 'Total',
-  'grand total': 'Total',
-  
-  'search': 'Search Non-Brand',
-  'branded search': 'Search Brand',
-  'video': 'Demand Gen Video'
+  'grand total': 'Total'
 };
 
 export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<string, number>> {

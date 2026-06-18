@@ -1,163 +1,229 @@
 import { NextResponse } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
-import * as dates from '@/lib/dateUtils';
+import { getDateParams } from '@/lib/dateUtils';
 
 export const dynamic = 'force-dynamic';
 
-function classifyCampaign(channelType: string, campaignName: string): string {
-  const n = campaignName.toLowerCase();
-  if (channelType === 'SEARCH' && !n.includes('brand')) {
-    const isNew = n.includes('mum') || n.includes('hyd') || n.includes('chen') || n.includes('beng') || n.includes('del') || n.includes('ncr') || n.includes('ahm') || n.includes('guj') || n.includes('surat') || n.includes('rajkot');
-    return isNew ? 'Search Non-Brand New' : 'Search Non-Brand Old';
-  }
-  if (channelType === 'SEARCH' && n.includes('brand')) return 'Search Brand';
-  if (channelType === 'DEMAND_GEN' || channelType === 'DISCOVERY') {
-    return n.includes('click') ? 'Demand Gen Clicks' : 'Demand Gen Video';
-  }
-  if (channelType === 'PERFORMANCE_MAX') return 'Performance Max';
-  if (channelType === 'SHOPPING') return 'Shopping';
-  if (channelType === 'DISPLAY') return 'Display';
-  return 'Other';
-}
-
-function getGeoCityGroup(canonicalName: string): string | null {
+function getCity(canonicalName: string, cityName: string): string | null {
   const c = canonicalName.toLowerCase();
-  if (c.includes('mumbai')) return 'Mumbai';
-  if (c.includes('bengaluru')) return 'Bengaluru';
-  if (c.includes('chennai')) return 'Chennai';
-  if (c.includes('hyderabad')) return 'Hyderabad';
-  if (c.includes('ahmedabad') || c.includes('surat') || c.includes('rajkot') || c.includes('vadodara')) return 'Gujarat';
-  if (c.includes('delhi') || c.includes('noida') || c.includes('gurugram') || c.includes('ghaziabad') || c.includes('faridabad')) return 'Delhi+NCR';
+  const n = cityName.toLowerCase();
+
+  // Delhi+NCR — check first
+  if (c.includes('delhi') || n.includes('delhi') ||
+      n.includes('gurugram') || n.includes('gurgaon') ||
+      n.includes('noida') || n.includes('ghaziabad') ||
+      n.includes('faridabad')) return 'Delhi+NCR';
+
+  // Gujarat cities
+  if (n.includes('ahmedabad') || n.includes('ahmadabad') ||
+      n.includes('gandhinagar') || n.includes('surat') ||
+      n.includes('rajkot') || n.includes('vadodara') ||
+      n.includes('bodakdev') || n.includes('bopal') ||
+      n.includes('nikol') || n.includes('maninagar') ||
+      n.includes('paldi') || n.includes('athwa') ||
+      n.includes('bhakti nagar')) return 'Gujarat';
+
+  // Individual cities
+  if (n.includes('mumbai') || n.includes('navi mumbai') ||
+      n.includes('thane') || n.includes('kalyan') ||
+      n.includes('dombivli') || n.includes('vasai') ||
+      n.includes('virar') || n.includes('bhiwandi') ||
+      n.includes('panvel') || n.includes('vashi') ||
+      n.includes('ghansoli') || n.includes('sanpada') ||
+      n.includes('mahape') || n.includes('seawoods') ||
+      n.includes('cbd belapur') || n.includes('rabale') ||
+      n.includes('ulhasnagar') || n.includes('ambernath') ||
+      n.includes('mira') || n.includes('bhayandar') ||
+      n.includes('nalasopara') || n.includes('palghar') ||
+      n.includes('bhandup') || n.includes('mulund') ||
+      n.includes('worli') || n.includes('bandra') ||
+      n.includes('juhu') || n.includes('andheri') ||
+      n.includes('malad') || n.includes('kandivali') ||
+      n.includes('borivali') || n.includes('dahisar') ||
+      n.includes('parel') || n.includes('mazgaon') ||
+      n.includes('byculla') || n.includes('fort') ||
+      n.includes('jogeshwari') || n.includes('khadakpada') ||
+      c.includes('maharashtra') && !n.includes('pune') &&
+      !n.includes('nashik') && !n.includes('nagpur') &&
+      !n.includes('aurangabad') && !n.includes('sambhaji') &&
+      !n.includes('kolhapur') && !n.includes('sangli') &&
+      !n.includes('solapur')) return 'Mumbai';
+
+  if (n.includes('bengaluru') || n.includes('bangalore') ||
+      n.includes('koramangala') || n.includes('indiranagar') ||
+      n.includes('whitefield') || n.includes('bellandur') ||
+      n.includes('mahadevapura') || n.includes('marathahalli') ||
+      n.includes('jayanagar') || n.includes('jp nagar') ||
+      n.includes('btm') || n.includes('hebbal') ||
+      n.includes('yelahanka') || n.includes('electronic city') ||
+      n.includes('rajajinagar') || n.includes('malleshwaram') ||
+      n.includes('basavanagudi') || n.includes('brookefield') ||
+      n.includes('krishnarajapura') || n.includes('kudlu') ||
+      n.includes('akshayanagar') || n.includes('rayasandra') ||
+      n.includes('balagere') || n.includes('nayanda halli') ||
+      n.includes('chikkakannalli') || n.includes('subramanyapura') ||
+      n.includes('narayanapura') || n.includes('indirapuram')) return 'Bengaluru';
+
+  if (n.includes('chennai') || n.includes('tambaram') ||
+      n.includes('velachery') || n.includes('adyar') ||
+      n.includes('anna nagar') || n.includes('t nagar') ||
+      n.includes('mylapore') || n.includes('pallavaram') ||
+      n.includes('sholinganallur') || n.includes('shollinganallur') ||
+      n.includes('perungudi') || n.includes('medavakkam') ||
+      n.includes('madipakkam') || n.includes('tharamani') ||
+      n.includes('manapakkam') || n.includes('meenambakkam') ||
+      n.includes('nungambakkam') || n.includes('kovilambakkam') ||
+      n.includes('thiruverkadu') || n.includes('injambakkam') ||
+      n.includes('korattur') || n.includes('madambakkam') ||
+      n.includes('egmore') || n.includes('aminjikarai') ||
+      n.includes('kanchipuram') || n.includes('thiruvallur') ||
+      n.includes('george town') || n.includes('pammal') ||
+      n.includes('kodungaiyur') || n.includes('kelambakkam') ||
+      n.includes('guduvancheri')) return 'Chennai';
+
+  if (n.includes('hyderabad') || n.includes('secunderabad') ||
+      n.includes('sangareddy') || n.includes('serilingampalli') ||
+      n.includes('malkajgiri') || n.includes('balanagar') ||
+      n.includes('qutubullapur') || n.includes('saroornagar') ||
+      n.includes('nizampet') || n.includes('jubilee hills') ||
+      n.includes('banjara hills') || n.includes('khairtabad') ||
+      n.includes('cherlapalli') || n.includes('bachupally') ||
+      n.includes('manchirevula') || n.includes('bolarum') ||
+      n.includes('jagathgiri') || n.includes('hastinapuram') ||
+      n.includes('alwal') || n.includes('kondapur') ||
+      n.includes('nallagandla') || n.includes('patan cheruvu') ||
+      n.includes('nizamabad')) return 'Hyderabad';
+
+  // Not one of the 6 cities
   return null;
 }
 
-const exclusions = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf', 'chair', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
-
-const isExcluded = (name: string) => {
-  const n = name.toLowerCase();
-  if (!n.includes('mat')) return true; // Only mattress campaigns
-  for (const ex of exclusions) {
-    if (n.includes(ex)) return true;
+function classifyCampaign(channelType: string, campaignName: string): string | null {
+  const name = campaignName.toLowerCase();
+  if (channelType === 'PERFORMANCE_MAX') return 'Performance Max';
+  if (channelType === 'SHOPPING') return 'Shopping';
+  if (channelType === 'DISPLAY') return 'Display';
+  if (channelType === 'DEMAND_GEN') {
+    return name.includes('click') ? 'Demand Gen Clicks' : 'Demand Gen Video';
   }
-  return false;
-};
+  if (channelType === 'SEARCH') {
+    return name.includes('brand') ? 'Branded Search' : 'Search';
+  }
+  return null;
+}
 
 export async function GET() {
   try {
-    const { sinceMTD, sinceYday, daysPassed, totalDays, daysRemaining, displayMonth } = dates.getDateParams();
+    const dates = getDateParams();
 
-    const geoMtdQuery = `
+    const gaqlGeoMTD = `
       SELECT campaign.name, campaign.advertising_channel_type, segments.geo_target_city, metrics.cost_micros
       FROM geographic_view
-      WHERE segments.date BETWEEN '${sinceMTD}' AND '${sinceYday}'
+      WHERE segments.date BETWEEN '${dates.sinceMTD}' AND '${dates.untilYday}'
     `;
     
-    const geoYdayQuery = `
+    const gaqlGeoYday = `
       SELECT campaign.name, campaign.advertising_channel_type, segments.geo_target_city, metrics.cost_micros
       FROM geographic_view
-      WHERE segments.date = '${sinceYday}'
+      WHERE segments.date = '${dates.untilYday}'
     `;
-
-    const campMtdQuery = `
-      SELECT campaign.name, metrics.cost_micros
-      FROM campaign
-      WHERE segments.date BETWEEN '${sinceMTD}' AND '${sinceYday}'
-    `;
-
-    const campYdayQuery = `
-      SELECT campaign.name, metrics.cost_micros
-      FROM campaign
-      WHERE segments.date = '${sinceYday}'
-    `;
-
-    const constantsQuery = `
-      SELECT geo_target_constant.resource_name, geo_target_constant.canonical_name
+    
+    const geoConstantsQuery = `
+      SELECT geo_target_constant.name, geo_target_constant.resource_name, geo_target_constant.canonical_name
       FROM geo_target_constant
       WHERE geo_target_constant.country_code = 'IN'
     `;
 
-    const [geoMtd, geoYday, campMtd, campYday, constants] = await Promise.all([
-      queryAllGoogleAdsAccounts(geoMtdQuery),
-      queryAllGoogleAdsAccounts(geoYdayQuery),
-      queryAllGoogleAdsAccounts(campMtdQuery),
-      queryAllGoogleAdsAccounts(campYdayQuery),
-      queryAllGoogleAdsAccounts(constantsQuery)
+    const [geoConstantsRes, geoMtdRes, geoYdayRes] = await Promise.all([
+      queryAllGoogleAdsAccounts(geoConstantsQuery),
+      queryAllGoogleAdsAccounts(gaqlGeoMTD),
+      queryAllGoogleAdsAccounts(gaqlGeoYday),
     ]);
 
-    const constMap = new Map<string, string>();
-    for (const c of constants) {
-      if (c.geoTargetConstant) {
-        constMap.set(c.geoTargetConstant.resourceName, c.geoTargetConstant.canonicalName);
+    const geoMap = new Map<string, { canonicalName: string, name: string }>();
+    for (const row of geoConstantsRes) {
+      const rn = row.geoTargetConstant?.resourceName;
+      const canonicalName = row.geoTargetConstant?.canonicalName;
+      const name = row.geoTargetConstant?.name;
+      if (rn && canonicalName && name) {
+        geoMap.set(rn, { canonicalName, name });
       }
     }
 
-    const states = ["Mumbai", "Bengaluru", "Chennai", "Hyderabad", "Gujarat", "Delhi+NCR"];
-    const types = ["Search Non-Brand New", "Search Non-Brand Old", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
+    const campaignTypes = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    const cities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad', 'Gujarat', 'Delhi+NCR'];
 
-    const result: any = {
-      geo_total_mtd: 0,
-      geo_total_yday: 0,
-      campaign_total_mtd: 0,
-      campaign_total_yday: 0,
+    const createCityObject = () => {
+      const obj: any = {};
+      campaignTypes.forEach(t => obj[t] = { mtd: 0, yesterday: 0 });
+      obj.total = { mtd: 0, yesterday: 0 };
+      return obj;
     };
 
-    states.forEach(s => {
-      result[s] = {};
-      types.forEach(t => result[s][t] = { mtd: 0, yday: 0 });
-    });
+    const result: any = { cities: {}, grandTotal: { mtd: 0, yesterday: 0 } };
+    cities.forEach(city => result.cities[city] = createCityObject());
 
-    const processGeo = (rows: any[], isMtd: boolean) => {
-      let geoTotal = 0;
-      for (const r of rows) {
-        if (!r.campaign || isExcluded(r.campaign.name)) continue;
-        const cost = parseInt(r.metrics.costMicros) / 1000000;
-        geoTotal += cost;
+    const exclusions = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf', 'chair', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
+
+    const processResults = (res: any[], timePeriod: 'mtd' | 'yesterday') => {
+      for (const row of res) {
+        const campaignName = row.campaign?.name || '';
+        const nameLower = campaignName.toLowerCase();
         
-        const rName = r.segments.geoTargetCity;
-        const canonical = constMap.get(rName);
-        if (!canonical) continue;
-        
-        const state = getGeoCityGroup(canonical);
-        if (state) {
-          const type = classifyCampaign(r.campaign.advertisingChannelType, r.campaign.name);
-          if (types.includes(type)) {
-            if (isMtd) result[state][type].mtd += cost;
-            else result[state][type].yday += cost;
+        // 1. Check campaign exclusions
+        let isExcluded = false;
+        for (const ex of exclusions) {
+          if (nameLower.includes(ex)) {
+            isExcluded = true;
+            break;
           }
         }
+        if (isExcluded) continue;
+
+        // 2. Check category filter
+        if (!nameLower.includes('mat')) continue;
+
+        // 3. Resolve geo_target_city
+        const resourceName = row.segments?.geoTargetCity;
+        if (!resourceName) continue;
+        
+        const geoData = geoMap.get(resourceName);
+        if (!geoData) continue;
+
+        // 4. Run getCity mapping
+        const cityBucket = getCity(geoData.canonicalName, geoData.name);
+        if (!cityBucket) continue; // Discard Not one of 6 cities
+
+        // 5. Run classifyCampaign
+        const channelType = row.campaign?.advertisingChannelType || '';
+        const campType = classifyCampaign(channelType, campaignName);
+        if (!campType) continue; // Discard invalid types
+
+        const cost = parseFloat(row.metrics?.costMicros || '0') / 1000000;
+
+        // 6. Add spend
+        result.cities[cityBucket][campType][timePeriod] += cost;
+        result.cities[cityBucket].total[timePeriod] += cost;
+        result.grandTotal[timePeriod] += cost;
       }
-      return geoTotal;
     };
 
-    result.geo_total_mtd = processGeo(geoMtd, true);
-    result.geo_total_yday = processGeo(geoYday, false);
+    processResults(geoMtdRes, 'mtd');
+    processResults(geoYdayRes, 'yesterday');
 
-    const processCamp = (rows: any[]) => {
-      let campTotal = 0;
-      for (const r of rows) {
-        if (!r.campaign || isExcluded(r.campaign.name)) continue;
-        campTotal += parseInt(r.metrics.costMicros) / 1000000;
-      }
-      return campTotal;
+    result.dateInfo = {
+      monthName: dates.sinceMTD, // Could format better if needed, but keeping simple
+      dayOfMonth: dates.daysPassed,
+      daysRemaining: dates.daysRemaining,
+      totalDays: dates.totalDays,
+      mtdStart: dates.sinceMTD,
+      yesterday: dates.untilYday
     };
 
-    result.campaign_total_mtd = processCamp(campMtd);
-    result.campaign_total_yday = processCamp(campYday);
+    return NextResponse.json(result);
 
-    return NextResponse.json({
-      data: result,
-      dates: {
-        sinceMTD,
-        sinceYday,
-        daysPassed,
-        totalDays,
-        daysRemaining,
-        displayMonth
-      }
-    });
-
-  } catch (error: any) {
-    console.error('Google Ads 6 City error:', error);
-    return NextResponse.json({ error: error.message || 'Unknown error' }, { status: 500 });
+  } catch (err: any) {
+    console.error('API Error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

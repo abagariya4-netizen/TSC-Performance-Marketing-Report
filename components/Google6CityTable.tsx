@@ -1,280 +1,175 @@
 'use client';
 import React, { useState } from 'react';
-import { calcRow, formatINR } from '@/lib/calculations';
 
-export default function Google6CityTable({ data, plan }: { data: any, plan: Record<string, Record<string, number>> }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+type RowData = {
+  mtd: number;
+  yesterday: number;
+};
+
+type CityData = {
+  'Search': RowData;
+  'Branded Search': RowData;
+  'Demand Gen Clicks': RowData;
+  'Demand Gen Video': RowData;
+  'Performance Max': RowData;
+  'Shopping': RowData;
+  'Display': RowData;
+  total: RowData;
+};
+
+type DateInfo = {
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+};
+
+type Google6CityTableProps = {
+  data: {
+    cities: Record<string, CityData>;
+    grandTotal: RowData;
+    dateInfo: DateInfo;
+  };
+  planData: Record<string, Record<string, number>> | null;
+};
+
+const formatIndianNum = (num: number) => {
+  return new Intl.NumberFormat('en-IN').format(Math.round(num));
+};
+
+const getPillColor = (isOver: boolean) => {
+  return isOver ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+};
+
+export default function Google6CityTable({ data, planData }: Google6CityTableProps) {
+  const [expandedCities, setExpandedCities] = useState<Record<string, boolean>>({});
 
   const toggleCity = (city: string) => {
-    const newCol = new Set(collapsed);
-    if (newCol.has(city)) newCol.delete(city);
-    else newCol.add(city);
-    setCollapsed(newCol);
+    setExpandedCities(prev => ({ ...prev, [city]: !prev[city] }));
   };
 
-  const cities = ["Mumbai", "Bengaluru", "Chennai", "Hyderabad", "Gujarat", "Delhi+NCR"];
-  const funnels = ["Search Non-Brand", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
+  const { daysPassed, daysRemaining, totalDays } = data.dateInfo;
 
-  let gtMtd = 0, gtYday = 0, gtPlan = 0;
+  const renderRow = (
+    city: string,
+    campaignType: string,
+    rowData: RowData,
+    planValue: number,
+    isTotal: boolean = false,
+    indentLevel: number = 0
+  ) => {
+    const estSpends = rowData.mtd + (rowData.yesterday * daysRemaining);
+    const estMinusPlan = estSpends - planValue;
+    const overUnder = estSpends >= planValue ? 'Over' : 'Under';
 
-  const renderRow = (r: any, isSubRow = false, isFunnelTotal = false, isGrandTotal = false) => {
-    const diffColor = r.diffPct > 0 ? '#48bb78' : r.diffPct < 0 ? '#fc8181' : '#ecc94b';
-    const pillHtml = r.overUnder === 'Over'
-      ? <span style={{ background: '#1a3a2a', color: '#48bb78', border: '1px solid #276749', borderRadius: '999px', padding: '2px 10px' }}>Over</span>
-      : r.overUnder === 'Under'
-      ? <span style={{ background: '#3a1a1a', color: '#fc8181', border: '1px solid #742a2a', borderRadius: '999px', padding: '2px 10px' }}>Under</span>
-      : '—';
+    let diffPercent = 0;
+    if (planValue > 0 && daysPassed > 0) {
+      const proratedPlan = planValue * (daysPassed / totalDays);
+      diffPercent = ((rowData.mtd / proratedPlan) - 1) * 100;
+    }
 
-    const bg = isGrandTotal ? '#0d2137' : '#1a1d27';
-    const weight = (isFunnelTotal || isGrandTotal) ? 'bold' : 'normal';
-
+    const diffColor = diffPercent >= 0 ? '#48bb78' : '#fc8181';
+    
     return (
-      <tr key={r.id} style={{ background: bg, fontWeight: weight }}>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left', paddingLeft: isSubRow ? '30px' : '12px' }}>{r.name}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.plan)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.mtd)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.yday)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.est)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.plan != null ? diffColor : 'inherit' }}>
-          {r.plan != null ? `${r.diffPct > 0 ? '+' : ''}${r.diffPct}%` : '—'}
+      <tr key={`${city}-${campaignType}`} style={{ backgroundColor: isTotal ? '#1a1d27' : '#1f2333', borderBottom: '1px solid #2d3748' }}>
+        <td style={{ padding: '12px', paddingLeft: `${12 + indentLevel * 20}px`, fontWeight: isTotal ? 'bold' : 'normal', color: 'white' }}>
+          {isTotal && indentLevel === 0 ? (
+            <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => toggleCity(city)}>
+              <span style={{ marginRight: '8px', fontSize: '10px' }}>{expandedCities[city] ? '▼' : '▶'}</span>
+              {city}
+            </span>
+          ) : (
+            campaignType
+          )}
         </td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.estMinusPlan != null ? (r.estMinusPlan < 0 ? '#fc8181' : '#48bb78') : 'inherit' }}>{formatINR(r.estMinusPlan)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'center' }}>{pillHtml}</td>
+        <td style={{ padding: '12px', textAlign: 'right', color: '#a0aec0' }}>{planValue ? formatIndianNum(planValue) : '-'}</td>
+        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(rowData.mtd)}</td>
+        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(rowData.yesterday)}</td>
+        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(estSpends)}</td>
+        <td style={{ padding: '12px', textAlign: 'right', color: diffColor }}>
+          {planValue > 0 ? `${diffPercent > 0 ? '+' : ''}${diffPercent.toFixed(2)}%` : '-'}
+        </td>
+        <td style={{ padding: '12px', textAlign: 'right', color: estMinusPlan >= 0 ? '#48bb78' : '#fc8181' }}>
+          {planValue > 0 ? formatIndianNum(estMinusPlan) : '-'}
+        </td>
+        <td style={{ padding: '12px', textAlign: 'center' }}>
+          {planValue > 0 ? (
+             <span style={{ 
+               padding: '4px 8px', 
+               borderRadius: '12px', 
+               fontSize: '12px', 
+               fontWeight: 'bold',
+               backgroundColor: overUnder === 'Over' ? '#c6f6d5' : '#fed7d7',
+               color: overUnder === 'Over' ? '#22543d' : '#822727'
+             }}>
+               {overUnder}
+             </span>
+          ) : '-'}
+        </td>
       </tr>
     );
   };
 
-  const exportCSV = () => {
-    const headers = [
-      'Region', 'Overall (Plan)', 'MTD', 'Yesterday',
-      'Est. Spends', 'Difference', 'Est - Plan', 'Over/Under'
-    ];
-
-    const lines: string[] = [];
-    lines.push(headers.join(','));
-
-    let totalNamedMtd = 0, totalNamedYday = 0;
-
-    cities.forEach(city => {
-      const cityPlan = plan[city] || {};
-      
-      lines.push(`"${city}",,,,,,,`);
-      
-      let cityMtd = 0, cityYday = 0, cityPlanTotal = 0;
-
-      funnels.forEach(f => {
-        const p = cityPlan[f] ?? null;
-        let m = 0, y = 0;
-        if (f === 'Search Non-Brand') {
-          m = (data.data[city]?.['Search Non-Brand New']?.mtd || 0) + (data.data[city]?.['Search Non-Brand Old']?.mtd || 0);
-          y = (data.data[city]?.['Search Non-Brand New']?.yday || 0) + (data.data[city]?.['Search Non-Brand Old']?.yday || 0);
-        } else {
-          m = data.data[city]?.[f]?.mtd || 0;
-          y = data.data[city]?.[f]?.yday || 0;
-        }
-        
-        cityMtd += m;
-        cityYday += y;
-        if (p != null) cityPlanTotal += p;
-
-        const rowData = calcRow(m, y, p, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-        lines.push([
-          `"${f}"`,
-          p != null ? p : '',
-          m,
-          y,
-          rowData.est,
-          rowData.diffPct != null ? `${rowData.diffPct}%` : '',
-          rowData.estMinusPlan != null ? rowData.estMinusPlan : '',
-          rowData.overUnder ?? ''
-        ].join(','));
-      });
-      
-      totalNamedMtd += cityMtd;
-      totalNamedYday += cityYday;
-
-      const cityTotalPlan = cityPlan['Total'] ?? cityPlanTotal;
-      const cityRow = calcRow(cityMtd, cityYday, cityTotalPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-      
-      lines.push([
-        '"Total"',
-        cityTotalPlan,
-        cityMtd,
-        cityYday,
-        cityRow.est,
-        cityRow.diffPct != null ? `${cityRow.diffPct}%` : '',
-        cityRow.estMinusPlan != null ? cityRow.estMinusPlan : '',
-        cityRow.overUnder ?? ''
-      ].join(','));
-      
-      // Add Sub-Metrics below Total
-      const subMetrics = ["Search Non-Brand New", "Search Non-Brand Old"];
-      subMetrics.forEach(sf => {
-        const sm = data.data[city]?.[sf]?.mtd || 0;
-        const sy = data.data[city]?.[sf]?.yday || 0;
-        const sRowData = calcRow(sm, sy, null, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-        lines.push([
-          `"${sf}"`,
-          '',
-          sm,
-          sy,
-          sRowData.est,
-          '',
-          '',
-          ''
-        ].join(','));
-      });
-    });
-    
-    // Add Unknown
-    const unknownMtd = data.data.campaign_total_mtd - data.data.geo_total_mtd;
-    const unknownYday = data.data.campaign_total_yday - data.data.geo_total_yday;
-    const unknownPlan = plan['Unknown']?.['Total'] ?? null;
-    const unknownRow = calcRow(unknownMtd, unknownYday, unknownPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-    lines.push([
-      '"Unknown"', unknownPlan ?? '', unknownMtd, unknownYday, unknownRow.est, 
-      unknownRow.diffPct != null ? `${unknownRow.diffPct}%` : '', 
-      unknownRow.estMinusPlan != null ? unknownRow.estMinusPlan : '', 
-      unknownRow.overUnder ?? ''
-    ].join(','));
-
-    // Add Rest
-    const restMtd = data.data.campaign_total_mtd - totalNamedMtd - unknownMtd;
-    const restYday = data.data.campaign_total_yday - totalNamedYday - unknownYday;
-    const restPlan = plan['Rest']?.['Total'] ?? null;
-    const restRow = calcRow(restMtd, restYday, restPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-    lines.push([
-      '"Rest of India"', restPlan ?? '', restMtd, restYday, restRow.est, 
-      restRow.diffPct != null ? `${restRow.diffPct}%` : '', 
-      restRow.estMinusPlan != null ? restRow.estMinusPlan : '', 
-      restRow.overUnder ?? ''
-    ].join(','));
-    
-    // Add Grand Total
-    let finalGtPlan = 0;
-    cities.forEach(c => finalGtPlan += (plan[c]?.['Total'] || 0));
-    finalGtPlan += (plan['Unknown']?.['Total'] || 0) + (plan['Rest']?.['Total'] || 0);
-
-    const gtRow = calcRow(data.data.campaign_total_mtd, data.data.campaign_total_yday, finalGtPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-    lines.push([
-      '"Grand Total"', finalGtPlan, data.data.campaign_total_mtd, data.data.campaign_total_yday, gtRow.est,
-      gtRow.diffPct != null ? `${gtRow.diffPct}%` : '',
-      gtRow.estMinusPlan != null ? gtRow.estMinusPlan : '',
-      gtRow.overUnder ?? ''
-    ].join(','));
-
-    const csvContent = lines.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `TSC_Google_6City_Report_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  };
-
-  let totalNamedMtd = 0, totalNamedYday = 0;
+  const campaignTypes: (keyof CityData)[] = [
+    'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'
+  ];
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <div style={{ marginBottom: '10px', textAlign: 'right' }}>
-        <button onClick={exportCSV} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-          📥 Export CSV
-        </button>
-      </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', whiteSpace: 'nowrap' }}>
-        <thead>
-          <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-            <th style={{ padding: '10px 12px', textAlign: 'left' }}>Region / Campaign Type</th>
-            <th style={{ padding: '10px 12px' }}>Overall (Plan)</th>
-            <th style={{ padding: '10px 12px' }}>MTD</th>
-            <th style={{ padding: '10px 12px' }}>Yesterday</th>
-            <th style={{ padding: '10px 12px' }}>Est. Spends</th>
-            <th style={{ padding: '10px 12px' }}>Difference</th>
-            <th style={{ padding: '10px 12px' }}>Est - Plan</th>
-            <th style={{ padding: '10px 12px' }}>Over/Under</th>
+    <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+        <thead style={{ backgroundColor: '#2d3748', color: '#a0aec0', textAlign: 'left' }}>
+          <tr>
+            <th style={{ padding: '12px', fontWeight: 'bold' }}>City/Campaign Type</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Overall (Plan)</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>MTD</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Yesterday</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Est. Spends</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Difference</th>
+            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Est - Plan</th>
+            <th style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold' }}>Over/Under</th>
           </tr>
         </thead>
         <tbody>
-          {cities.map(city => {
-            const isCol = collapsed.has(city);
-            const cityPlan = plan[city] || {};
+          {Object.entries(data.cities).map(([cityName, cityData]) => {
+            const cityPlan = planData?.[cityName] || {};
+            const totalPlan = cityPlan['Total'] || 0;
             
-            let cityMtd = 0, cityYday = 0, cityPlanTotal = 0;
-
-            const subRows = funnels.map(f => {
-              const p = cityPlan[f] ?? null;
-              let m = 0, y = 0;
-              if (f === 'Search Non-Brand') {
-                m = (data.data[city]?.['Search Non-Brand New']?.mtd || 0) + (data.data[city]?.['Search Non-Brand Old']?.mtd || 0);
-                y = (data.data[city]?.['Search Non-Brand New']?.yday || 0) + (data.data[city]?.['Search Non-Brand Old']?.yday || 0);
-              } else {
-                m = data.data[city]?.[f]?.mtd || 0;
-                y = data.data[city]?.[f]?.yday || 0;
-              }
-              cityMtd += m;
-              cityYday += y;
-              if (p != null) cityPlanTotal += p;
-              const rowData = calcRow(m, y, p, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-              return renderRow({ id: `${city}-${f}`, name: f, plan: p, ...rowData }, true, false);
-            });
-
-            totalNamedMtd += cityMtd;
-            totalNamedYday += cityYday;
-
-            const cityTotalPlan = cityPlan['Total'] ?? cityPlanTotal;
-            const cityRowData = calcRow(cityMtd, cityYday, cityTotalPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-            gtPlan += cityTotalPlan;
-
             return (
-              <React.Fragment key={city}>
-                <tr onClick={() => toggleCity(city)} style={{ background: '#e8733a', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
-                  <td colSpan={8} style={{ padding: '10px 12px', textAlign: 'left' }}>
-                    {isCol ? '▶' : '▼'} {city}
-                  </td>
-                </tr>
-                {!isCol && subRows}
-                {!isCol && renderRow({ id: `${city}-Total`, name: 'Total', plan: cityTotalPlan, ...cityRowData }, false, true)}
-                {!isCol && ["Search Non-Brand New", "Search Non-Brand Old"].map(sf => {
-                  const sm = data.data[city]?.[sf]?.mtd || 0;
-                  const sy = data.data[city]?.[sf]?.yday || 0;
-                  const sRowData = calcRow(sm, sy, null, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-                  return renderRow({ id: `${city}-${sf}`, name: sf, plan: null, ...sRowData }, true, false);
+              <React.Fragment key={cityName}>
+                {renderRow(cityName, cityName, cityData.total, totalPlan, true, 0)}
+                {expandedCities[cityName] && campaignTypes.map(type => {
+                  const typePlan = cityPlan[type] || 0;
+                  return renderRow(cityName, type, cityData[type], typePlan, false, 1);
                 })}
               </React.Fragment>
             );
           })}
-          
-          {/* Unknown Row */}
+          {/* Grand Total */}
           {(() => {
-            const unknownMtd = data.data.campaign_total_mtd - data.data.geo_total_mtd;
-            const unknownYday = data.data.campaign_total_yday - data.data.geo_total_yday;
-            const unknownPlan = plan['Unknown']?.['Total'] ?? null;
-            if (unknownPlan) gtPlan += unknownPlan;
-            const unknownRow = calcRow(unknownMtd, unknownYday, unknownPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-            return renderRow({ id: 'Unknown', name: 'Unknown', plan: unknownPlan, ...unknownRow }, false, true);
+            let grandPlan = 0;
+            if (planData) {
+              Object.values(planData).forEach(cp => {
+                if (cp['Total']) grandPlan += cp['Total'];
+              });
+            }
+            return (
+              <tr style={{ backgroundColor: '#e8733a', color: 'white', fontWeight: 'bold' }}>
+                <td style={{ padding: '12px' }}>Grand Total</td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>{grandPlan ? formatIndianNum(grandPlan) : '-'}</td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.mtd)}</td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.yesterday)}</td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining))}</td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>
+                  {grandPlan > 0 && daysPassed > 0 ? (
+                    `${(((data.grandTotal.mtd / (grandPlan * (daysPassed / totalDays))) - 1) * 100).toFixed(2)}%`
+                  ) : '-'}
+                </td>
+                <td style={{ padding: '12px', textAlign: 'right' }}>
+                  {grandPlan > 0 ? formatIndianNum((data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining)) - grandPlan) : '-'}
+                </td>
+                <td style={{ padding: '12px', textAlign: 'center' }}>-</td>
+              </tr>
+            );
           })()}
-
-          {/* Rest Row */}
-          {(() => {
-            const unknownMtd = data.data.campaign_total_mtd - data.data.geo_total_mtd;
-            const unknownYday = data.data.campaign_total_yday - data.data.geo_total_yday;
-            const restMtd = data.data.campaign_total_mtd - totalNamedMtd - unknownMtd;
-            const restYday = data.data.campaign_total_yday - totalNamedYday - unknownYday;
-            const restPlan = plan['Rest']?.['Total'] ?? null;
-            if (restPlan) gtPlan += restPlan;
-            const restRow = calcRow(restMtd, restYday, restPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-            return renderRow({ id: 'Rest', name: 'Rest of India', plan: restPlan, ...restRow }, false, true);
-          })()}
-
-          {/* Grand Total Row */}
-          {(() => {
-            const gtRow = calcRow(data.data.campaign_total_mtd, data.data.campaign_total_yday, gtPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
-            return renderRow({ id: 'GT', name: 'Grand Total', plan: gtPlan, ...gtRow }, false, false, true);
-          })()}
-
         </tbody>
       </table>
     </div>
