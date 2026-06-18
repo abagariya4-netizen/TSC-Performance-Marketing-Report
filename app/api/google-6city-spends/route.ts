@@ -23,15 +23,14 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('paldi') || n.includes('athwa') ||
       n.includes('bhakti nagar')) return 'Gujarat';
 
-  // 1. MUMBAI (Strict formatting to avoid Haryana/WB leaks, dropped Badlapur/Palghar/Boisar)
+  // 1. MUMBAI
   if (c.includes('mumbai') || c.includes('thane') ||
       c.includes('kalyan') || c.includes('dombivali') ||
       c.includes('dombivli') || c.includes('vasai') || 
       c.includes('virar') || c.includes('mira bhayandar') || 
       c.includes('bhiwandi') || c.includes('ambernath') || 
       c.includes('ulhasnagar') || c.includes('panvel') || 
-      c.includes('nala sopara') || c.includes('palghar') || 
-      c.includes('pale gaon')) return 'Mumbai';
+      c.includes('nala sopara') || c.includes('pale gaon')) return 'Mumbai';
 
   // 2. BENGALURU (Added Nijagal & Kudlu)
   if (n.includes('bengaluru') || n.includes('bangalore') ||
@@ -50,11 +49,11 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('mahadevapura') || n.includes('rr nagar') ||
       n.includes('rajajinagar') || n.includes('chikkakannalli') ||
       n.includes('subramanyapura') || n.includes('narayanapura') ||
-      n.includes('indirapuram') || c.includes('bandapura')) return 'Bengaluru';
+      n.includes('indirapuram') || c.includes('kommaghatta')) return 'Bengaluru';
 
   // 3. CHENNAI
   if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
-      if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
+      if (!c.includes('thiruvallur') && 
           !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
           return 'Chennai';
       }
