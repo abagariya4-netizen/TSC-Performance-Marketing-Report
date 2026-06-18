@@ -49,18 +49,17 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('mahadevapura') || n.includes('rr nagar') ||
       n.includes('rajajinagar') || n.includes('chikkakannalli') ||
       n.includes('subramanyapura') || n.includes('narayanapura') ||
-      n.includes('indirapuram') || c.includes('nijagal') || 
-      c.includes('kudlu')) return 'Bengaluru';
+      n.includes('indirapuram')) return 'Bengaluru';
 
   // 3. CHENNAI (Added Padianallur)
-  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
+  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai') || c.includes('padianallur')) {
       if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
           !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
           return 'Chennai';
       }
   }
 
-  // 4. HYDERABAD (Removed Kondapur and Nallagandla)
+  // 4. HYDERABAD (Removed Kondapur)
   if (c.includes('hyderabad') || c.includes('secunderabad') ||
       c.includes('jubilee hills') || c.includes('banjara hills') ||
       c.includes('madhapur') || c.includes('gachibowli') ||
@@ -80,11 +79,13 @@ function getCity(canonicalName: string, cityName: string): string | null {
       }
   }
 
-  // 5. DELHI+NCR (Ensure Baprola/Mundka are dropped, Greater Noida is kept since it's 45k)
+  // 5. DELHI+NCR (Ensure Baprola/Mundka are dropped)
   if (c.includes('delhi') || c.includes('gurugram') || c.includes('gurgaon') ||
       c.includes('noida') || c.includes('ghaziabad') ||
       c.includes('faridabad')) {
-      return 'Delhi+NCR';
+      if (!c.includes('baprola') && !c.includes('mundka')) {
+         return 'Delhi+NCR';
+      }
   }
 
   // Not one of the 6 cities
