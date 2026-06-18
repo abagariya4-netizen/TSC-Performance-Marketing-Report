@@ -24,8 +24,8 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('bhakti nagar')) return 'Gujarat';
 
   // 1. MUMBAI (Strict formatting to avoid Haryana/WB leaks, dropped Badlapur/Palghar/Boisar)
-  if (c.includes('mumbai') || c.includes('thane,') ||
-      c.includes('kalyan,maharashtra') || c.includes('dombivali') ||
+  if (c.includes('mumbai') || c.includes('thane') ||
+      c.includes('kalyan') || c.includes('dombivali') ||
       c.includes('dombivli') || c.includes('vasai') || 
       c.includes('virar') || c.includes('mira bhayandar') || 
       c.includes('bhiwandi') || c.includes('ambernath') || 
@@ -53,7 +53,7 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('kudlu')) return 'Bengaluru';
 
   // 3. CHENNAI (Added Padianallur)
-  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai') || c.includes('padianallur')) {
+  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
       if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
           !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
           return 'Chennai';
@@ -75,7 +75,7 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('manchirevula') || c.includes('bolarum') || 
       c.includes('hastinapuram') || c.includes('jagathgiri') || 
       c.includes('patan cheruvu')) {
-      if (!c.includes('palwal') && !c.includes('choutuppal') && !c.includes('punjab')) {
+      if (!c.includes('palwal') && !c.includes('choutuppal') && !c.includes('punjab') && !c.includes('kondapur')) {
          return 'Hyderabad';
       }
   }
@@ -84,9 +84,7 @@ function getCity(canonicalName: string, cityName: string): string | null {
   if (c.includes('delhi') || c.includes('gurugram') || c.includes('gurgaon') ||
       c.includes('noida') || c.includes('ghaziabad') ||
       c.includes('faridabad')) {
-      if (!c.includes('baprola') && !c.includes('mundka')) {
-         return 'Delhi+NCR';
-      }
+      return 'Delhi+NCR';
   }
 
   // Not one of the 6 cities
