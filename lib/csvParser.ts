@@ -1,4 +1,7 @@
 export function parseCSVLine(line: string): string[] {
+  if (line.includes('\t')) {
+    return line.split('\t').map(x => x.trim());
+  }
   const result: string[] = [];
   let cur = '', inQ = false;
   for (const ch of line) {
@@ -106,7 +109,12 @@ const GOOGLE_FUNNEL_MAP: Record<string, string> = {
   shopping: 'Shopping',
   display: 'Display',
   total: 'Total',
-  'grand total': 'Total'
+  'grand total': 'Total',
+  
+  // Fallbacks for older plan formats
+  'search': 'Search Non-Brand New',
+  'branded search': 'Search Brand',
+  'video': 'Demand Gen Video'
 };
 
 export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<string, number>> {
