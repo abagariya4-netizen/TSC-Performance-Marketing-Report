@@ -67,13 +67,14 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('miyapur') || c.includes('lb nagar') || 
       c.includes('dilsukhnagar') || c.includes('uppal') || 
       c.includes('nacharam') || c.includes('alwal,') || 
-      c.includes('malkajgiri') || c.includes('balanagar, telangana') || 
+      c.includes('malkajgiri') || c.includes('balanagar,telangana') || 
       c.includes('qutubullapur') || c.includes('saroornagar') || 
       c.includes('nizampet') || c.includes('serilingampalli') || 
       c.includes('cherlapalli') || c.includes('bachupally') || 
       c.includes('manchirevula') || c.includes('bolarum') || 
       c.includes('hastinapuram') || c.includes('jagathgiri') || 
-      c.includes('patan cheruvu')) {
+      c.includes('patan cheruvu') || c.includes('sangareddy') || 
+      c.includes('khairtabad')) {
       if (!c.includes('palwal') && !c.includes('choutuppal') && !c.includes('punjab') && !c.includes('kondapur')) {
          return 'Hyderabad';
       }
