@@ -30,7 +30,8 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('virar') || c.includes('mira bhayandar') || 
       c.includes('bhiwandi') || c.includes('ambernath') || 
       c.includes('ulhasnagar') || c.includes('panvel') || 
-      c.includes('nala sopara')) return 'Mumbai';
+      c.includes('nala sopara') || c.includes('palghar') || 
+      c.includes('pale gaon')) return 'Mumbai';
 
   // 2. BENGALURU (Added Nijagal & Kudlu)
   if (n.includes('bengaluru') || n.includes('bangalore') ||
@@ -49,10 +50,10 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('mahadevapura') || n.includes('rr nagar') ||
       n.includes('rajajinagar') || n.includes('chikkakannalli') ||
       n.includes('subramanyapura') || n.includes('narayanapura') ||
-      n.includes('indirapuram')) return 'Bengaluru';
+      n.includes('indirapuram') || c.includes('bandapura')) return 'Bengaluru';
 
-  // 3. CHENNAI (Added Padianallur)
-  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai') || c.includes('padianallur')) {
+  // 3. CHENNAI
+  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
       if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
           !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
           return 'Chennai';
