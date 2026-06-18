@@ -35,24 +35,23 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('ulhasnagar') || c.includes('panvel') ||
       c.includes('nala sopara')) return 'Mumbai';
 
-  // BENGALURU — removed indirapuram (Ghaziabad, UP not Bengaluru)
-  if (n.includes('bengaluru') || n.includes('bangalore') ||
-      n.includes('koramangala') || n.includes('indiranagar') ||
-      n.includes('whitefield') || n.includes('jayanagar') ||
-      n.includes('marathahalli') || n.includes('malleswaram') ||
-      n.includes('electronic city') || n.includes('hsr layout') ||
-      n.includes('bellandur') || n.includes('btm layout') ||
-      n.includes('kr puram') || n.includes('yelahanka') ||
-      n.includes('banashankari') || n.includes('hebbal') ||
-      n.includes('basavanagudi') || n.includes('mahadevapura') ||
-      n.includes('rajajinagar') || n.includes('chikkakannalli') ||
-      n.includes('subramanyapura') || n.includes('narayanapura') ||
-      c.includes('kommaghatta')) return 'Bengaluru';
+  // BENGALURU — use canonicalName (c) with Karnataka qualifier to avoid false matches
+  if (c.includes('karnataka') && (
+      c.includes('bengaluru') || c.includes('bangalore') ||
+      c.includes('koramangala') || c.includes('indiranagar') ||
+      c.includes('whitefield') || c.includes('jayanagar') ||
+      c.includes('marathahalli') || c.includes('malleswaram') ||
+      c.includes('electronic city') || c.includes('hsr layout') ||
+      c.includes('bellandur') || c.includes('btm layout') ||
+      c.includes('kr puram') || c.includes('yelahanka') ||
+      c.includes('banashankari') || c.includes('hebbal') ||
+      c.includes('basavanagudi') || c.includes('mahadevapura') ||
+      c.includes('rajajinagar') || c.includes('chikkakannalli') ||
+      c.includes('subramanyapura') || c.includes('narayanapura') ||
+      c.includes('kommaghatta'))) return 'Bengaluru';
 
-  // CHENNAI — Tamil Nadu metro districts only
-  if (c.includes('tamil nadu') && (
-      c.includes('chennai') || c.includes('thiruvallur') ||
-      c.includes('kanchipuram') || c.includes('chengalpattu'))) {
+  // CHENNAI — strict canonical_name check only
+  if (c.includes('chennai')) {
     return 'Chennai';
   }
 
