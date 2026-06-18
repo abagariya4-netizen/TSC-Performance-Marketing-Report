@@ -18,9 +18,10 @@ type CityData = {
 };
 
 type DateInfo = {
-  daysPassed: number;
+  dayOfMonth: number;
   daysRemaining: number;
   totalDays: number;
+  monthName: string;
 };
 
 type Google6CityTableProps = {
