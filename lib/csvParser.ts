@@ -96,7 +96,14 @@ export function parseCityPlanCSV(text: string): Record<string, Record<string, nu
   return cityPlan;
 }
 
-const GOOGLE_6CITY_HEADERS = ["mumbai", "bengaluru", "chennai", "hyderabad", "gujarat"];
+const GOOGLE_6CITY_HEADERS = [
+  "mumbai", "maharashtra", 
+  "bengaluru", "bangalore", "karnataka", 
+  "chennai", "tamil nadu", 
+  "hyderabad", "telangana", 
+  "gujarat", "ahmedabad", "surat"
+];
+const GOOGLE_DELHI_KEYWORDS = ["delhi", "ncr", "noida", "gurgaon"];
 
 const GOOGLE_FUNNEL_MAP: Record<string, string> = {
   'search': 'Search',
@@ -128,19 +135,20 @@ export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<str
       continue;
     }
 
-    const isCity = GOOGLE_6CITY_HEADERS.some(k => col0.includes(k)) || DELHI_KEYWORDS.some(k => col0.includes(k));
+    const isCity = GOOGLE_6CITY_HEADERS.some(k => col0.includes(k)) || GOOGLE_DELHI_KEYWORDS.some(k => col0.includes(k));
     const isSpecial = col0 === 'unknown' || col0 === 'rest of india';
 
     if (isCity || isSpecial) {
       if (isSpecial) {
         currentCity = col0 === 'unknown' ? 'Unknown' : 'Rest';
       } else {
-        currentCity = col0.includes('delhi')
-          ? 'Delhi+NCR'
-          : col0.includes('gujarat')
-            ? 'Gujarat'
-            : GOOGLE_6CITY_HEADERS.find(k => col0.includes(k))?.split(' ')
-                .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ') || 'Unknown';
+        if (GOOGLE_DELHI_KEYWORDS.some(k => col0.includes(k))) currentCity = 'Delhi+NCR';
+        else if (col0.includes('gujarat') || col0.includes('ahmedabad') || col0.includes('surat')) currentCity = 'Gujarat';
+        else if (col0.includes('mumbai') || col0.includes('maharashtra')) currentCity = 'Mumbai';
+        else if (col0.includes('bengaluru') || col0.includes('bangalore') || col0.includes('karnataka')) currentCity = 'Bengaluru';
+        else if (col0.includes('chennai') || col0.includes('tamil nadu')) currentCity = 'Chennai';
+        else if (col0.includes('hyderabad') || col0.includes('telangana')) currentCity = 'Hyderabad';
+        else currentCity = 'Unknown';
       }
       cityPlan[currentCity] = {};
     }

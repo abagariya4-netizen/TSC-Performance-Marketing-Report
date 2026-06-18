@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import NavBar from '@/components/NavBar';
+import { useState, useEffect } from 'react';
 import PlanUpload from '@/components/PlanUpload';
 import Google6CityTable from '@/components/Google6CityTable';
 import { parseGoogle6CityPlanCSV } from '@/lib/csvParser';
@@ -42,9 +41,6 @@ export default function Google6CitySpends() {
 
   return (
     <div style={{ backgroundColor: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white', fontFamily: 'sans-serif' }}>
-      <Suspense fallback={<div>Loading nav...</div>}>
-        <NavBar />
-      </Suspense>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
