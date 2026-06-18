@@ -12,7 +12,11 @@ function getCity(canonicalName: string, cityName: string): string | null {
   if (c.includes('delhi') || n.includes('delhi') ||
       n.includes('gurugram') || n.includes('gurgaon') ||
       n.includes('noida') || n.includes('ghaziabad') ||
-      n.includes('faridabad')) return 'Delhi+NCR';
+      n.includes('faridabad')) {
+    if (!c.includes('baprola') && !c.includes('mundka')) {
+      return 'Delhi+NCR';
+    }
+  }
 
   // Gujarat cities
   if (n.includes('ahmedabad') || n.includes('ahmadabad') ||
@@ -49,14 +53,13 @@ function getCity(canonicalName: string, cityName: string): string | null {
       n.includes('mahadevapura') || n.includes('rr nagar') ||
       n.includes('rajajinagar') || n.includes('chikkakannalli') ||
       n.includes('subramanyapura') || n.includes('narayanapura') ||
-      n.includes('indirapuram') || c.includes('kommaghatta')) return 'Bengaluru';
+      c.includes('kommaghatta')) return 'Bengaluru';
 
   // 3. CHENNAI
-  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
-      if (!c.includes('thiruvallur') && 
-          !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
-          return 'Chennai';
-      }
+  if (c.includes('chennai') || c.includes('thiruvallur') ||
+      c.includes('guduvancheri') || c.includes('kelambakkam') ||
+      c.includes('kanchipuram')) {
+    return 'Chennai';
   }
 
   // 4. HYDERABAD (Removed Kondapur)
