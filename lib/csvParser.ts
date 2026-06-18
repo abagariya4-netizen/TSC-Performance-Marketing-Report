@@ -126,7 +126,7 @@ export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<str
       continue;
     }
 
-    const isCity = GOOGLE_6CITY_HEADERS.includes(col0) || DELHI_KEYWORDS.some(k => col0.includes(k));
+    const isCity = GOOGLE_6CITY_HEADERS.some(k => col0.includes(k)) || DELHI_KEYWORDS.some(k => col0.includes(k));
     const isSpecial = col0 === 'unknown' || col0 === 'rest of india';
 
     if (isCity || isSpecial) {
@@ -135,8 +135,10 @@ export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<str
       } else {
         currentCity = col0.includes('delhi')
           ? 'Delhi+NCR'
-          : row[0].trim().replace(/\r/g, '').split(' ')
-              .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          : col0.includes('gujarat')
+            ? 'Gujarat'
+            : GOOGLE_6CITY_HEADERS.find(k => col0.includes(k))?.split(' ')
+                .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ') || 'Unknown';
       }
       cityPlan[currentCity] = {};
     }
