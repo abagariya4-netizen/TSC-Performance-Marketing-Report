@@ -29,8 +29,8 @@ export default function Google6CitySpends() {
     setError(null);
     try {
       const res = await fetch('/api/google-6city-spends');
-      if (!res.ok) throw new Error('Failed to fetch data');
       const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to fetch data');
       setData(json);
     } catch (err: any) {
       setError(err.message);
