@@ -8,18 +8,18 @@ export default function NavBar() {
   const tab = searchParams.get('tab');
 
   const navItems = [
-    { label: 'Region Level Spends (Meta)', href: '/' },
-    { label: '6 City (Meta)',              href: '/?tab=6city' },
-    { label: 'LC to LP',                   href: '/lc-to-lp' },
-    { label: 'CPM',                        href: '/cpm' },
-    { label: 'Placements (Meta)',          href: '/placements' },
-    { label: 'City Level Spends (Google)', href: '/google-city-spends' },
-    { label: '6 City (Google)',            href: '/google-6city-spends' },
+    { label: 'Region Level Spends (Meta)', href: '/meta' },
+    { label: '6 City (Meta)',              href: '/meta?tab=6city' },
+    { label: 'LC to LP',                   href: '/meta/lc-to-lp' },
+    { label: 'CPM',                        href: '/meta/cpm' },
+    { label: 'Placements (Meta)',          href: '/meta/placements' },
+    { label: 'City Level Spends (Google)', href: '/google/city-spends' },
+    { label: '6 City (Google)',            href: '/google/6city-spends' },
   ];
 
   const getIsActive = (href: string) => {
-    if (href === '/?tab=6city') return pathname === '/' && tab === '6city';
-    if (href === '/') return pathname === '/' && tab !== '6city';
+    if (href === '/meta?tab=6city') return pathname === '/meta' && tab === '6city';
+    if (href === '/meta') return pathname === '/meta' && tab !== '6city';
     return pathname === href;
   };
 
