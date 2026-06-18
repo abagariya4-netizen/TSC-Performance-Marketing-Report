@@ -1,0 +1,252 @@
+﻿
+=== HYDERABAD MAPPED CITIES ===
+Hyderabad,Telangana,India: Γé╣1312864.79
+Secunderabad,Telangana,India: Γé╣204085.49
+Kondapur,Rangareddy,Telangana,India: Γé╣19100.10
+Nallagandla,Telangana,India: Γé╣3643.62
+Palwal,Palwal,Haryana,India: Γé╣523.92
+Choutuppal,Telangana,India: Γé╣137.68
+Uppal,Punjab,India: Γé╣3.53
+TOTAL: Γé╣1540359.13
+
+=== CHENNAI MAPPED CITIES ===
+Chennai,Chennai,Tamil Nadu,India: Γé╣1780946.62
+Kelambakkam,Tamil Nadu,India: Γé╣1997.94
+Guduvancheri,Tamil Nadu,India: Γé╣1818.23
+TOTAL: Γé╣1784762.80
+
+=== DELHI+NCR MAPPED CITIES ===
+Delhi,Delhi,India: Γé╣478530.47
+New Delhi,Delhi,India: Γé╣375863.27
+Gurugram,Gurugram,Haryana,India: Γé╣288814.51
+Noida,Uttar Pradesh,India: Γé╣241255.12
+Ghaziabad,Uttar Pradesh,India: Γé╣150839.48
+Faridabad,Haryana,India: Γé╣113982.29
+Greater Noida,Uttar Pradesh,India: Γé╣45172.81
+Baprola,Delhi,India: Γé╣685.22
+Mundka,Delhi,India: Γé╣626.46
+TOTAL: Γé╣1695769.64
+
+=== MUMBAI NULL MAHARASHTRA CITIES ===
+Pune,Maharashtra,India: Γé╣613641.55
+Pimpri-Chinchwad,Maharashtra,India: Γé╣214419.32
+Nagpur,Nagpur,Maharashtra,India: Γé╣105306.82
+Nashik,Nashik,Maharashtra,India: Γé╣82473.05
+Kolhapur,Maharashtra,India: Γé╣51630.05
+Chhatrapati Sambhajinagar,Maharashtra,India: Γé╣34602.29
+Sangli,Maharashtra,India: Γé╣12517.09
+Rajavali,Maharashtra,India: Γé╣9376.57
+Adai,Maharashtra,India: Γé╣3886.25
+Nilaje,Maharashtra,India: Γé╣3718.61
+Badlapur,Maharashtra,India: Γé╣3655.91
+Waliv,Maharashtra,India: Γé╣2553.88
+Nala Sopara,Maharashtra,India: Γé╣2548.43
+Titvala,Maharashtra,India: Γé╣2503.29
+Nanded,Nanded,Maharashtra,India: Γé╣2299.20
+Solapur,Maharashtra,India: Γé╣1795.91
+Ahilyanagar,Maharashtra,India: Γé╣1447.55
+Akola,Akola,Maharashtra,India: Γé╣991.19
+Latur,Latur,Maharashtra,India: Γé╣924.52
+Amravati,Maharashtra,India: Γé╣834.79
+Yewalewadi,Maharashtra,India: Γé╣818.57
+Sandor,Maharashtra,India: Γé╣812.18
+Chakan,Maharashtra,India: Γé╣810.43
+Palghar,Palghar,Maharashtra,India: Γé╣777.40
+Jalgaon,Nashik Division,Maharashtra,India: Γé╣753.64
+Nandurbar,Nandurbar,Maharashtra,India: Γé╣721.00
+Chandrapur,Chandrapur,Maharashtra,India: Γé╣671.14
+Miraj,Miraj,Maharashtra,India: Γé╣655.41
+Ranjnoli,Maharashtra,India: Γé╣643.86
+Pali,Maharashtra,India: Γé╣541.34
+Sangli Miraj Kupwad,Maharashtra,India: Γé╣519.80
+Satara,Satara,Maharashtra,India: Γé╣508.57
+Yavatmal,Yavatmal,Maharashtra,India: Γé╣502.80
+Boisar,Maharashtra,India: Γé╣474.95
+Parbhani,Parbhani,Maharashtra,India: Γé╣407.44
+Devlali,Maharashtra,India: Γé╣398.65
+Talegaon Dabhade R,Maharashtra,India: Γé╣357.59
+Dhule,Dhule,Maharashtra,India: Γé╣334.05
+Ambivli,Maharashtra,India: Γé╣333.50
+Lonavala,Maharashtra,India: Γé╣332.73
+Beed,Maharashtra,India: Γé╣323.57
+Wani,Wani,Maharashtra,India: Γé╣304.39
+Baramati,Baramati,Maharashtra,India: Γé╣300.64
+Rajgurunagar,Maharashtra,India: Γé╣287.80
+Sinnar,Maharashtra,India: Γé╣269.23
+Barshi,Barshi,Maharashtra,India: Γé╣254.94
+Kasheli,Maharashtra,India: Γé╣254.87
+Karad,Karad,Maharashtra,India: Γé╣254.22
+Wahal,Maharashtra,India: Γé╣241.76
+Bori,Maharashtra,India: Γé╣239.80
+Wardha,Wardha,Maharashtra,India: Γé╣231.44
+Malkapur,Pune Division,Maharashtra,India: Γé╣228.53
+Khopoli,Maharashtra,India: Γé╣195.61
+Sangamner,Maharashtra,India: Γé╣191.14
+Shahapur,Shahapur,Maharashtra,India: Γé╣184.58
+Malegaon,Maharashtra,India: Γé╣172.70
+Manchar,Maharashtra,India: Γé╣165.70
+Khadewadi,Maharashtra,India: Γé╣162.08
+Dahanu,Maharashtra,India: Γé╣161.86
+Bhusawal,Bhusawal,Maharashtra,India: Γé╣156.28
+Narayangaon,Maharashtra,India: Γé╣155.33
+Bhandara,Bhandara,Maharashtra,India: Γé╣155.15
+Vadgaon,Maharashtra,India: Γé╣155.06
+Ratnagiri,Ratnagiri,Maharashtra,India: Γé╣145.46
+Loni Kalbhor,Maharashtra,India: Γé╣142.92
+Kamptee,Kamptee,Maharashtra,India: Γé╣139.41
+Pandharpur,Pandharpur,Maharashtra,India: Γé╣137.84
+Neral,Maharashtra,India: Γé╣132.66
+Rahuri,Rahuri,Maharashtra,India: Γé╣131.73
+Kudal,Maharashtra,India: Γé╣130.23
+Chalisgaon,Maharashtra,India: Γé╣122.35
+Kardal,Maharashtra,India: Γé╣120.66
+Shirdi,Maharashtra,India: Γé╣113.65
+Pachora,Pachora,Maharashtra,India: Γé╣105.54
+Hinganghat,Hinganghat,Maharashtra,India: Γé╣105.05
+Koregaon Bhima,Maharashtra,India: Γé╣104.95
+Bilalpada,Maharashtra,India: Γé╣104.32
+Shirur,Maharashtra,India: Γé╣103.87
+Karjat,Karjat,Maharashtra,India: Γé╣102.69
+Dehu,Maharashtra,India: Γé╣98.04
+Karanja,Amravati Division,Maharashtra,India: Γé╣96.65
+Tuljapur,Tuljapur,Maharashtra,India: Γé╣93.45
+Panchgani,Maharashtra,India: Γé╣92.36
+Chiplun,Chiplun,Maharashtra,India: Γé╣91.43
+Khamgaon,Maharashtra,India: Γé╣87.92
+Igatpuri,Igatpuri,Maharashtra,India: Γé╣87.38
+Kopargaon,Kopargaon,Maharashtra,India: Γé╣85.43
+Washim,Washim,Maharashtra,India: Γé╣85.12
+Ballarpur,Ballarpur,Maharashtra,India: Γé╣84.63
+Pen,Pen,Maharashtra,India: Γé╣83.66
+Ichalkaranji,Maharashtra,India: Γé╣78.46
+Murtijapur,Maharashtra,India: Γé╣76.42
+Umred,Umred,Maharashtra,India: Γé╣74.56
+Sanaswadi,Maharashtra,India: Γé╣72.78
+Dattwadi,Maharashtra,India: Γé╣69.96
+Ojhar,Maharashtra,India: Γé╣68.52
+Wanadongri,Maharashtra,India: Γé╣67.70
+Lonikand,Maharashtra,India: Γé╣66.58
+Hingoli,Hingoli,Maharashtra,India: Γé╣65.99
+Kamshet,Maharashtra,India: Γé╣64.49
+Taroda Bk.,Maharashtra,India: Γé╣63.06
+Mahalunge,Khed,Maharashtra,India: Γé╣62.41
+Jalna,Jalna,Maharashtra,India: Γé╣62.41
+Wadgaon Kolhati,Maharashtra,India: Γé╣59.39
+Kharabwadi,Maharashtra,India: Γé╣58.61
+Khandala,Khandala,Maharashtra,India: Γé╣52.71
+Akot,Maharashtra,India: Γé╣51.73
+Jaysingpur,Maharashtra,India: Γé╣49.89
+Daund,Daund,Maharashtra,India: Γé╣48.38
+Pale Gaon,Maharashtra,India: Γé╣48.07
+Ghulewadi,Maharashtra,India: Γé╣47.55
+Vangaon,Maharashtra,India: Γé╣45.85
+Moi,Maharashtra,India: Γé╣45.85
+Kaman,Maharashtra,India: Γé╣42.01
+Manor,Maharashtra,India: Γé╣40.86
+Nandgaon,Nandgaon,Maharashtra,India: Γé╣37.93
+Kurduvadi,Maharashtra,India: Γé╣36.95
+Uruli Kanchan,Maharashtra,India: Γé╣35.47
+Rasayani,Maharashtra,India: Γé╣34.68
+Pimpalgaon Baswant,Maharashtra,India: Γé╣33.34
+Nagaon,Konkan Division,Maharashtra,India: Γé╣32.70
+Amalner,Amalner,Maharashtra,India: Γé╣31.90
+Shrirampur,Maharashtra,India: Γé╣31.05
+Shikrapur,Maharashtra,India: Γé╣28.84
+Navghar Manikpur,Maharashtra,India: Γé╣28.50
+Manmad,Maharashtra,India: Γé╣28.09
+Shirwal,Maharashtra,India: Γé╣27.48
+Mohol,Mohol,Maharashtra,India: Γé╣25.09
+Dhaniv,Maharashtra,India: Γé╣24.41
+Rees,Maharashtra,India: Γé╣24.32
+Nagapur,Maharashtra,India: Γé╣23.93
+Shegaon,Shegaon,Maharashtra,India: Γé╣23.83
+Achalpur,Achalpur,Maharashtra,India: Γé╣22.86
+Saphale,Maharashtra,India: Γé╣22.65
+Rahata,Rahata,Maharashtra,India: Γé╣21.50
+Digdoh,Maharashtra,India: Γé╣20.85
+Asangaon,Maharashtra,India: Γé╣18.44
+Umbraj,Maharashtra,India: Γé╣17.70
+Ranjangaon,Maharashtra,India: Γé╣17.14
+Yeola,Yeola,Maharashtra,India: Γé╣16.84
+Wadhe,Maharashtra,India: Γé╣16.57
+Saswad,Maharashtra,India: Γé╣16.32
+Pimpalner,Maharashtra,India: Γé╣16.18
+Urun-Ishwarpur,Maharashtra,India: Γé╣15.69
+Jamtha,Maharashtra,India: Γé╣14.55
+Shirsad,Maharashtra,India: Γé╣13.03
+Girinagar,Maharashtra,India: Γé╣11.69
+Peth Vadgaon,Maharashtra,India: Γé╣11.68
+Bhigwan,Maharashtra,India: Γé╣11.28
+Vadpa,Maharashtra,India: Γé╣10.51
+Gandhinagar,Konkan Division,Maharashtra,India: Γé╣10.23
+Ghoti Budruk,Maharashtra,India: Γé╣9.70
+Chimbli,Maharashtra,India: Γé╣9.21
+Khed,Maharashtra,India: Γé╣9.21
+Talegaon Dabhade,Maharashtra,India: Γé╣8.44
+Varve Bk,Maharashtra,India: Γé╣8.18
+Jejuri,Maharashtra,India: Γé╣8.16
+Urse,Maharashtra,India: Γé╣7.88
+Padgha,Maharashtra,India: Γé╣7.34
+Adhe,Maharashtra,India: Γé╣6.82
+Chichala,Maharashtra,India: Γé╣6.29
+Nere,Maharashtra,India: Γé╣6.16
+Sawali Vihir Bk.,Maharashtra,India: Γé╣6.07
+Dive Anjur,Maharashtra,India: Γé╣5.66
+Rahta Pimplas,Maharashtra,India: Γé╣5.45
+Dholi,Maharashtra,India: Γé╣5.42
+Kurkumbh,Maharashtra,India: Γé╣5.18
+Warasgaon,Maharashtra,India: Γé╣5.04
+Pargaon,Maharashtra,India: Γé╣4.56
+Kondhapuri,Maharashtra,India: Γé╣4.39
+Shirol,Konkan Division,Maharashtra,India: Γé╣4.01
+Chinchoti,Maharashtra,India: Γé╣4.00
+Boripardhi,Maharashtra,India: Γé╣4.00
+Karanja,Nagpur Division,Maharashtra,India: Γé╣3.75
+Deoli,Deoli,Maharashtra,India: Γé╣3.50
+Haloli,Maharashtra,India: Γé╣2.62
+Shivare,Maharashtra,India: Γé╣2.51
+Babhaleshwar,Maharashtra,India: Γé╣2.46
+Kusgaon Budruk,Maharashtra,India: Γé╣2.44
+Ten,Maharashtra,India: Γé╣2.07
+Khambale,Maharashtra,India: Γé╣1.90
+Shendre,Maharashtra,India: Γé╣1.78
+Varade,Maharashtra,India: Γé╣1.50
+Chandoli,Maharashtra,India: Γé╣1.50
+Kagal,Kagal,Maharashtra,India: Γé╣1.32
+Dhangarwadi,Maharashtra,India: Γé╣1.31
+Kasara Khu.,Maharashtra,India: Γé╣1.25
+Parali,Satara,Maharashtra,India: Γé╣1.21
+Gokul Shirgaon,Maharashtra,India: Γé╣1.19
+Tardobachiwadi,Maharashtra,India: Γé╣1.11
+Dongargaon,Maharashtra,India: Γé╣1.10
+Sunarwadi,Maharashtra,India: Γé╣1.08
+Nimgaon Mhalungi,Maharashtra,India: Γé╣1.00
+Madap,Maharashtra,India: Γé╣0.98
+Shiroli,Maharashtra,India: Γé╣0.80
+Kolhar Budruk,Maharashtra,India: Γé╣0.78
+Khandale,Maharashtra,India: Γé╣0.77
+Vathar Tarf Vadgaon,Maharashtra,India: Γé╣0.72
+Amalner,Maharashtra,India: Γé╣0.71
+Kurli,Maharashtra,India: Γé╣0.67
+Gahunje,Maharashtra,India: Γé╣0.65
+Atgaon,Maharashtra,India: Γé╣0.55
+Vitthal Nagar,Maharashtra,India: Γé╣0.52
+Manora,Amravati Division,Maharashtra,India: Γé╣0.47
+Rajpur,Maharashtra,India: Γé╣0.46
+Kolhar Kh,Maharashtra,India: Γé╣0.43
+Ghol,Maharashtra,India: Γé╣0.39
+Mokhavane,Maharashtra,India: Γé╣0.38
+Gandhinagar,Maharashtra,India: Γé╣0.36
+Vasind,Maharashtra,India: Γé╣0.33
+Kumbhivali,Maharashtra,India: Γé╣0.30
+Devli,Maharashtra,India: Γé╣0.29
+Kurud,Maharashtra,India: Γé╣0.17
+Wani,Nagpur Division,Maharashtra,India: Γé╣0.15
+Nanded-Waghala,Maharashtra,India: Γé╣0.13
+Amalner,Aurangabad Division,Maharashtra,India: Γé╣0.12
+Vaveghar,Maharashtra,India: Γé╣0.11
+Narayanpur,Amaravati,Maharashtra,India: Γé╣0.09
+Mangadewadi,Maharashtra,India: Γé╣0.08
+Balanagar,Maharashtra,India: Γé╣0.05
+Kasurdi,Maharashtra,India: Γé╣0.01
+TOTAL: Γé╣1172965.14

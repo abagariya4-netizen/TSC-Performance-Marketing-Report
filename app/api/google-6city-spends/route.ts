@@ -29,52 +29,62 @@ function getCity(canonicalName: string, cityName: string): string | null {
       c.includes('vasai') || c.includes('virar') ||
       c.includes('mira bhayandar') || c.includes('bhiwandi') ||
       c.includes('ambernath') || c.includes('ulhasnagar') ||
-      c.includes('panvel')) return 'Mumbai';
+      c.includes('panvel') || c.includes('nala sopara') ||
+      c.includes('palghar') || c.includes('boisar') ||
+      c.includes('badlapur')) return 'Mumbai';
 
   if (n.includes('bengaluru') || n.includes('bangalore') ||
       n.includes('koramangala') || n.includes('indiranagar') ||
-      n.includes('whitefield') || n.includes('bellandur') ||
-      n.includes('mahadevapura') || n.includes('marathahalli') ||
-      n.includes('jayanagar') || n.includes('jp nagar') ||
-      n.includes('btm') || n.includes('hebbal') ||
-      n.includes('yelahanka') || n.includes('electronic city') ||
-      n.includes('rajajinagar') || n.includes('malleshwaram') ||
-      n.includes('basavanagudi') || n.includes('brookefield') ||
-      n.includes('krishnarajapura') || n.includes('kudlu') ||
-      n.includes('akshayanagar') || n.includes('rayasandra') ||
-      n.includes('balagere') || n.includes('nayanda halli') ||
-      n.includes('chikkakannalli') || n.includes('subramanyapura') ||
-      n.includes('narayanapura') || n.includes('indirapuram')) return 'Bengaluru';
+      n.includes('whitefield') || n.includes('jayanagar') ||
+      n.includes('marathahalli') || n.includes('malleswaram') ||
+      n.includes('electronic city') || n.includes('hsr layout') ||
+      n.includes('bellandur') || n.includes('btm layout') ||
+      n.includes('kr puram') || n.includes('yelahanka') ||
+      n.includes('banashankari') || n.includes('hebbal') ||
+      n.includes('domlur') || n.includes('bommanahalli') ||
+      n.includes('halasuru') || n.includes('basavanagudi') ||
+      n.includes('kengeri') || n.includes('peenya') ||
+      n.includes('sarjapur') || n.includes('cv raman nagar') ||
+      n.includes('vijayanagar') || n.includes('mathikere') ||
+      n.includes('mahadevapura') || n.includes('rr nagar') ||
+      n.includes('rajajinagar') || n.includes('chikkakannalli') ||
+      n.includes('subramanyapura') || n.includes('narayanapura') ||
+      n.includes('indirapuram')) return 'Bengaluru';
 
-  if (n.includes('chennai') || n.includes('tambaram') ||
-      n.includes('velachery') || n.includes('adyar') ||
-      n.includes('anna nagar') || n.includes('t nagar') ||
-      n.includes('mylapore') || n.includes('pallavaram') ||
-      n.includes('sholinganallur') || n.includes('shollinganallur') ||
-      n.includes('perungudi') || n.includes('medavakkam') ||
-      n.includes('madipakkam') || n.includes('tharamani') ||
-      n.includes('manapakkam') || n.includes('meenambakkam') ||
-      n.includes('nungambakkam') || n.includes('kovilambakkam') ||
-      n.includes('thiruverkadu') || n.includes('injambakkam') ||
-      n.includes('korattur') || n.includes('madambakkam') ||
-      n.includes('egmore') || n.includes('aminjikarai') ||
-      n.includes('kanchipuram') || n.includes('thiruvallur') ||
-      n.includes('george town') || n.includes('pammal') ||
-      n.includes('kodungaiyur') || n.includes('kelambakkam') ||
-      n.includes('guduvancheri')) return 'Chennai';
+  if (c === 'chennai,chennai,tamil nadu,india' || c.includes('chennai')) {
+      if (!c.includes('kanchipuram') && !c.includes('thiruvallur') && 
+          !c.includes('guduvancheri') && !c.includes('kelambakkam')) {
+          return 'Chennai';
+      }
+  }
 
-  if (n.includes('hyderabad') || n.includes('secunderabad') ||
-      n.includes('sangareddy') || n.includes('serilingampalli') ||
-      n.includes('malkajgiri') || n.includes('balanagar') ||
-      n.includes('qutubullapur') || n.includes('saroornagar') ||
-      n.includes('nizampet') || n.includes('jubilee hills') ||
-      n.includes('banjara hills') || n.includes('khairtabad') ||
-      n.includes('cherlapalli') || n.includes('bachupally') ||
-      n.includes('manchirevula') || n.includes('bolarum') ||
-      n.includes('jagathgiri') || n.includes('hastinapuram') ||
-      n.includes('alwal') || n.includes('kondapur') ||
-      n.includes('nallagandla') || n.includes('patan cheruvu') ||
-      n.includes('nizamabad')) return 'Hyderabad';
+  if (c.includes('hyderabad') || c.includes('secunderabad') ||
+      c.includes('jubilee hills') || c.includes('banjara hills') ||
+      c.includes('madhapur') || c.includes('gachibowli') ||
+      c.includes('kondapur') || c.includes('hitec city') ||
+      c.includes('kukatpally') || c.includes('miyapur') ||
+      c.includes('lb nagar') || c.includes('dilsukhnagar') ||
+      c.includes('uppal') || c.includes('nacharam') ||
+      c.includes('alwal,') || c.includes('malkajgiri') ||
+      c.includes('balanagar, telangana') || c.includes('qutubullapur') ||
+      c.includes('saroornagar') || c.includes('nizampet') ||
+      c.includes('serilingampalli') || c.includes('cherlapalli') ||
+      c.includes('bachupally') || c.includes('manchirevula') ||
+      c.includes('bolarum') || c.includes('hastinapuram') ||
+      c.includes('jagathgiri') || c.includes('patan cheruvu') ||
+      c.includes('nallagandla')) {
+      if (!c.includes('palwal') && !c.includes('choutuppal') && !c.includes('punjab')) {
+         return 'Hyderabad';
+      }
+  }
+
+  if (c.includes('delhi') || c.includes('gurugram') || c.includes('gurgaon') ||
+      c.includes('noida') || c.includes('ghaziabad') ||
+      c.includes('faridabad')) {
+      if (!c.includes('baprola') && !c.includes('mundka') && !c.includes('greater noida')) {
+         return 'Delhi+NCR';
+      }
+  }
 
   // Not one of the 6 cities
   return null;
