@@ -170,16 +170,20 @@ export async function GET() {
 
         // 6. For Search Non-Brand, split into New/Old for Mumbai/Bengaluru/Chennai/Hyderabad
         const newOldCities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad'];
+        let newOldType: string | null = null;
         if (campType === 'Search' && newOldCities.includes(cityBucket)) {
           const isNew = nameLower.includes('mum') || nameLower.includes('beng') ||
                         nameLower.includes('chen') || nameLower.includes('hyd');
-          campType = isNew ? 'Search Non-Brand (New)' : 'Search Non-Brand (Old)';
+          newOldType = isNew ? 'Search Non-Brand (New)' : 'Search Non-Brand (Old)';
         }
 
         const cost = parseFloat(row.metrics?.costMicros || '0') / 1000000;
 
-        // 7. Add spend
+        // 7. Add spend — also populate New/Old buckets alongside Search
         result.cities[cityBucket][campType][timePeriod] += cost;
+        if (newOldType) {
+          result.cities[cityBucket][newOldType][timePeriod] += cost;
+        }
         result.cities[cityBucket].total[timePeriod] += cost;
         result.grandTotal[timePeriod] += cost;
       }
