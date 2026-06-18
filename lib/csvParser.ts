@@ -92,3 +92,45 @@ export function parseCityPlanCSV(text: string): Record<string, Record<string, nu
   }
   return cityPlan;
 }
+
+const GOOGLE_FUNNEL_MAP: Record<string, string> = {
+  search: 'Search',
+  'branded search': 'Branded Search',
+  'demand gen clicks': 'Demand Gen Clicks',
+  'demand gen video': 'Demand Gen Video',
+  'performance max': 'Performance Max',
+  pmax: 'Performance Max',
+  shopping: 'Shopping',
+  display: 'Display',
+  total: 'Total',
+  'grand total': 'Total'
+};
+
+export function parseGoogle6CityPlanCSV(text: string): Record<string, Record<string, number>> {
+  const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim());
+  const allRows = lines.map(parseCSVLine);
+  const cityPlan: Record<string, Record<string, number>> = {};
+  let currentCity: string | null = null;
+
+  for (const row of allRows) {
+    const col0 = (row[0] || '').trim().replace(/\r/g, '').toLowerCase();
+    const col1 = (row[1] || '').trim().replace(/\r/g, '');
+    if (!col0) continue;
+
+    if (GOOGLE_FUNNEL_MAP[col0] && currentCity) {
+      const val = cleanNum(col1);
+      if (!isNaN(val) && val >= 0) cityPlan[currentCity][GOOGLE_FUNNEL_MAP[col0]] = val;
+      continue;
+    }
+
+    const isCity = CITY_HEADERS.includes(col0) || DELHI_KEYWORDS.some(k => col0.includes(k));
+    if (isCity) {
+      currentCity = col0.includes('delhi')
+        ? 'Delhi+NCR'
+        : row[0].trim().replace(/\r/g, '').split(' ')
+            .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      cityPlan[currentCity] = {};
+    }
+  }
+  return cityPlan;
+}

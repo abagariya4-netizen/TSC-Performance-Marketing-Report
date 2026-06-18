@@ -14,6 +14,7 @@ export default function NavBar() {
     { label: 'CPM',                        href: '/cpm' },
     { label: 'Placements (Meta)',          href: '/placements' },
     { label: 'City Level Spends (Google)', href: '/google-city-spends' },
+    { label: '6 City (Google)',            href: '/google-6city-spends' },
   ];
 
   const getIsActive = (href: string) => {
