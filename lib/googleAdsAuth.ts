@@ -10,7 +10,9 @@ export async function getGoogleAdsAccessToken(): Promise<string> {
     }),
   });
   const json = await res.json();
-  if (!json.access_token) throw new Error('Failed to get Google Ads access token');
+  if (!json.access_token) {
+    throw new Error(`Failed to get Google Ads access token: ${json.error_description || json.error || JSON.stringify(json)}`);
+  }
   return json.access_token;
 }
 
