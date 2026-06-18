@@ -111,8 +111,7 @@ const GOOGLE_FUNNEL_MAP: Record<string, string> = {
   total: 'Total',
   'grand total': 'Total',
   
-  // Fallbacks for older plan formats
-  'search': 'Search Non-Brand New',
+  'search': 'Search Non-Brand',
   'branded search': 'Search Brand',
   'video': 'Demand Gen Video'
 };

@@ -13,7 +13,7 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
   };
 
   const cities = ["Mumbai", "Bengaluru", "Chennai", "Hyderabad", "Gujarat", "Delhi+NCR"];
-  const funnels = ["Search Non-Brand New", "Search Non-Brand Old", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
+  const funnels = ["Search Non-Brand", "Search Brand", "Demand Gen Video", "Demand Gen Clicks", "Performance Max", "Shopping", "Display"];
 
   let gtMtd = 0, gtYday = 0, gtPlan = 0;
 
@@ -64,8 +64,14 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
 
       funnels.forEach(f => {
         const p = cityPlan[f] ?? null;
-        const m = data.data[city]?.[f]?.mtd || 0;
-        const y = data.data[city]?.[f]?.yday || 0;
+        let m = 0, y = 0;
+        if (f === 'Search Non-Brand') {
+          m = (data.data[city]?.['Search Non-Brand New']?.mtd || 0) + (data.data[city]?.['Search Non-Brand Old']?.mtd || 0);
+          y = (data.data[city]?.['Search Non-Brand New']?.yday || 0) + (data.data[city]?.['Search Non-Brand Old']?.yday || 0);
+        } else {
+          m = data.data[city]?.[f]?.mtd || 0;
+          y = data.data[city]?.[f]?.yday || 0;
+        }
         
         cityMtd += m;
         cityYday += y;
@@ -100,6 +106,24 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
         cityRow.estMinusPlan != null ? cityRow.estMinusPlan : '',
         cityRow.overUnder ?? ''
       ].join(','));
+      
+      // Add Sub-Metrics below Total
+      const subMetrics = ["Search Non-Brand New", "Search Non-Brand Old"];
+      subMetrics.forEach(sf => {
+        const sm = data.data[city]?.[sf]?.mtd || 0;
+        const sy = data.data[city]?.[sf]?.yday || 0;
+        const sRowData = calcRow(sm, sy, null, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
+        lines.push([
+          `"${sf}"`,
+          '',
+          sm,
+          sy,
+          sRowData.est,
+          '',
+          '',
+          ''
+        ].join(','));
+      });
     });
     
     // Add Unknown
@@ -182,8 +206,14 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
 
             const subRows = funnels.map(f => {
               const p = cityPlan[f] ?? null;
-              const m = data.data[city]?.[f]?.mtd || 0;
-              const y = data.data[city]?.[f]?.yday || 0;
+              let m = 0, y = 0;
+              if (f === 'Search Non-Brand') {
+                m = (data.data[city]?.['Search Non-Brand New']?.mtd || 0) + (data.data[city]?.['Search Non-Brand Old']?.mtd || 0);
+                y = (data.data[city]?.['Search Non-Brand New']?.yday || 0) + (data.data[city]?.['Search Non-Brand Old']?.yday || 0);
+              } else {
+                m = data.data[city]?.[f]?.mtd || 0;
+                y = data.data[city]?.[f]?.yday || 0;
+              }
               cityMtd += m;
               cityYday += y;
               if (p != null) cityPlanTotal += p;
@@ -207,6 +237,12 @@ export default function Google6CityTable({ data, plan }: { data: any, plan: Reco
                 </tr>
                 {!isCol && subRows}
                 {!isCol && renderRow({ id: `${city}-Total`, name: 'Total', plan: cityTotalPlan, ...cityRowData }, false, true)}
+                {!isCol && ["Search Non-Brand New", "Search Non-Brand Old"].map(sf => {
+                  const sm = data.data[city]?.[sf]?.mtd || 0;
+                  const sy = data.data[city]?.[sf]?.yday || 0;
+                  const sRowData = calcRow(sm, sy, null, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
+                  return renderRow({ id: `${city}-${sf}`, name: sf, plan: null, ...sRowData }, true, false);
+                })}
               </React.Fragment>
             );
           })}
