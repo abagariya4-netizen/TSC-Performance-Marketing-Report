@@ -56,7 +56,7 @@ function PageContent() {
       ) : (
         <>
           <div style={{ background: '#1a3a2a', borderRadius: '8px', padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{color: '#48bb78', fontWeight: 'bold', fontSize: '14px'}}>v2.1</span>
+            <span style={{color: '#48bb78', fontWeight: 'bold', fontSize: '14px'}}>v2.2 ({Object.keys(plan).join(', ')})</span>
             <PlanUpload label="6 City Google Plan" onLoad={handlePlanUpload} loaded={true} count={Object.keys(plan).length} unit="cities" compact />
             
             <button onClick={generateReport} disabled={loading}
