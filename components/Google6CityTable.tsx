@@ -47,7 +47,7 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
     setExpandedCities(prev => ({ ...prev, [city]: !prev[city] }));
   };
 
-  const { daysPassed, daysRemaining, totalDays } = data.dateInfo;
+  const { dayOfMonth: daysPassed, daysRemaining, totalDays } = data.dateInfo;
 
   const renderRow = (
     city: string,

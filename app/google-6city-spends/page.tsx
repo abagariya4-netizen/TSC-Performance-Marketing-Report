@@ -39,6 +39,70 @@ export default function Google6CitySpends() {
     }
   };
 
+  const exportCSV = () => {
+    if (!data || !data.cities) return;
+    const { dayOfMonth: daysPassed, daysRemaining, totalDays } = data.dateInfo;
+    
+    let csv = 'City,Campaign Type,Overall (Plan),MTD,Yesterday,Est. Spends,Difference,Est - Plan,Over/Under\n';
+    
+    const campaignTypes = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    
+    const cities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad', 'Gujarat', 'Delhi+NCR'];
+    
+    let grandPlan = 0;
+
+    cities.forEach(cityName => {
+      const cityData = data.cities[cityName];
+      if (!cityData) return;
+      const cityPlan = planData?.[cityName] || {};
+      const totalPlan = cityPlan['Total'] || 0;
+      if (totalPlan) grandPlan += totalPlan;
+
+      // Add Total Row
+      const estSpendsTotal = cityData.total.mtd + (cityData.total.yesterday * daysRemaining);
+      const estMinusPlanTotal = estSpendsTotal - totalPlan;
+      const overUnderTotal = estSpendsTotal >= totalPlan ? 'Over' : 'Under';
+      let diffPercentTotal = 0;
+      if (totalPlan > 0 && daysPassed > 0) {
+        diffPercentTotal = ((cityData.total.mtd / (totalPlan * (daysPassed / totalDays))) - 1) * 100;
+      }
+
+      csv += `"${cityName}","Total",${totalPlan || ''},${cityData.total.mtd.toFixed(2)},${cityData.total.yesterday.toFixed(2)},${estSpendsTotal.toFixed(2)},${totalPlan ? diffPercentTotal.toFixed(2) + '%' : ''},${totalPlan ? estMinusPlanTotal.toFixed(2) : ''},${totalPlan ? overUnderTotal : ''}\n`;
+
+      // Add Child Rows
+      campaignTypes.forEach(type => {
+        const rowData = cityData[type];
+        if (!rowData) return;
+        const typePlan = cityPlan[type] || 0;
+        const estSpends = rowData.mtd + (rowData.yesterday * daysRemaining);
+        const estMinusPlan = estSpends - typePlan;
+        const overUnder = estSpends >= typePlan ? 'Over' : 'Under';
+        let diffPercent = 0;
+        if (typePlan > 0 && daysPassed > 0) {
+          diffPercent = ((rowData.mtd / (typePlan * (daysPassed / totalDays))) - 1) * 100;
+        }
+        csv += `"${cityName}","${type}",${typePlan || ''},${rowData.mtd.toFixed(2)},${rowData.yesterday.toFixed(2)},${estSpends.toFixed(2)},${typePlan ? diffPercent.toFixed(2) + '%' : ''},${typePlan ? estMinusPlan.toFixed(2) : ''},${typePlan ? overUnder : ''}\n`;
+      });
+    });
+
+    // Grand Total Row
+    const grandEstSpends = data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining);
+    const grandEstMinusPlan = grandEstSpends - grandPlan;
+    let grandDiffPercent = 0;
+    if (grandPlan > 0 && daysPassed > 0) {
+      grandDiffPercent = ((data.grandTotal.mtd / (grandPlan * (daysPassed / totalDays))) - 1) * 100;
+    }
+    csv += `"Grand Total","",${grandPlan || ''},${data.grandTotal.mtd.toFixed(2)},${data.grandTotal.yesterday.toFixed(2)},${grandEstSpends.toFixed(2)},${grandPlan ? grandDiffPercent.toFixed(2) + '%' : ''},${grandPlan ? grandEstMinusPlan.toFixed(2) : ''},\n`;
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Google_6City_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ backgroundColor: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white', fontFamily: 'sans-serif' }}>
       
@@ -92,7 +156,7 @@ export default function Google6CitySpends() {
               cursor: 'pointer',
               fontWeight: 'bold'
             }}
-            onClick={() => alert("CSV Export not fully implemented yet")}
+            onClick={exportCSV}
           >
             Export CSV
           </button>
