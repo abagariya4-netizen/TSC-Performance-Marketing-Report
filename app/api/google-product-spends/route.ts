@@ -5,24 +5,6 @@ import { getCategoryForProduct } from '@/lib/productCategoryMap';
 
 export const dynamic = 'force-dynamic';
 
-const DATE_RANGES = [
-  { key: 'mar', start: '2026-03-01', end: '2026-03-31' },
-  { key: 'apr', start: '2026-04-01', end: '2026-04-30' },
-  { key: 'may', start: '2026-05-01', end: '2026-05-31' },
-  { key: 'jun1_15', start: '2026-06-01', end: '2026-06-15' },
-  { key: 'jun16', start: '2026-06-16', end: '2026-06-16' },
-  { key: 'jun17', start: '2026-06-17', end: '2026-06-17' },
-  { key: 'jun18', start: '2026-06-18', end: '2026-06-18' },
-];
-
-// MTD for Est. Spends formula: 1 June to 18 June (yesterday relative to today=19 June)
-const MTD_START = '2026-06-01';
-const MTD_END = '2026-06-18';
-const YESTERDAY = '2026-06-18';
-const TOTAL_DAYS_IN_JUNE = 30;
-const DAYS_PASSED = 18; // 1 June through 18 June inclusive
-const DAYS_REMAINING = TOTAL_DAYS_IN_JUNE - DAYS_PASSED; // 12
-
 const EXCLUSIONS = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
 function isExcluded(campaignName: string) {
@@ -30,9 +12,60 @@ function isExcluded(campaignName: string) {
   return EXCLUSIONS.some(ex => lower.includes(ex));
 }
 
+function formatDate(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
+
+function addDays(d: Date, days: number): Date {
+  const result = new Date(d);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function getDaysInMonth(year: number, month: number): number {
+  // month is 0-indexed (0=Jan)
+  return new Date(year, month + 1, 0).getDate();
+}
+
 export async function GET() {
   try {
-    // Run all period queries + the dedicated MTD query for Est. Spends
+    // Dynamic date calculation based on actual current date
+    const now = new Date();
+    const yesterday = addDays(now, -1); // "yesterday relative to today"
+
+    const yesterdayStr = formatDate(yesterday);
+    const day1Before = formatDate(addDays(yesterday, -1)); // 2 days ago
+    const day2Before = formatDate(addDays(yesterday, -2)); // 3 days ago
+
+    const currentMonthStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), 1);
+    const currentMonthStartStr = formatDate(currentMonthStart);
+
+    const totalDaysInMonth = getDaysInMonth(yesterday.getFullYear(), yesterday.getMonth());
+    const daysPassed = yesterday.getDate(); // e.g. 18 if yesterday = 18th
+    const daysRemaining = totalDaysInMonth - daysPassed;
+
+    // First 15 days of current month (or up to yesterday if month just started)
+    const first15End = new Date(yesterday.getFullYear(), yesterday.getMonth(), Math.min(15, daysPassed));
+    const first15EndStr = formatDate(first15End);
+
+    // Previous 3 full months (rolling, relative to current month)
+    const month1 = new Date(yesterday.getFullYear(), yesterday.getMonth() - 3, 1);
+    const month1End = new Date(yesterday.getFullYear(), yesterday.getMonth() - 2, 0);
+    const month2 = new Date(yesterday.getFullYear(), yesterday.getMonth() - 2, 1);
+    const month2End = new Date(yesterday.getFullYear(), yesterday.getMonth() - 1, 0);
+    const month3 = new Date(yesterday.getFullYear(), yesterday.getMonth() - 1, 1);
+    const month3End = new Date(yesterday.getFullYear(), yesterday.getMonth(), 0);
+
+    const DATE_RANGES = [
+      { key: 'month1', start: formatDate(month1), end: formatDate(month1End) },
+      { key: 'month2', start: formatDate(month2), end: formatDate(month2End) },
+      { key: 'month3', start: formatDate(month3), end: formatDate(month3End) },
+      { key: 'curMonthFirst15', start: currentMonthStartStr, end: first15EndStr },
+      { key: 'day3', start: day2Before, end: day2Before },
+      { key: 'day2', start: day1Before, end: day1Before },
+      { key: 'day1', start: yesterdayStr, end: yesterdayStr }, // most recent = "yesterday"
+    ];
+
     const periodPromises = DATE_RANGES.map(async (range) => {
       const gaql = `
         SELECT segments.product_title, campaign.name, 
@@ -50,7 +83,7 @@ export async function GET() {
         SELECT segments.product_title, campaign.name, 
         campaign.advertising_channel_type, metrics.cost_micros
         FROM shopping_performance_view
-        WHERE segments.date BETWEEN '${MTD_START}' AND '${MTD_END}'
+        WHERE segments.date BETWEEN '${currentMonthStartStr}' AND '${yesterdayStr}'
         AND campaign.advertising_channel_type IN ('SHOPPING', 'PERFORMANCE_MAX')
       `;
       const data = await queryAllGoogleAdsAccounts(gaql);
@@ -90,62 +123,77 @@ export async function GET() {
     for (const [category, products] of Object.entries(productSpends)) {
       const productArr = [];
       for (const [productName, spends] of Object.entries(products)) {
-        const mar = spends['mar'] || 0;
-        const apr = spends['apr'] || 0;
-        const may = spends['may'] || 0;
-        const jun1_15 = spends['jun1_15'] || 0;
-        const jun16 = spends['jun16'] || 0;
-        const jun17 = spends['jun17'] || 0;
-        const jun18 = spends['jun18'] || 0;
-        const mtd = spends['mtd'] || 0; // 1 June - 18 June
+        const month1Spend = spends['month1'] || 0;
+        const month2Spend = spends['month2'] || 0;
+        const month3Spend = spends['month3'] || 0;
+        const curMonthFirst15 = spends['curMonthFirst15'] || 0;
+        const day3 = spends['day3'] || 0;
+        const day2 = spends['day2'] || 0;
+        const day1 = spends['day1'] || 0; // most recent day = "yesterday"
+        const mtd = spends['mtd'] || 0;
 
-        const catMar = categoryTotals[category]['mar'] || 1;
-        const catApr = categoryTotals[category]['apr'] || 1;
-        const catMay = categoryTotals[category]['may'] || 1;
-        const catJun1_15 = categoryTotals[category]['jun1_15'] || 1;
-        const catJun16 = categoryTotals[category]['jun16'] || 1;
-        const catJun17 = categoryTotals[category]['jun17'] || 1;
-        const catJun18 = categoryTotals[category]['jun18'] || 1;
+        const catMonth1 = categoryTotals[category]['month1'] || 1;
+        const catMonth2 = categoryTotals[category]['month2'] || 1;
+        const catMonth3 = categoryTotals[category]['month3'] || 1;
+        const catCurFirst15 = categoryTotals[category]['curMonthFirst15'] || 1;
+        const catDay3 = categoryTotals[category]['day3'] || 1;
+        const catDay2 = categoryTotals[category]['day2'] || 1;
+        const catDay1 = categoryTotals[category]['day1'] || 1;
 
-        // Est. Spends = MTD (1-18 June) + (18 June spend * Days Remaining in month)
-        const estSpends = mtd + (jun18 * DAYS_REMAINING);
+        // Est. Spends = MTD (1st of month to yesterday) + (yesterday's spend * Days Remaining)
+        const estSpends = mtd + (day1 * daysRemaining);
 
-        // Comparisons for Est. Spends
-        const avg3Months = (mar + apr + may) / 3;
+        const avg3Months = (month1Spend + month2Spend + month3Spend) / 3;
         const vsAvg3Months = avg3Months > 0 ? ((estSpends - avg3Months) / avg3Months) * 100 : null;
-        const vsMay = may > 0 ? ((estSpends - may) / may) * 100 : null;
+        const vsLastMonth = month3Spend > 0 ? ((estSpends - month3Spend) / month3Spend) * 100 : null;
 
         productArr.push({
           name: productName,
-          mar, apr, may, jun1_15, jun16, jun17, jun18,
-          salienceMar: (mar / catMar) * 100,
-          salienceApr: (apr / catApr) * 100,
-          salienceMay: (may / catMay) * 100,
-          salienceJun1_15: (jun1_15 / catJun1_15) * 100,
-          salienceJun16: (jun16 / catJun16) * 100,
-          salienceJun17: (jun17 / catJun17) * 100,
-          salienceJun18: (jun18 / catJun18) * 100,
+          month1: month1Spend, month2: month2Spend, month3: month3Spend,
+          curMonthFirst15,
+          day3, day2, day1,
+          salienceMonth1: (month1Spend / catMonth1) * 100,
+          salienceMonth2: (month2Spend / catMonth2) * 100,
+          salienceMonth3: (month3Spend / catMonth3) * 100,
+          salienceCurFirst15: (curMonthFirst15 / catCurFirst15) * 100,
+          salienceDay3: (day3 / catDay3) * 100,
+          salienceDay2: (day2 / catDay2) * 100,
+          salienceDay1: (day1 / catDay1) * 100,
           mtd,
           estSpends,
           vsAvg3Months,
-          vsMay,
+          vsLastMonth,
         });
       }
 
-      // Sort by most recent day (18 June) descending
-      productArr.sort((a, b) => b.jun18 - a.jun18);
+      // Sort by most recent day descending
+      productArr.sort((a, b) => b.day1 - a.day1);
       outputCategories[category] = { products: productArr };
     }
 
     const dateRangesMap: Record<string, any> = {};
     DATE_RANGES.forEach(r => { dateRangesMap[r.key] = { start: r.start, end: r.end }; });
-    dateRangesMap['mtd'] = { start: MTD_START, end: MTD_END };
+    dateRangesMap['mtd'] = { start: currentMonthStartStr, end: yesterdayStr };
+
+    // Human-readable labels for the frontend
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const labels = {
+      month1: monthNames[month1.getMonth()],
+      month2: monthNames[month2.getMonth()],
+      month3: monthNames[month3.getMonth()],
+      curMonthFirst15: `${monthNames[currentMonthStart.getMonth()]}(1-${Math.min(15, daysPassed)})`,
+      day3: `${day2Before.split('-')[2]} ${monthNames[new Date(day2Before).getMonth()]}`,
+      day2: `${day1Before.split('-')[2]} ${monthNames[new Date(day1Before).getMonth()]}`,
+      day1: `${yesterdayStr.split('-')[2]} ${monthNames[yesterday.getMonth()]}`,
+      lastMonth: monthNames[month3.getMonth()],
+    };
 
     return NextResponse.json({
       categories: outputCategories,
       dateRanges: dateRangesMap,
-      daysRemaining: DAYS_REMAINING,
-      daysPassed: DAYS_PASSED,
+      daysRemaining,
+      daysPassed,
+      labels,
     });
   } catch (error: any) {
     console.error('API Error:', error);

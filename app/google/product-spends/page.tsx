@@ -4,24 +4,35 @@ import { formatINR } from '@/lib/calculations';
 
 interface ProductRow {
   name: string;
-  mar: number;
-  apr: number;
-  may: number;
-  jun1_15: number;
-  jun16: number;
-  jun17: number;
-  jun18: number;
-  salienceMar: number;
-  salienceApr: number;
-  salienceMay: number;
-  salienceJun1_15: number;
-  salienceJun16: number;
-  salienceJun17: number;
-  salienceJun18: number;
+  month1: number;
+  month2: number;
+  month3: number;
+  curMonthFirst15: number;
+  day3: number;
+  day2: number;
+  day1: number;
+  salienceMonth1: number;
+  salienceMonth2: number;
+  salienceMonth3: number;
+  salienceCurFirst15: number;
+  salienceDay3: number;
+  salienceDay2: number;
+  salienceDay1: number;
   mtd: number;
   estSpends: number;
   vsAvg3Months: number | null;
-  vsMay: number | null;
+  vsLastMonth: number | null;
+}
+
+interface ReportLabels {
+  month1: string;
+  month2: string;
+  month3: string;
+  curMonthFirst15: string;
+  day3: string;
+  day2: string;
+  day1: string;
+  lastMonth: string;
 }
 
 interface ReportData {
@@ -29,6 +40,7 @@ interface ReportData {
   dateRanges: Record<string, { start: string, end: string }>;
   daysRemaining: number;
   daysPassed: number;
+  labels: ReportLabels;
 }
 
 const CATEGORIES = ['Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager', 'Bed', 'Elite', 'Sofa'];
@@ -36,18 +48,19 @@ const CATEGORIES = ['Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager',
 function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, selectedCategory: string }) {
   const categoryData = data.categories[selectedCategory] || { products: [] };
   const rows = categoryData.products;
+  const labels = data.labels;
 
   const exportCSV = () => {
     const headers = [
-      'Product', 
-      'Mar Amount', 'Mar Salience %', 
-      'Apr Amount', 'Apr Salience %', 
-      'May Amount', 'May Salience %', 
-      'Jun(1-15) Amount', 'Jun(1-15) Salience %', 
-      '16 Jun Amount', '16 Jun Salience %',
-      '17 Jun Amount', '17 Jun Salience %',
-      '18 Jun Amount', '18 Jun Salience %',
-      'MTD (1-18 Jun)', 'Est. Spends', 'vs Avg 3 Months %', 'vs May %'
+      'Product',
+      `${labels.month1} Amount`, `${labels.month1} Salience %`,
+      `${labels.month2} Amount`, `${labels.month2} Salience %`,
+      `${labels.month3} Amount`, `${labels.month3} Salience %`,
+      `${labels.curMonthFirst15} Amount`, `${labels.curMonthFirst15} Salience %`,
+      `${labels.day3} Amount`, `${labels.day3} Salience %`,
+      `${labels.day2} Amount`, `${labels.day2} Salience %`,
+      `${labels.day1} Amount`, `${labels.day1} Salience %`,
+      'MTD', 'Est. Spends', 'vs Avg 3 Months %', `vs ${labels.lastMonth} %`
     ];
 
     const lines: string[] = [];
@@ -56,16 +69,16 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
     rows.forEach(r => {
       lines.push([
         `"${r.name}"`,
-        r.mar, r.salienceMar,
-        r.apr, r.salienceApr,
-        r.may, r.salienceMay,
-        r.jun1_15, r.salienceJun1_15,
-        r.jun16, r.salienceJun16,
-        r.jun17, r.salienceJun17,
-        r.jun18, r.salienceJun18,
+        r.month1, r.salienceMonth1,
+        r.month2, r.salienceMonth2,
+        r.month3, r.salienceMonth3,
+        r.curMonthFirst15, r.salienceCurFirst15,
+        r.day3, r.salienceDay3,
+        r.day2, r.salienceDay2,
+        r.day1, r.salienceDay1,
         r.mtd, r.estSpends,
         r.vsAvg3Months !== null ? r.vsAvg3Months : '',
-        r.vsMay !== null ? r.vsMay : ''
+        r.vsLastMonth !== null ? r.vsLastMonth : ''
       ].join(','));
     });
 
@@ -98,16 +111,16 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         <thead>
           <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
             <th style={{ padding: '10px 12px', textAlign: 'left' }}>Product ({selectedCategory})</th>
-            <th style={{ padding: '10px 12px' }}>Mar<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>Apr<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>May<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>Jun(1-15)<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>16 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>17 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>18 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(MTD + 18Jun×Remaining)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.month1}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.month2}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.month3}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.curMonthFirst15}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.day3}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.day2}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>{labels.day1}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(MTD + {labels.day1}×Remaining)</span></th>
             <th style={{ padding: '10px 12px' }}>vs Avg 3 Months</th>
-            <th style={{ padding: '10px 12px' }}>vs May</th>
+            <th style={{ padding: '10px 12px' }}>vs {labels.lastMonth}</th>
           </tr>
         </thead>
         <tbody>
@@ -120,32 +133,32 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
             <tr key={r.name} style={{ background: i % 2 === 0 ? '#1a1d27' : '#1f2333' }}>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left' }}>{r.name}</td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.mar)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMar || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.month1)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth1 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.apr)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceApr || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.month2)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth2 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.may)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMay || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.month3)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth3 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.jun1_15)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun1_15 || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.curMonthFirst15)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceCurFirst15 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.jun16)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun16 || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.day3)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay3 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.jun17)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun17 || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.day2)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay2 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.jun18)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun18 || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.day1)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay1 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', fontWeight: 'bold' }}>
                 {formatINR(r.estSpends)}
@@ -154,7 +167,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
                 {renderPct(r.vsAvg3Months)}
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                {renderPct(r.vsMay)}
+                {renderPct(r.vsLastMonth)}
               </td>
             </tr>
           ))}
@@ -188,45 +201,39 @@ function PageContent() {
   };
 
   return (
-    <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
-      
-      <div style={{ background: '#1a3a2a', borderRadius: '8px', padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontWeight: 600 }}>Category:</label>
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: '6px', background: '#1a1d27', color: 'white', border: '1px solid #4a5568' }}
-          >
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
+    <div style={{ background: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Product Spends (Google)</h1>
 
-        <button onClick={generateReport} disabled={loading}
-          style={{ marginLeft: 'auto', padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-            background: '#e8733a', color: 'white', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-          {loading ? '⏳ Fetching...' : '🔄 Generate Report'}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          style={{ background: '#1a1d27', color: 'white', border: '1px solid #4a5568', borderRadius: '6px', padding: '8px 12px' }}
+        >
+          {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+        </select>
+
+        <button
+          onClick={generateReport}
+          disabled={loading}
+          style={{ background: '#e8733a', color: 'white', border: 'none', borderRadius: '6px', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          {loading ? 'Loading...' : '🔄 Generate Report'}
         </button>
+
+        {lastUpdated && <span style={{ color: '#a0aec0', fontSize: '14px' }}>Last updated: {lastUpdated}</span>}
       </div>
 
-      {error && <div style={{ background: '#3a1a1a', color: '#fc8181', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
+      {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>Error: {error}</div>}
 
-      {data && (
-        <ProductSpendsTable data={data} selectedCategory={selectedCategory} />
-      )}
-
-      {lastUpdated && (
-        <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
-          Last updated: {lastUpdated}
-        </div>
-      )}
-    </main>
+      {data && <ProductSpendsTable data={data} selectedCategory={selectedCategory} />}
+    </div>
   );
 }
 
-export default function GoogleProductSpendsPage() {
+export default function ProductSpendsPage() {
   return (
-    <Suspense fallback={<div style={{ color: 'white', padding: '24px' }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ background: '#0f1117', minHeight: '100vh', color: 'white', padding: '24px' }}>Loading...</div>}>
       <PageContent />
     </Suspense>
   );
