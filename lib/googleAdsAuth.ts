@@ -1,11 +1,26 @@
+import { cookies } from 'next/headers';
+
 export async function getGoogleAdsAccessToken(): Promise<string> {
+  let refreshToken = process.env.GOOGLE_REFRESH_TOKEN!;
+
+  try {
+    const cookieStore = cookies();
+    const overrideToken = cookieStore.get('google_refresh_token')?.value;
+    if (overrideToken) {
+      refreshToken = overrideToken;
+    }
+  } catch (e) {
+    // cookies() throws an error if called outside of a Request context
+    // Safe to ignore, fallback to env var
+  }
+
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       client_id:     process.env.GOOGLE_CLIENT_ID!,
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN!,
+      refresh_token: refreshToken,
       grant_type:    'refresh_token',
     }),
   });
