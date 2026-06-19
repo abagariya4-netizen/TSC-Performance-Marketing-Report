@@ -17,11 +17,6 @@ interface CityData {
 }
 
 function GoogleCityTable({ data, plan }: { data: CityData, plan: Record<string, number> }) {
-  const allCities = Array.from(new Set([
-    ...data.rows.map(r => r.city),
-    ...Object.keys(plan)
-  ]));
-
   let gtMtd = 0, gtYday = 0, gtPlan = 0;
 
   const getRowData = (cityName: string) => {
@@ -33,21 +28,9 @@ function GoogleCityTable({ data, plan }: { data: CityData, plan: Record<string, 
     return { city: cityName, plan: p, ...row };
   };
 
-  const priority = ["Bengaluru", "Hyderabad", "Mumbai", "Rest", "Chennai", "Delhi", "Pune", "Noida", "Ahmedabad", "Kolkata", "Lucknow", "Gurgaon", "Unknown"];
-  const rows: any[] = [];
-
-  priority.forEach(city => {
-    if (allCities.includes(city)) {
-      rows.push(getRowData(city));
-      allCities.splice(allCities.indexOf(city), 1);
-    }
-  });
-
-  allCities.sort().forEach(city => {
-    rows.push(getRowData(city));
-  });
-
-  rows.sort((a, b) => b.mtd - a.mtd);
+  // The backend already returns data.rows sorted exactly according to TSC_CITIES.
+  // We use this exact order instead of resorting.
+  const rows = data.rows.map(r => getRowData(r.city));
 
   rows.forEach(r => {
     gtMtd += r.mtd;
