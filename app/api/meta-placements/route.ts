@@ -72,20 +72,32 @@ export async function GET(req: NextRequest) {
        return NextResponse.json({ placements: {}, periods: [] });
     }
 
-    // STEP 2: Fetch breakdown data in chunks of 50 adset IDs
-    const CHUNK_SIZE = 50;
+    // STEP 2: Fetch breakdown data in chunks of 100 adset IDs, parallelized
+    const CHUNK_SIZE = 100;
     let allBreakdowns: any[] = [];
     
+    const chunks = [];
     for (let i = 0; i < adsetIdArray.length; i += CHUNK_SIZE) {
-      const chunk = adsetIdArray.slice(i, i + CHUNK_SIZE);
-      const filteringStr = encodeURIComponent(JSON.stringify([
-        { field: 'adset.id', operator: 'IN', value: chunk }
-      ]));
+      chunks.push(adsetIdArray.slice(i, i + CHUNK_SIZE));
+    }
+
+    const CONCURRENCY = 5;
+    for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+      const batch = chunks.slice(i, i + CONCURRENCY);
+      const batchPromises = batch.map(async (chunk) => {
+        const filteringStr = encodeURIComponent(JSON.stringify([
+          { field: 'adset.id', operator: 'IN', value: chunk }
+        ]));
+        
+        const breakdownUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=spend,impressions,clicks,ctr,cpc,cpm,actions,action_values&level=adset&breakdowns=publisher_platform,platform_position&time_range=${timeRangeStr}&filtering=${filteringStr}&limit=500&time_increment=monthly&access_token=${token}`;
+        
+        return await fetchAllPages(breakdownUrl);
+      });
       
-      const breakdownUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=spend,impressions,clicks,ctr,cpc,cpm,actions,action_values&level=adset&breakdowns=publisher_platform,platform_position&time_range=${timeRangeStr}&filtering=${filteringStr}&limit=500&time_increment=monthly&access_token=${token}`;
-      
-      const chunkData = await fetchAllPages(breakdownUrl);
-      allBreakdowns = allBreakdowns.concat(chunkData);
+      const batchResults = await Promise.all(batchPromises);
+      for (const res of batchResults) {
+        allBreakdowns = allBreakdowns.concat(res);
+      }
     }
 
     // Grouping
