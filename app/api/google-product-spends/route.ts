@@ -12,18 +12,6 @@ function isExcluded(campaignName: string) {
   return EXCLUSIONS.some(ex => lower.includes(ex));
 }
 
-function getCategoryFromCampaign(campaignName: string): string {
-  const lower = (campaignName || '').toLowerCase();
-  if (lower.includes('chair')) return 'Chair';
-  if (lower.includes('desk')) return 'Desk';
-  if (lower.includes('elite')) return 'Elite';
-  if (lower.includes('sofa')) return 'Sofa';
-  if (lower.includes('foot') || lower.includes('massager')) return 'Foot Massager';
-  if (lower.includes('accessories') || lower.includes('pillow') || lower.includes('cushion') || lower.includes('protector') || lower.includes('bedsheet') || lower.includes('comforter')) return 'Accessories';
-  if (lower.includes('bed')) return 'Bed';
-  return 'Mattress';
-}
-
 function formatDate(d: Date): string {
   return d.toISOString().split('T')[0];
 }
@@ -116,16 +104,7 @@ export async function GET() {
         const cost = Number(row.metrics?.costMicros || 0) / 1000000;
 
         const cleanName = getCleanProductName(rawTitle);
-        let category = getCategoryFromCampaign(campaignName);
-        
-        // If the campaign name didn't have a category keyword and defaulted to 'Mattress',
-        // check the product's actual category to prevent non-mattress products from leaking into Mattress.
-        if (category === 'Mattress') {
-          const productCategory = getCategoryForProduct(cleanName);
-          if (productCategory !== 'Mattress') {
-            category = productCategory;
-          }
-        }
+        const category = getCategoryForProduct(cleanName);
 
         if (!categoryTotals[category]) categoryTotals[category] = {};
         if (!categoryTotals[category][key]) categoryTotals[category][key] = 0;
