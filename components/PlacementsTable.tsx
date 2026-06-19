@@ -7,13 +7,16 @@ interface PlacementsTableProps {
   periods: string[];
   category: string;
   hasCategoryAction: boolean;
+  csvRoasData?: Record<string, Record<string, number>> | null;
 }
 
-export default function PlacementsTable({ data, periods, category, hasCategoryAction }: PlacementsTableProps) {
+export default function PlacementsTable({ data, periods, category, hasCategoryAction, csvRoasData }: PlacementsTableProps) {
   const formatMonthHeader = (ymd: string) => {
     const d = new Date(ymd);
     return d.toLocaleString('en-IN', { month: 'short' });
   };
+
+  const showCategoryRoas = (hasCategoryAction && category !== 'All') || !!csvRoasData;
 
   const formatINR = (val: number) => `₹${Math.round(val).toLocaleString('en-IN')}`;
   const formatPct = (val: number | null) => val != null ? `${val.toFixed(2)}%` : '—';
@@ -73,8 +76,8 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
     
     addGroup('Amount Spent Salience (%)');
 
-    if (hasCategoryAction && category !== 'All') {
-      addGroup(`${category} ROAS`);
+    if (showCategoryRoas) {
+      addGroup(`${category === 'All' ? 'Category' : category} ROAS`);
     }
 
     addGroup('Overall Purchase ROAS');
@@ -119,11 +122,16 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
       });
 
       // Category ROAS
-      if (hasCategoryAction && category !== 'All') {
+      if (showCategoryRoas) {
         periods.forEach(p => {
-          const spend = rowMap[p]?.spend || 0;
-          const conv = rowMap[p]?.category_purchase || 0;
-          line.push(spend > 0 ? (conv / spend).toFixed(2) : '');
+          if (csvRoasData) {
+            const csvVal = csvRoasData[name]?.[p];
+            line.push(csvVal != null ? csvVal.toString() : '');
+          } else {
+            const spend = rowMap[p]?.spend || 0;
+            const conv = rowMap[p]?.category_purchase || 0;
+            line.push(spend > 0 ? (conv / spend).toFixed(2) : '');
+          }
         });
       }
 
@@ -229,9 +237,9 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
               <th colSpan={periods.length} style={thStyle}>Amount Spent</th>
               <th colSpan={periods.length} style={thStyle}>Amount Spent Salience (%)</th>
               
-              {hasCategoryAction && category !== 'All' && (
+              {showCategoryRoas && (
                 <>
-                  <th colSpan={periods.length} style={thStyle}>{category} ROAS</th>
+                  <th colSpan={periods.length} style={thStyle}>{category === 'All' ? 'Category' : category} ROAS</th>
                 </>
               )}
 
@@ -252,7 +260,7 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
               {periods.map(p => <th key={`sp-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)}
               
               {/* Other columns */}
-              {[...Array((hasCategoryAction && category !== 'All' ? 12 : 11))].map((_, i) => (
+              {[...Array((showCategoryRoas ? 12 : 11))].map((_, i) => (
                 periods.map(p => <th key={`sub-${i}-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)
               ))}
               
@@ -289,14 +297,18 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
                     return <td key={p} style={tdStyle}>{total > 0 ? formatPct((val / total) * 100) : '—'}</td>;
                   })}
 
-                  {/* Category */}
-                  {hasCategoryAction && category !== 'All' && (
+                  {/* Category ROAS */}
+                  {showCategoryRoas && (
                     <>
-                      {/* ROAS */}
                       {periods.map(p => {
-                        const spend = rowMap[p]?.spend || 0;
-                        const conv = rowMap[p]?.category_purchase || 0;
-                        return <td key={p} style={tdStyle}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
+                        if (csvRoasData) {
+                          const csvVal = csvRoasData[placement]?.[p];
+                          return <td key={p} style={tdStyle}>{csvVal != null ? csvVal : '—'}</td>;
+                        } else {
+                          const spend = rowMap[p]?.spend || 0;
+                          const conv = rowMap[p]?.category_purchase || 0;
+                          return <td key={p} style={tdStyle}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
+                        }
                       })}
                     </>
                   )}
