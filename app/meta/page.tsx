@@ -4,6 +4,7 @@ import RegionTable from '@/components/RegionTable';
 import CityTable from '@/components/CityTable';
 import PlanUpload from '@/components/PlanUpload';
 import { parseRegionPlanCSV, parseCityPlanCSV } from '@/lib/csvParser';
+import DaysCountBadge from '@/components/DaysCountBadge';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -82,11 +83,10 @@ function HomeContent() {
   return (
     <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ marginBottom: '24px' }}>
-        {dateInfo && (
-          <div style={{ background: '#1a1d27', display: 'inline-block', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', color: '#90cdf4' }}>
-            {dateInfo.displayMonth} | Day {dateInfo.daysPassed} of {dateInfo.totalDays} | {dateInfo.daysRemaining} days remaining
-          </div>
-        )}
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>
+          {activeTab === 'region' ? 'Region Level Spends (Meta)' : '6 City (Meta)'}
+        </h1>
+        <DaysCountBadge />
       </div>
 
       {!anyPlanLoaded ? (

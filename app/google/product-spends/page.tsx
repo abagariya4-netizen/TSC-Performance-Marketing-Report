@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, Suspense } from 'react';
 import { formatINR } from '@/lib/calculations';
+import DaysCountBadge from '@/components/DaysCountBadge';
 
 interface ProductRow {
   name: string;
@@ -202,8 +203,10 @@ function PageContent() {
 
   return (
     <div style={{ background: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white' }}>
-      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Product Spends (Google)</h1>
-
+      <div>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>Product Spends (Google)</h1>
+        <DaysCountBadge />
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <select
           value={selectedCategory}

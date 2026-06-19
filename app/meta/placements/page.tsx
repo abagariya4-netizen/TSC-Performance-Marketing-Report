@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import FilterBar from '@/components/FilterBar';
 import PlacementsTable from '@/components/PlacementsTable';
+import DaysCountBadge from '@/components/DaysCountBadge';
 
 export default function PlacementsPage() {
   const [category, setCategory] = useState('All');
@@ -81,6 +82,10 @@ export default function PlacementsPage() {
 
   return (
     <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>Placements (Meta)</h1>
+        <DaysCountBadge />
+      </div>
       <FilterBar 
         category={category} setCategory={setCategory}
         funnel={funnel} setFunnel={setFunnel}

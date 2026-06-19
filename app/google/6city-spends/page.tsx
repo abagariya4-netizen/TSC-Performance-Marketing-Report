@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import PlanUpload from '@/components/PlanUpload';
 import Google6CityTable from '@/components/Google6CityTable';
 import { parseGoogle6CityPlanCSV } from '@/lib/csvParser';
+import DaysCountBadge from '@/components/DaysCountBadge';
 
 export default function Google6CitySpends() {
   const [data, setData] = useState<any>(null);
@@ -109,19 +110,7 @@ export default function Google6CitySpends() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>6 City (Google) Report</h1>
-          {data && data.dateInfo && (
-            <div style={{ 
-              display: 'inline-block', 
-              marginTop: '8px', 
-              padding: '4px 12px', 
-              backgroundColor: '#2d3748', 
-              borderRadius: '16px', 
-              fontSize: '14px', 
-              color: '#a0aec0' 
-            }}>
-              {data.dateInfo.monthName} | Day {data.dateInfo.dayOfMonth} of {data.dateInfo.totalDays} | {data.dateInfo.daysRemaining} days remaining
-            </div>
-          )}
+          <DaysCountBadge />
         </div>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <PlanUpload

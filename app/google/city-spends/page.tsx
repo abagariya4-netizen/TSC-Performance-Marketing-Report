@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import PlanUpload from '@/components/PlanUpload';
 import { calcRow, formatINR } from '@/lib/calculations';
 import { parseRegionPlanCSV } from '@/lib/csvParser';
+import DaysCountBadge from '@/components/DaysCountBadge';
 
 interface CityData {
   rows: any[];
@@ -200,11 +201,8 @@ function PageContent() {
   return (
     <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ marginBottom: '24px' }}>
-        {data && (
-          <div style={{ background: '#1a1d27', display: 'inline-block', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', color: '#90cdf4' }}>
-            {new Date(data.monthStart).toLocaleString('en-IN', { month: 'long', year: 'numeric' })} | Day {data.daysPassed} of {data.totalDays} | {data.daysRemaining} days remaining
-          </div>
-        )}
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>City Level Spends (Google)</h1>
+        <DaysCountBadge />
       </div>
 
       {!plan ? (
