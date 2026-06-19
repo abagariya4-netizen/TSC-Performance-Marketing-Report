@@ -121,7 +121,11 @@ export async function GET() {
     // Step 6 — Output format
     const finalData = [];
     for (const city of TSC_CITIES) {
-      if (city !== 'Unknown' && city !== 'Rest' && city !== 'Grand Total') {
+      if (city === 'Rest') {
+        finalData.push({ city: 'Rest', mtd: Rest_MTD, yesterday: Rest_Yday });
+      } else if (city === 'Unknown') {
+        finalData.push({ city: 'Unknown', mtd: Unknown_MTD, yesterday: Unknown_Yday });
+      } else if (city !== 'Grand Total') {
         finalData.push({
           city,
           mtd: cityBucketsMtd.get(city) || 0,
@@ -129,9 +133,6 @@ export async function GET() {
         });
       }
     }
-
-    finalData.push({ city: 'Rest', mtd: Rest_MTD, yesterday: Rest_Yday });
-    finalData.push({ city: 'Unknown', mtd: Unknown_MTD, yesterday: Unknown_Yday });
 
     return NextResponse.json({
       rows: finalData,
