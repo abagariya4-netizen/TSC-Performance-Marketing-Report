@@ -20,6 +20,8 @@ interface ProductRow {
   salienceJun18: number;
   mtd: number;
   estSpends: number;
+  vsAvg3Months: number | null;
+  vsMay: number | null;
 }
 
 interface ReportData {
@@ -45,7 +47,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
       '16 Jun Amount', '16 Jun Salience %',
       '17 Jun Amount', '17 Jun Salience %',
       '18 Jun Amount', '18 Jun Salience %',
-      'MTD (1-18 Jun)', 'Est. Spends'
+      'MTD (1-18 Jun)', 'Est. Spends', 'vs Avg 3 Months %', 'vs May %'
     ];
 
     const lines: string[] = [];
@@ -61,7 +63,9 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         r.jun16, r.salienceJun16,
         r.jun17, r.salienceJun17,
         r.jun18, r.salienceJun18,
-        r.mtd, r.estSpends
+        r.mtd, r.estSpends,
+        r.vsAvg3Months !== null ? r.vsAvg3Months : '',
+        r.vsMay !== null ? r.vsMay : ''
       ].join(','));
     });
 
@@ -102,12 +106,14 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
             <th style={{ padding: '10px 12px' }}>17 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
             <th style={{ padding: '10px 12px' }}>18 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
             <th style={{ padding: '10px 12px' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(MTD + 18Jun×Remaining)</span></th>
+            <th style={{ padding: '10px 12px' }}>vs Avg 3 Months</th>
+            <th style={{ padding: '10px 12px' }}>vs May</th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={9} style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No products found in this category.</td>
+              <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No products found in this category.</td>
             </tr>
           )}
           {rows.map((r, i) => (
@@ -143,6 +149,12 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', fontWeight: 'bold' }}>
                 {formatINR(r.estSpends)}
+              </td>
+              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
+                {renderPct(r.vsAvg3Months)}
+              </td>
+              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
+                {renderPct(r.vsMay)}
               </td>
             </tr>
           ))}

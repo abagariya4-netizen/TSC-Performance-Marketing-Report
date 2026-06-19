@@ -110,6 +110,11 @@ export async function GET() {
         // Est. Spends = MTD (1-18 June) + (18 June spend * Days Remaining in month)
         const estSpends = mtd + (jun18 * DAYS_REMAINING);
 
+        // Comparisons for Est. Spends
+        const avg3Months = (mar + apr + may) / 3;
+        const vsAvg3Months = avg3Months > 0 ? ((estSpends - avg3Months) / avg3Months) * 100 : null;
+        const vsMay = may > 0 ? ((estSpends - may) / may) * 100 : null;
+
         productArr.push({
           name: productName,
           mar, apr, may, jun1_15, jun16, jun17, jun18,
@@ -122,6 +127,8 @@ export async function GET() {
           salienceJun18: (jun18 / catJun18) * 100,
           mtd,
           estSpends,
+          vsAvg3Months,
+          vsMay,
         });
       }
 
