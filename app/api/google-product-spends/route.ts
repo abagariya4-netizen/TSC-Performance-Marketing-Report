@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
-import { getCleanProductName } from '@/lib/productTitleMap';
-import { getCategoryForProduct } from '@/lib/productCategoryMap';
+import { PRODUCT_TITLE_MAP, getCleanProductName } from '@/lib/productTitleMap';
+import { PRODUCT_CATEGORY_MAP, getCategoryForProduct } from '@/lib/productCategoryMap';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,8 +92,25 @@ export async function GET() {
 
     const results = await Promise.all([...periodPromises, mtdPromise]);
 
-    const categoryTotals: Record<string, Record<string, number>> = {};
     const productSpends: Record<string, Record<string, Record<string, number>>> = {};
+    const categoryTotals: Record<string, Record<string, number>> = {};
+
+    // Pre-fill all known products with 0 spend so they always appear in their category
+    const allKnownCleanNames = Array.from(new Set([
+      ...Object.values(PRODUCT_TITLE_MAP),
+      ...Object.keys(PRODUCT_CATEGORY_MAP)
+    ]));
+    
+    allKnownCleanNames.forEach(cleanName => {
+      const category = getCategoryForProduct(cleanName);
+      if (!productSpends[category]) productSpends[category] = {};
+      if (!productSpends[category][cleanName]) {
+        productSpends[category][cleanName] = { mar: 0, apr: 0, may: 0, jun1_15: 0, junLast3: 0 };
+      }
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = { mar: 0, apr: 0, may: 0, jun1_15: 0, junLast3: 0 };
+      }
+    });
 
     results.forEach(({ key, data }) => {
       data.forEach((row: any) => {
