@@ -1,5 +1,6 @@
-require('dotenv').config({ path: '.env.local' });
 const { GoogleAdsApi } = require('google-ads-api');
+require('dotenv').config({ path: '.env.local' });
+
 const client = new GoogleAdsApi({
   client_id: process.env.GOOGLE_ADS_CLIENT_ID,
   client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET,
@@ -19,14 +20,30 @@ async function run() {
     AND campaign.advertising_channel_type IN ('SHOPPING', 'PERFORMANCE_MAX')
   `;
   const stream = customer.reportStream({ query: gaql });
+  let totalOnyx = 0;
+  let campaignOnyx = 0;
+  let genericOnyx = 0;
+
   for await (const row of stream) {
-    const rawTitle = row.segments.product_title;
-    const campaignName = row.campaign.name.toLowerCase();
+    const rawTitle = row.segments.product_title || '';
+    const campaignName = (row.campaign.name || '').toLowerCase();
     const cost = (row.metrics.cost_micros || 0) / 1000000;
     
-    if (rawTitle.includes('Onyx') || rawTitle.includes('Stylux') || rawTitle.includes('XGen') || rawTitle.includes('Ultron')) {
-      console.log(`Campaign: ${row.campaign.name} | RawTitle: ${rawTitle.substring(0,40)} | Cost: ${cost}`);
+    // Check exclusions
+    if (['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'].some(ex => campaignName.includes(ex))) continue;
+
+    if (rawTitle.includes('Onyx Orthopedic Office Chair')) {
+      totalOnyx += cost;
+      if (campaignName.includes('chair')) {
+        campaignOnyx += cost;
+      } else {
+        genericOnyx += cost;
+        console.log(`Generic Campaign for Onyx: ${campaignName} | Cost: ${cost}`);
+      }
     }
   }
+  console.log(`Total Onyx Spend (All campaigns): ${totalOnyx}`);
+  console.log(`Onyx Spend in 'chair' campaigns: ${campaignOnyx}`);
+  console.log(`Onyx Spend in generic campaigns: ${genericOnyx}`);
 }
-run();
+run().catch(console.error);

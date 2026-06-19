@@ -12,6 +12,19 @@ function isExcluded(campaignName: string) {
   return EXCLUSIONS.some(ex => lower.includes(ex));
 }
 
+function getCategoryFromCampaign(campaignName: string): string {
+  const lower = (campaignName || '').toLowerCase();
+  if (lower.includes('chair')) return 'Chair';
+  if (lower.includes('desk')) return 'Desk';
+  if (lower.includes('elite')) return 'Elite';
+  if (lower.includes('sofa')) return 'Sofa';
+  if (lower.includes('foot') || lower.includes('massager')) return 'Foot Massager';
+  if (lower.includes('accessories') || lower.includes('pillow') || lower.includes('cushion') || lower.includes('protector') || lower.includes('bedsheet') || lower.includes('comforter')) return 'Accessories';
+  if (lower.includes('bed')) return 'Bed';
+  // Generic campaigns default to Mattress
+  return 'Mattress';
+}
+
 function formatDate(d: Date): string {
   return d.toISOString().split('T')[0];
 }
@@ -104,7 +117,18 @@ export async function GET() {
         const cost = Number(row.metrics?.costMicros || 0) / 1000000;
 
         const cleanName = getCleanProductName(rawTitle);
-        const category = getCategoryForProduct(cleanName);
+        const campaignCategory = getCategoryFromCampaign(campaignName);
+        const productCategory = getCategoryForProduct(cleanName);
+
+        // Only include the spend if the product actually belongs to the campaign's mapped category.
+        // This ensures that:
+        // 1. Generic campaigns (defaulting to Mattress) don't pollute the Mattress category with Chairs/Desks.
+        // 2. The Chair/Desk categories ONLY receive spend from their designated Chair/Desk campaigns, keeping totals accurate.
+        if (campaignCategory !== productCategory) {
+          return;
+        }
+
+        const category = campaignCategory;
 
         if (!categoryTotals[category]) categoryTotals[category] = {};
         if (!categoryTotals[category][key]) categoryTotals[category][key] = 0;
