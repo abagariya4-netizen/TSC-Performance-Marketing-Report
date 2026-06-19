@@ -116,7 +116,16 @@ export async function GET() {
         const cost = Number(row.metrics?.costMicros || 0) / 1000000;
 
         const cleanName = getCleanProductName(rawTitle);
-        const category = getCategoryFromCampaign(campaignName);
+        let category = getCategoryFromCampaign(campaignName);
+        
+        // If the campaign name didn't have a category keyword and defaulted to 'Mattress',
+        // check the product's actual category to prevent non-mattress products from leaking into Mattress.
+        if (category === 'Mattress') {
+          const productCategory = getCategoryForProduct(cleanName);
+          if (productCategory !== 'Mattress') {
+            category = productCategory;
+          }
+        }
 
         if (!categoryTotals[category]) categoryTotals[category] = {};
         if (!categoryTotals[category][key]) categoryTotals[category][key] = 0;
