@@ -8,19 +8,25 @@ interface ProductRow {
   apr: number;
   may: number;
   jun1_15: number;
-  junLast3: number;
+  jun16: number;
+  jun17: number;
+  jun18: number;
   salienceMar: number;
   salienceApr: number;
   salienceMay: number;
   salienceJun1_15: number;
-  salienceJunLast3: number;
-  vsLastMonth: number | null;
-  vsAvg3Months: number | null;
+  salienceJun16: number;
+  salienceJun17: number;
+  salienceJun18: number;
+  mtd: number;
+  estSpends: number;
 }
 
 interface ReportData {
   categories: Record<string, { products: ProductRow[] }>;
   dateRanges: Record<string, { start: string, end: string }>;
+  daysRemaining: number;
+  daysPassed: number;
 }
 
 const CATEGORIES = ['Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager', 'Bed', 'Elite', 'Sofa'];
@@ -36,8 +42,10 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
       'Apr Amount', 'Apr Salience %', 
       'May Amount', 'May Salience %', 
       'Jun(1-15) Amount', 'Jun(1-15) Salience %', 
-      'Jun Last 3 Amount', 'Jun Last 3 Salience %', 
-      'vs Last Month %', 'vs Avg 3 Months %'
+      '16 Jun Amount', '16 Jun Salience %',
+      '17 Jun Amount', '17 Jun Salience %',
+      '18 Jun Amount', '18 Jun Salience %',
+      'MTD (1-18 Jun)', 'Est. Spends'
     ];
 
     const lines: string[] = [];
@@ -50,9 +58,10 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         r.apr, r.salienceApr,
         r.may, r.salienceMay,
         r.jun1_15, r.salienceJun1_15,
-        r.junLast3, r.salienceJunLast3,
-        r.vsLastMonth !== null ? r.vsLastMonth : '',
-        r.vsAvg3Months !== null ? r.vsAvg3Months : ''
+        r.jun16, r.salienceJun16,
+        r.jun17, r.salienceJun17,
+        r.jun18, r.salienceJun18,
+        r.mtd, r.estSpends
       ].join(','));
     });
 
@@ -89,15 +98,16 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
             <th style={{ padding: '10px 12px' }}>Apr<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
             <th style={{ padding: '10px 12px' }}>May<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
             <th style={{ padding: '10px 12px' }}>Jun(1-15)<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>Jun Last 3<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>vs Last Month</th>
-            <th style={{ padding: '10px 12px' }}>vs Avg 3 Months</th>
+            <th style={{ padding: '10px 12px' }}>16 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>17 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>18 Jun<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
+            <th style={{ padding: '10px 12px' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(MTD + 18Jun×Remaining)</span></th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={8} style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No products found in this category.</td>
+              <td colSpan={9} style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No products found in this category.</td>
             </tr>
           )}
           {rows.map((r, i) => (
@@ -120,14 +130,19 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
                 <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun1_15 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.junLast3)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJunLast3 || 0).toFixed(1)}%</div>
+                <div>{formatINR(r.jun16)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun16 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                {renderPct(r.vsLastMonth)}
+                <div>{formatINR(r.jun17)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun17 || 0).toFixed(1)}%</div>
               </td>
               <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                {renderPct(r.vsAvg3Months)}
+                <div>{formatINR(r.jun18)}</div>
+                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceJun18 || 0).toFixed(1)}%</div>
+              </td>
+              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', fontWeight: 'bold' }}>
+                {formatINR(r.estSpends)}
               </td>
             </tr>
           ))}

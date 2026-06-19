@@ -10,8 +10,18 @@ const DATE_RANGES = [
   { key: 'apr', start: '2026-04-01', end: '2026-04-30' },
   { key: 'may', start: '2026-05-01', end: '2026-05-31' },
   { key: 'jun1_15', start: '2026-06-01', end: '2026-06-15' },
-  { key: 'junLast3', start: '2026-06-16', end: '2026-06-18' }
+  { key: 'jun16', start: '2026-06-16', end: '2026-06-16' },
+  { key: 'jun17', start: '2026-06-17', end: '2026-06-17' },
+  { key: 'jun18', start: '2026-06-18', end: '2026-06-18' },
 ];
+
+// MTD for Est. Spends formula: 1 June to 18 June (yesterday relative to today=19 June)
+const MTD_START = '2026-06-01';
+const MTD_END = '2026-06-18';
+const YESTERDAY = '2026-06-18';
+const TOTAL_DAYS_IN_JUNE = 30;
+const DAYS_PASSED = 18; // 1 June through 18 June inclusive
+const DAYS_REMAINING = TOTAL_DAYS_IN_JUNE - DAYS_PASSED; // 12
 
 const EXCLUSIONS = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
@@ -22,7 +32,8 @@ function isExcluded(campaignName: string) {
 
 export async function GET() {
   try {
-    const promises = DATE_RANGES.map(async (range) => {
+    // Run all period queries + the dedicated MTD query for Est. Spends
+    const periodPromises = DATE_RANGES.map(async (range) => {
       const gaql = `
         SELECT segments.product_title, campaign.name, 
         campaign.advertising_channel_type, metrics.cost_micros
@@ -34,7 +45,19 @@ export async function GET() {
       return { key: range.key, data };
     });
 
-    const results = await Promise.all(promises);
+    const mtdPromise = (async () => {
+      const gaql = `
+        SELECT segments.product_title, campaign.name, 
+        campaign.advertising_channel_type, metrics.cost_micros
+        FROM shopping_performance_view
+        WHERE segments.date BETWEEN '${MTD_START}' AND '${MTD_END}'
+        AND campaign.advertising_channel_type IN ('SHOPPING', 'PERFORMANCE_MAX')
+      `;
+      const data = await queryAllGoogleAdsAccounts(gaql);
+      return { key: 'mtd', data };
+    })();
+
+    const results = await Promise.all([...periodPromises, mtdPromise]);
 
     const categoryTotals: Record<string, Record<string, number>> = {};
     const productSpends: Record<string, Record<string, Record<string, number>>> = {};
@@ -57,7 +80,7 @@ export async function GET() {
         if (!productSpends[category]) productSpends[category] = {};
         if (!productSpends[category][cleanName]) productSpends[category][cleanName] = {};
         if (!productSpends[category][cleanName][key]) productSpends[category][cleanName][key] = 0;
-        
+
         productSpends[category][cleanName][key] += cost;
       });
     });
@@ -71,43 +94,51 @@ export async function GET() {
         const apr = spends['apr'] || 0;
         const may = spends['may'] || 0;
         const jun1_15 = spends['jun1_15'] || 0;
-        const junLast3 = spends['junLast3'] || 0;
+        const jun16 = spends['jun16'] || 0;
+        const jun17 = spends['jun17'] || 0;
+        const jun18 = spends['jun18'] || 0;
+        const mtd = spends['mtd'] || 0; // 1 June - 18 June
 
         const catMar = categoryTotals[category]['mar'] || 1;
         const catApr = categoryTotals[category]['apr'] || 1;
         const catMay = categoryTotals[category]['may'] || 1;
         const catJun1_15 = categoryTotals[category]['jun1_15'] || 1;
-        const catJunLast3 = categoryTotals[category]['junLast3'] || 1;
+        const catJun16 = categoryTotals[category]['jun16'] || 1;
+        const catJun17 = categoryTotals[category]['jun17'] || 1;
+        const catJun18 = categoryTotals[category]['jun18'] || 1;
 
-        const avg3Months = (mar + apr + may) / 3;
-        const vsLastMonth = may > 0 ? ((junLast3 - may) / may) * 100 : null; // Wait, comparison for junLast3 might be different. Let's compare to May as "last full month". Actually, usually vs Last Month implies current vs previous period. Let's define vsLastMonth as (junLast3 - jun1_15)/jun1_15 ? No, comparing 3 days to 15 days is weird. Wait, the prompt says vs Last Month. We'll use ((junLast3 - may)/may)*100.
-        // Actually, let's just do ((junLast3 - may)/may) * 100. Wait! The prompt says currentPeriod is the one we compare. Since junLast3 is partial, comparing vs May directly might be a huge negative.
-        // Let's implement exactly what is asked: vsLastMonth = ((junLast3 - may) / may) * 100.
-        const vsAvg3M = avg3Months > 0 ? ((junLast3 - avg3Months) / avg3Months) * 100 : null;
+        // Est. Spends = MTD (1-18 June) + (18 June spend * Days Remaining in month)
+        const estSpends = mtd + (jun18 * DAYS_REMAINING);
 
         productArr.push({
           name: productName,
-          mar, apr, may, jun1_15, junLast3,
+          mar, apr, may, jun1_15, jun16, jun17, jun18,
           salienceMar: (mar / catMar) * 100,
           salienceApr: (apr / catApr) * 100,
           salienceMay: (may / catMay) * 100,
           salienceJun1_15: (jun1_15 / catJun1_15) * 100,
-          salienceJunLast3: (junLast3 / catJunLast3) * 100,
-          vsLastMonth: vsLastMonth,
-          vsAvg3Months: vsAvg3M,
+          salienceJun16: (jun16 / catJun16) * 100,
+          salienceJun17: (jun17 / catJun17) * 100,
+          salienceJun18: (jun18 / catJun18) * 100,
+          mtd,
+          estSpends,
         });
       }
-      
-      productArr.sort((a, b) => b.junLast3 - a.junLast3);
+
+      // Sort by most recent day (18 June) descending
+      productArr.sort((a, b) => b.jun18 - a.jun18);
       outputCategories[category] = { products: productArr };
     }
 
     const dateRangesMap: Record<string, any> = {};
     DATE_RANGES.forEach(r => { dateRangesMap[r.key] = { start: r.start, end: r.end }; });
+    dateRangesMap['mtd'] = { start: MTD_START, end: MTD_END };
 
     return NextResponse.json({
       categories: outputCategories,
-      dateRanges: dateRangesMap
+      dateRanges: dateRangesMap,
+      daysRemaining: DAYS_REMAINING,
+      daysPassed: DAYS_PASSED,
     });
   } catch (error: any) {
     console.error('API Error:', error);
