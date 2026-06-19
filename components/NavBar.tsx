@@ -25,18 +25,21 @@ export default function NavBar() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', alignItems: 'center', borderBottom: '1px solid #2d3748', paddingBottom: '16px' }}>
+    <div style={{ display: 'flex', gap: '8px', paddingBottom: '0', flexWrap: 'wrap' }}>
       {navItems.map((item) => {
         const isActive = getIsActive(item.href);
         return (
           <Link key={item.label} href={item.href} style={{ 
-            padding: '8px 20px', 
-            borderRadius: '8px 8px 0 0', 
+            padding: '8px 16px', 
+            borderRadius: '999px', 
             textDecoration: 'none',
-            background: isActive ? '#e8733a' : 'transparent',
-            color: isActive ? 'white' : '#a0aec0', 
-            fontWeight: 600,
-            borderBottom: isActive ? '3px solid white' : '3px solid transparent'
+            background: isActive ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
+            color: isActive ? '#ffffff' : 'var(--text-secondary)', 
+            fontWeight: isActive ? 600 : 500,
+            fontSize: '14px',
+            border: isActive ? '1px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.1)',
+            transition: 'all 0.2s ease',
+            boxShadow: isActive ? '0 2px 8px rgba(99, 102, 241, 0.4)' : 'none'
           }}>
             {item.label}
           </Link>

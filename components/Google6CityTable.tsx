@@ -70,11 +70,11 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
       diffPercent = ((rowData.mtd / proratedPlan) - 1) * 100;
     }
 
-    const diffColor = diffPercent >= 0 ? '#48bb78' : '#fc8181';
+    const diffColor = diffPercent >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
     
     return (
-      <tr key={`${city}-${campaignType}`} style={{ backgroundColor: isTotal ? '#1a1d27' : '#1f2333', borderBottom: '1px solid #2d3748' }}>
-        <td style={{ padding: '12px', paddingLeft: `${12 + indentLevel * 20}px`, fontWeight: isTotal ? 'bold' : 'normal', color: 'white' }}>
+      <tr key={`${city}-${campaignType}`} style={{ backgroundColor: isTotal ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
+        <td style={{ textAlign: 'left', paddingLeft: `${12 + indentLevel * 20}px`, fontWeight: isTotal ? 'bold' : 'normal', borderRight: '1px solid var(--border-color)' }}>
           {isTotal && indentLevel === 0 ? (
             <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => toggleCity(city)}>
               <span style={{ marginRight: '8px', fontSize: '10px' }}>{expandedCities[city] ? '▼' : '▶'}</span>
@@ -84,25 +84,26 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
             campaignType
           )}
         </td>
-        <td style={{ padding: '12px', textAlign: 'right', color: '#a0aec0' }}>{planValue ? formatIndianNum(planValue) : '-'}</td>
-        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(rowData.mtd)}</td>
-        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(rowData.yesterday)}</td>
-        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>{formatIndianNum(estSpends)}</td>
-        <td style={{ padding: '12px', textAlign: 'right', color: diffColor }}>
+        <td>{planValue ? formatIndianNum(planValue) : '-'}</td>
+        <td>{formatIndianNum(rowData.mtd)}</td>
+        <td>{formatIndianNum(rowData.yesterday)}</td>
+        <td>{formatIndianNum(estSpends)}</td>
+        <td style={{ color: diffColor }}>
           {planValue > 0 ? `${diffPercent > 0 ? '+' : ''}${diffPercent.toFixed(2)}%` : '-'}
         </td>
-        <td style={{ padding: '12px', textAlign: 'right', color: estMinusPlan >= 0 ? '#48bb78' : '#fc8181' }}>
+        <td style={{ color: estMinusPlan >= 0 ? 'var(--success-color)' : 'var(--danger-color)' }}>
           {planValue > 0 ? formatIndianNum(estMinusPlan) : '-'}
         </td>
-        <td style={{ padding: '12px', textAlign: 'center' }}>
+        <td style={{ textAlign: 'center' }}>
           {planValue > 0 ? (
              <span style={{ 
-               padding: '4px 8px', 
-               borderRadius: '12px', 
+               padding: '2px 10px', 
+               borderRadius: '999px', 
                fontSize: '12px', 
                fontWeight: 'bold',
-               backgroundColor: overUnder === 'Over' ? '#c6f6d5' : '#fed7d7',
-               color: overUnder === 'Over' ? '#22543d' : '#822727'
+               backgroundColor: overUnder === 'Over' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+               color: overUnder === 'Over' ? 'var(--success-color)' : 'var(--danger-color)',
+               border: overUnder === 'Over' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)'
              }}>
                {overUnder}
              </span>
@@ -123,65 +124,67 @@ export default function Google6CityTable({ data, planData }: Google6CityTablePro
   };
 
   return (
-    <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-        <thead style={{ backgroundColor: '#2d3748', color: '#a0aec0', textAlign: 'left' }}>
-          <tr>
-            <th style={{ padding: '12px', fontWeight: 'bold' }}>City/Campaign Type</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Overall (Plan)</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>MTD</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Yesterday</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Est. Spends</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Difference</th>
-            <th style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>Est - Plan</th>
-            <th style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold' }}>Over/Under</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(data.cities).map(([cityName, cityData]) => {
-            const cityPlan = planData?.[cityName] || {};
-            const totalPlan = cityPlan['Total'] || 0;
-            
-            return (
-              <React.Fragment key={cityName}>
-                {renderRow(cityName, cityName, cityData.total, totalPlan, true, 0)}
-                {expandedCities[cityName] && getCampaignTypes(cityName).map(type => {
-                  const typePlan = cityPlan[type as string] || 0;
-                  const rowData = cityData[type] || { mtd: 0, yesterday: 0 };
-                  return renderRow(cityName, type as string, rowData, typePlan, false, 1);
-                })}
-              </React.Fragment>
-            );
-          })}
-          {/* Grand Total */}
-          {(() => {
-            let grandPlan = 0;
-            if (planData) {
-              Object.values(planData).forEach(cp => {
-                if (cp['Total']) grandPlan += cp['Total'];
-              });
-            }
-            return (
-              <tr style={{ backgroundColor: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-                <td style={{ padding: '12px' }}>Grand Total</td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>{grandPlan ? formatIndianNum(grandPlan) : '-'}</td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.mtd)}</td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.yesterday)}</td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>{formatIndianNum(data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining))}</td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>
-                  {grandPlan > 0 && daysPassed > 0 ? (
-                    `${(((data.grandTotal.mtd / (grandPlan * (daysPassed / totalDays))) - 1) * 100).toFixed(2)}%`
-                  ) : '-'}
-                </td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>
-                  {grandPlan > 0 ? formatIndianNum((data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining)) - grandPlan) : '-'}
-                </td>
-                <td style={{ padding: '12px', textAlign: 'center' }}>-</td>
-              </tr>
-            );
-          })()}
-        </tbody>
-      </table>
+    <div style={{ marginBottom: '32px' }}>
+      <div className="table-wrapper">
+        <table className="modern-table">
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>City/Campaign Type</th>
+              <th style={{ textAlign: 'center' }}>Overall (Plan)</th>
+              <th style={{ textAlign: 'center' }}>MTD</th>
+              <th style={{ textAlign: 'center' }}>Yesterday</th>
+              <th style={{ textAlign: 'center' }}>Est. Spends</th>
+              <th style={{ textAlign: 'center' }}>Difference</th>
+              <th style={{ textAlign: 'center' }}>Est - Plan</th>
+              <th style={{ textAlign: 'center' }}>Over/Under</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(data.cities).map(([cityName, cityData]) => {
+              const cityPlan = planData?.[cityName] || {};
+              const totalPlan = cityPlan['Total'] || 0;
+              
+              return (
+                <React.Fragment key={cityName}>
+                  {renderRow(cityName, cityName, cityData.total, totalPlan, true, 0)}
+                  {expandedCities[cityName] && getCampaignTypes(cityName).map(type => {
+                    const typePlan = cityPlan[type as string] || 0;
+                    const rowData = cityData[type] || { mtd: 0, yesterday: 0 };
+                    return renderRow(cityName, type as string, rowData, typePlan, false, 1);
+                  })}
+                </React.Fragment>
+              );
+            })}
+            {/* Grand Total */}
+            {(() => {
+              let grandPlan = 0;
+              if (planData) {
+                Object.values(planData).forEach(cp => {
+                  if (cp['Total']) grandPlan += cp['Total'];
+                });
+              }
+              return (
+                <tr style={{ backgroundColor: 'var(--accent-primary)', color: 'white', fontWeight: 'bold' }}>
+                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Grand Total</td>
+                  <td>{grandPlan ? formatIndianNum(grandPlan) : '-'}</td>
+                  <td>{formatIndianNum(data.grandTotal.mtd)}</td>
+                  <td>{formatIndianNum(data.grandTotal.yesterday)}</td>
+                  <td>{formatIndianNum(data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining))}</td>
+                  <td>
+                    {grandPlan > 0 && daysPassed > 0 ? (
+                      `${(((data.grandTotal.mtd / (grandPlan * (daysPassed / totalDays))) - 1) * 100).toFixed(2)}%`
+                    ) : '-'}
+                  </td>
+                  <td>
+                    {grandPlan > 0 ? formatIndianNum((data.grandTotal.mtd + (data.grandTotal.yesterday * daysRemaining)) - grandPlan) : '-'}
+                  </td>
+                  <td style={{ textAlign: 'center' }}>-</td>
+                </tr>
+              );
+            })()}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

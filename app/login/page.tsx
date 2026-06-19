@@ -31,35 +31,29 @@ export default function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#0f1117',
-      fontFamily: 'Inter, sans-serif'
     }}>
-      <div style={{
-        background: '#1a1d27',
+      <div className="card" style={{
         padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
         width: '100%',
         maxWidth: '400px',
-        border: '1px solid #2d3748'
       }}>
-        <h1 style={{ color: 'white', textAlign: 'center', marginBottom: '8px', fontSize: '24px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '8px', fontSize: '24px', fontWeight: 'bold' }}>
           🛏 TSC Login
         </h1>
-        <p style={{ color: '#a0aec0', textAlign: 'center', marginBottom: '32px', fontSize: '14px' }}>
+        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '32px', fontSize: '14px' }}>
           Performance Report Generator
         </p>
 
         {error && (
           <div style={{
-            background: 'rgba(252, 129, 129, 0.1)',
-            color: '#fc8181',
+            background: 'rgba(244, 63, 94, 0.1)',
+            color: 'var(--danger-color)',
             padding: '12px',
             borderRadius: '6px',
             marginBottom: '20px',
             fontSize: '14px',
             textAlign: 'center',
-            border: '1px solid rgba(252, 129, 129, 0.2)'
+            border: '1px solid rgba(244, 63, 94, 0.2)'
           }}>
             {error}
           </div>
@@ -67,7 +61,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{ display: 'block', color: '#e2e8f0', marginBottom: '8px', fontSize: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
               Sleep Company ID
             </label>
             <input
@@ -75,22 +69,13 @@ export default function LoginPage() {
               value={companyId}
               onChange={(e) => setCompanyId(e.target.value)}
               placeholder="Enter your ID"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '6px',
-                border: '1px solid #4a5568',
-                background: '#0f1117',
-                color: 'white',
-                fontSize: '16px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
+              className="input-field"
+              style={{ width: '100%' }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#e2e8f0', marginBottom: '8px', fontSize: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
               Password
             </label>
             <input
@@ -98,36 +83,21 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '6px',
-                border: '1px solid #4a5568',
-                background: '#0f1117',
-                color: 'white',
-                fontSize: '16px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
+              className="input-field"
+              style={{ width: '100%' }}
             />
           </div>
 
           <button
             type="submit"
+            className="btn-primary"
             style={{
-              background: '#e8733a',
-              color: 'white',
-              border: 'none',
               padding: '14px',
-              borderRadius: '6px',
               fontSize: '16px',
-              fontWeight: 600,
-              cursor: 'pointer',
               marginTop: '8px',
-              transition: 'background 0.2s'
+              width: '100%',
+              justifyContent: 'center'
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#d66329'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#e8733a'}
           >
             Sign In
           </button>

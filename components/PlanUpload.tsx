@@ -19,20 +19,20 @@ export default function PlanUpload({ label, onLoad, loaded, count, unit, compact
     reader.readAsText(file);
   };
   if (compact) return (
-    <span style={{ fontSize: '13px', color: loaded ? '#48bb78' : '#fc8181' }}>
+    <span style={{ fontSize: '13px', color: loaded ? 'var(--success-color)' : 'var(--danger-color)' }}>
       {loaded ? `✅ ${label}: ${count} ${unit} ${filename ? `(File: ${filename})` : ''}` : `⬜ ${label}: not loaded`}
-      <label style={{ marginLeft: '8px', cursor: 'pointer', color: '#90cdf4', textDecoration: 'underline' }}>
+      <label style={{ marginLeft: '8px', cursor: 'pointer', color: 'var(--accent-hover)', textDecoration: 'underline' }}>
         Change <input type="file" accept=".csv" onClick={(e: any) => e.target.value = null} onChange={handleFile} style={{ display: 'none' }} />
       </label>
     </span>
   );
   return (
     <div>
-      <label style={{ display: 'inline-block', padding: '8px 16px', background: '#e8733a', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+      <label className="btn-primary" style={{ display: 'inline-block' }}>
         📂 {loaded ? `Change ${label}` : `Upload ${label}`}
         <input type="file" accept=".csv" onClick={(e: any) => e.target.value = null} onChange={handleFile} style={{ display: 'none' }} />
       </label>
-      {loaded && <span style={{ marginLeft: '12px', color: '#48bb78' }}>✅ {count} {unit} loaded</span>}
+      {loaded && <span style={{ marginLeft: '12px', color: 'var(--success-color)' }}>✅ {count} {unit} loaded</span>}
     </div>
   );
 }

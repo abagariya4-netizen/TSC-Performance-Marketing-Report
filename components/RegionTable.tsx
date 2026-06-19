@@ -61,25 +61,25 @@ export default function RegionTable({ data, plan }: { data: RegionData, plan: Re
   const gtRow = calcRow(gtMtd, gtYday, gtPlan, data.dates.daysPassed, data.dates.totalDays, data.dates.daysRemaining);
 
   const renderRow = (r: any, isTotal = false) => {
-    const diffColor = r.diffPct > 0 ? '#48bb78' : r.diffPct < 0 ? '#fc8181' : '#ecc94b';
+    const diffColor = r.diffPct > 0 ? 'var(--success-color)' : r.diffPct < 0 ? 'var(--danger-color)' : 'var(--warning-color)';
     const pillHtml = r.overUnder === 'Over'
-      ? <span style={{ background: '#1a3a2a', color: '#48bb78', border: '1px solid #276749', borderRadius: '999px', padding: '2px 10px' }}>Over</span>
+      ? <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success-color)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '999px', padding: '2px 10px' }}>Over</span>
       : r.overUnder === 'Under'
-      ? <span style={{ background: '#3a1a1a', color: '#fc8181', border: '1px solid #742a2a', borderRadius: '999px', padding: '2px 10px' }}>Under</span>
+      ? <span style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--danger-color)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: '999px', padding: '2px 10px' }}>Under</span>
       : '—';
 
     return (
-      <tr key={r.region} style={isTotal ? { background: '#0d2137', fontWeight: 'bold' } : {}}>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left' }}>{r.region}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.plan)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.mtd)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.yday)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatINR(r.est)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.plan != null ? diffColor : 'inherit' }}>
+      <tr key={r.region} style={isTotal ? { background: 'rgba(0,0,0,0.2)', fontWeight: 'bold' } : {}}>
+        <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>{r.region}</td>
+        <td>{formatINR(r.plan)}</td>
+        <td>{formatINR(r.mtd)}</td>
+        <td>{formatINR(r.yday)}</td>
+        <td>{formatINR(r.est)}</td>
+        <td style={{ color: r.plan != null ? diffColor : 'inherit' }}>
           {r.plan != null ? `${r.diffPct > 0 ? '+' : ''}${r.diffPct}%` : '—'}
         </td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', color: r.estMinusPlan != null ? (r.estMinusPlan < 0 ? '#fc8181' : '#48bb78') : 'inherit' }}>{formatINR(r.estMinusPlan)}</td>
-        <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'center' }}>{pillHtml}</td>
+        <td style={{ color: r.estMinusPlan != null ? (r.estMinusPlan < 0 ? 'var(--danger-color)' : 'var(--success-color)') : 'inherit' }}>{formatINR(r.estMinusPlan)}</td>
+        <td style={{ textAlign: 'center' }}>{pillHtml}</td>
       </tr>
     );
   };
@@ -130,35 +130,36 @@ export default function RegionTable({ data, plan }: { data: RegionData, plan: Re
   };
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <div style={{ marginBottom: '10px', textAlign: 'right' }}>
-        <button onClick={exportCSV} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+    <div style={{ marginBottom: '32px' }}>
+      <div style={{ marginBottom: '12px', textAlign: 'right' }}>
+        <button onClick={exportCSV} className="btn-outline">
           📥 Export CSV
         </button>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', whiteSpace: 'nowrap' }}>
-        <thead>
-          <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-            <th style={{ padding: '10px 12px', textAlign: 'left' }}>Region</th>
-            <th style={{ padding: '10px 12px' }}>Overall (Plan)</th>
-            <th style={{ padding: '10px 12px' }}>MTD</th>
-            <th style={{ padding: '10px 12px' }}>Yesterday</th>
-            <th style={{ padding: '10px 12px' }}>Est. Spends</th>
-            <th style={{ padding: '10px 12px' }}>Difference</th>
-            <th style={{ padding: '10px 12px' }}>Est - Plan</th>
-            <th style={{ padding: '10px 12px' }}>Over/Under</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <React.Fragment key={r.region}>
-              <tr style={{ background: i % 2 === 0 ? '#1a1d27' : '#1f2333', display: 'none' }}></tr>
-              {renderRow(r)}
-            </React.Fragment>
-          ))}
-          {renderRow({ region: 'Grand Total', plan: gtPlan, ...gtRow }, true)}
-        </tbody>
-      </table>
+      <div className="table-wrapper">
+        <table className="modern-table">
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Region</th>
+              <th style={{ textAlign: 'center' }}>Overall (Plan)</th>
+              <th style={{ textAlign: 'center' }}>MTD</th>
+              <th style={{ textAlign: 'center' }}>Yesterday</th>
+              <th style={{ textAlign: 'center' }}>Est. Spends</th>
+              <th style={{ textAlign: 'center' }}>Difference</th>
+              <th style={{ textAlign: 'center' }}>Est - Plan</th>
+              <th style={{ textAlign: 'center' }}>Over/Under</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <React.Fragment key={r.region}>
+                {renderRow(r)}
+              </React.Fragment>
+            ))}
+            {renderRow({ region: 'Grand Total', plan: gtPlan, ...gtRow }, true)}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

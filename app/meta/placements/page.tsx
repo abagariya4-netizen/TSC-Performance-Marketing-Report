@@ -95,11 +95,11 @@ export default function PlacementsPage() {
         loading={loading}
       />
 
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: '#1a1d27', padding: '16px', borderRadius: '8px', border: '1px solid #2d3748' }}>
+      <div className="card" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <label style={{ color: '#a0aec0', fontSize: '14px', fontWeight: 'bold' }}>ROAS Mode:</label>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 'bold' }}>ROAS Mode:</label>
           <select 
-            style={{ background: '#0d1117', color: 'white', border: '1px solid #2d3748', padding: '8px 12px', borderRadius: '6px', outline: 'none' }}
+            className="input-field"
             value={roasMode} 
             onChange={(e) => {
               setRoasMode(e.target.value as 'without' | 'with');
@@ -113,18 +113,18 @@ export default function PlacementsPage() {
 
         {roasMode === 'with' && (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <label style={{ color: '#a0aec0', fontSize: '14px' }}>Upload CSV:</label>
+            <label style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Upload CSV:</label>
             <input 
               type="file" 
               accept=".csv"
               onChange={(e) => setRoasFile(e.target.files?.[0] || null)}
-              style={{ color: 'white', fontSize: '14px' }}
+              style={{ fontSize: '14px' }}
             />
           </div>
         )}
       </div>
 
-      {error && <div style={{ background: '#3a1a1a', color: '#fc8181', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
+      {error && <div style={{ background: 'rgba(244, 63, 94, 0.1)', color: 'var(--danger-color)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(244, 63, 94, 0.2)' }}>{error}</div>}
 
       {data && data.placements && (
         <PlacementsTable 

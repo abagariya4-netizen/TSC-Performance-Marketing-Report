@@ -102,78 +102,80 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
   };
 
   return (
-    <div style={{ overflowX: 'auto', marginTop: '16px' }}>
-      <div style={{ marginBottom: '10px', textAlign: 'right' }}>
-        <button onClick={exportCSV} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+    <div style={{ marginTop: '16px', marginBottom: '32px' }}>
+      <div style={{ marginBottom: '12px', textAlign: 'right' }}>
+        <button onClick={exportCSV} className="btn-outline">
           📥 Export CSV
         </button>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', whiteSpace: 'nowrap' }}>
-        <thead>
-          <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-            <th style={{ padding: '10px 12px', textAlign: 'left' }}>Product ({selectedCategory})</th>
-            <th style={{ padding: '10px 12px' }}>{labels.month1}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.month2}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.month3}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.curMonthFirst15}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.day3}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.day2}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>{labels.day1}<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(Amt | Salience)</span></th>
-            <th style={{ padding: '10px 12px' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal'}}>(MTD + {labels.day1}×Remaining)</span></th>
-            <th style={{ padding: '10px 12px' }}>vs Avg 3 Months</th>
-            <th style={{ padding: '10px 12px' }}>vs {labels.lastMonth}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 && (
+      <div className="table-wrapper">
+        <table className="modern-table">
+          <thead>
             <tr>
-              <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No products found in this category.</td>
+              <th style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Product ({selectedCategory})</th>
+              <th style={{ textAlign: 'center' }}>{labels.month1}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.month2}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.month3}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.curMonthFirst15}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.day3}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.day2}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>{labels.day1}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
+              <th style={{ textAlign: 'center' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {labels.day1}×Remaining)</span></th>
+              <th style={{ textAlign: 'center' }}>vs Avg 3 Months</th>
+              <th style={{ textAlign: 'center' }}>vs {labels.lastMonth}</th>
             </tr>
-          )}
-          {rows.map((r, i) => (
-            <tr key={r.name} style={{ background: i % 2 === 0 ? '#1a1d27' : '#1f2333' }}>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left' }}>{r.name}</td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.month1)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth1 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.month2)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth2 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.month3)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceMonth3 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.curMonthFirst15)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceCurFirst15 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.day3)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay3 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.day2)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay2 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                <div>{formatINR(r.day1)}</div>
-                <div style={{ fontSize: '12px', color: '#a0aec0' }}>{(r.salienceDay1 || 0).toFixed(1)}%</div>
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', fontWeight: 'bold' }}>
-                {formatINR(r.estSpends)}
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                {renderPct(r.vsAvg3Months)}
-              </td>
-              <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
-                {renderPct(r.vsLastMonth)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No products found in this category.</td>
+              </tr>
+            )}
+            {rows.map((r, i) => (
+              <tr key={r.name}>
+                <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', fontWeight: 500 }}>{r.name}</td>
+                <td>
+                  <div>{formatINR(r.month1)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth1 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.month2)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth2 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.month3)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth3 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.curMonthFirst15)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceCurFirst15 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.day3)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay3 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.day2)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay2 || 0).toFixed(1)}%</div>
+                </td>
+                <td>
+                  <div>{formatINR(r.day1)}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay1 || 0).toFixed(1)}%</div>
+                </td>
+                <td style={{ fontWeight: 'bold' }}>
+                  {formatINR(r.estSpends)}
+                </td>
+                <td>
+                  {renderPct(r.vsAvg3Months)}
+                </td>
+                <td>
+                  {renderPct(r.vsLastMonth)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -202,16 +204,17 @@ function PageContent() {
   };
 
   return (
-    <div style={{ background: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white' }}>
-      <div>
+    <div style={{ padding: '0 24px 24px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>Product Spends (Google)</h1>
         <DaysCountBadge />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          style={{ background: '#1a1d27', color: 'white', border: '1px solid #4a5568', borderRadius: '6px', padding: '8px 12px' }}
+          className="input-field"
+          style={{ minWidth: '150px' }}
         >
           {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
         </select>
@@ -219,15 +222,15 @@ function PageContent() {
         <button
           onClick={generateReport}
           disabled={loading}
-          style={{ background: '#e8733a', color: 'white', border: 'none', borderRadius: '6px', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}
+          className="btn-primary"
         >
-          {loading ? 'Loading...' : '🔄 Generate Report'}
+          {loading ? '⏳ Loading...' : '🔄 Generate Report'}
         </button>
 
-        {lastUpdated && <span style={{ color: '#a0aec0', fontSize: '14px' }}>Last updated: {lastUpdated}</span>}
+        {lastUpdated && <span style={{ color: 'var(--text-secondary)', fontSize: '14px', marginLeft: 'auto' }}>Last updated: {lastUpdated}</span>}
       </div>
 
-      {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>Error: {error}</div>}
+      {error && <div style={{ color: 'var(--danger-color)', marginBottom: '16px', padding: '16px', background: 'rgba(244, 63, 94, 0.1)', borderRadius: '8px' }}>Error: {error}</div>}
 
       {data && <ProductSpendsTable data={data} selectedCategory={selectedCategory} />}
     </div>
@@ -236,7 +239,7 @@ function PageContent() {
 
 export default function ProductSpendsPage() {
   return (
-    <Suspense fallback={<div style={{ background: '#0f1117', minHeight: '100vh', color: 'white', padding: '24px' }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ padding: '24px' }}>Loading...</div>}>
       <PageContent />
     </Suspense>
   );

@@ -43,34 +43,13 @@ export default function TokenInput() {
 
   if (!isClient) return null;
 
-  const btnStyle = {
-    background: '#3182ce',
-    color: 'white',
-    border: 'none',
-    padding: '7px 16px',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'background 0.2s'
-  };
 
-  const inputStyle = {
-    background: '#0f1117',
-    border: '1px solid #4a5568',
-    color: 'white',
-    padding: '6px 12px',
-    borderRadius: '6px',
-    fontSize: '14px',
-    width: '200px',
-    outline: 'none'
-  };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
       {/* Meta Token */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <label style={{ color: '#a0aec0', fontSize: '14px', fontWeight: 500 }}>
+        <label style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>
           Meta Token:
         </label>
         <input
@@ -78,13 +57,12 @@ export default function TokenInput() {
           value={metaToken}
           onChange={(e) => setMetaToken(e.target.value)}
           placeholder="••••••••••••••••••••"
-          style={inputStyle}
+          className="input-field"
+          style={{ width: '180px' }}
         />
         <button
           onClick={handleUpdateMeta}
-          style={btnStyle}
-          onMouseOver={(e) => e.currentTarget.style.background = '#2b6cb0'}
-          onMouseOut={(e) => e.currentTarget.style.background = '#3182ce'}
+          className="btn-outline"
         >
           Update
         </button>
@@ -92,7 +70,7 @@ export default function TokenInput() {
 
       {/* Google Token */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <label style={{ color: '#a0aec0', fontSize: '14px', fontWeight: 500 }}>
+        <label style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>
           Google Token:
         </label>
         <input
@@ -100,13 +78,12 @@ export default function TokenInput() {
           value={googleToken}
           onChange={(e) => setGoogleToken(e.target.value)}
           placeholder="Refresh Token..."
-          style={inputStyle}
+          className="input-field"
+          style={{ width: '180px' }}
         />
         <button
           onClick={handleUpdateGoogle}
-          style={btnStyle}
-          onMouseOver={(e) => e.currentTarget.style.background = '#2b6cb0'}
-          onMouseOut={(e) => e.currentTarget.style.background = '#3182ce'}
+          className="btn-outline"
         >
           Update
         </button>

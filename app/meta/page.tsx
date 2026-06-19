@@ -81,7 +81,7 @@ function HomeContent() {
   const anyPlanLoaded = regionPlan || cityPlan;
 
   return (
-    <main style={{ color: 'white', padding: '0 24px 24px 24px', fontFamily: 'Inter, sans-serif' }}>
+    <main className="container">
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>
           {activeTab === 'region' ? 'Region Level Spends (Meta)' : '6 City (Meta)'}
@@ -90,8 +90,8 @@ function HomeContent() {
       </div>
 
       {!anyPlanLoaded ? (
-        <div style={{ background: '#1a1d27', borderRadius: '12px', padding: '32px', maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ marginBottom: '24px', color: '#90cdf4' }}>Upload your plan CSVs to get started</p>
+        <div className="card" style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>Upload your plan CSVs to get started</p>
           <PlanUpload label="Region Plan CSV" onLoad={handleRegionPlanUpload} loaded={!!regionPlan} count={regionPlan ? Object.keys(regionPlan).length : 0} unit="regions" />
           <div style={{ marginTop: '16px' }}>
             <PlanUpload label="6 City Plan CSV" onLoad={handleCityPlanUpload} loaded={!!cityPlan} count={cityPlan ? Object.keys(cityPlan).length : 0} unit="cities" />
@@ -99,18 +99,21 @@ function HomeContent() {
         </div>
       ) : (
         <>
-          <div style={{ background: '#1a3a2a', borderRadius: '8px', padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="card" style={{ padding: '10px 16px', marginBottom: '16px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
             <PlanUpload label="Region Plan" onLoad={handleRegionPlanUpload} loaded={!!regionPlan} count={regionPlan ? Object.keys(regionPlan).length : 0} unit="regions" compact />
             <PlanUpload label="6 City Plan" onLoad={handleCityPlanUpload} loaded={!!cityPlan} count={cityPlan ? Object.keys(cityPlan).length : 0} unit="cities" compact />
             
-            <button onClick={generateReport} disabled={loading}
-              style={{ marginLeft: 'auto', padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                background: '#e8733a', color: 'white', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
+            <button 
+              onClick={generateReport} 
+              disabled={loading}
+              className="btn-primary"
+              style={{ marginLeft: 'auto' }}
+            >
               {loading ? '⏳ Fetching...' : '🔄 Generate Report'}
             </button>
           </div>
 
-          {error && <div style={{ background: '#3a1a1a', color: '#fc8181', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
+          {error && <div style={{ background: 'rgba(244, 63, 94, 0.1)', color: 'var(--danger-color)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(244, 63, 94, 0.2)' }}>{error}</div>}
 
           {activeTab === 'region' && regionData && (
             <RegionTable data={regionData} plan={regionPlan || {}} />

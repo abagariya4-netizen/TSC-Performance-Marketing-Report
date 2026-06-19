@@ -105,54 +105,38 @@ export default function Google6CitySpends() {
   };
 
   return (
-    <div style={{ backgroundColor: '#0f1117', minHeight: '100vh', padding: '24px', color: 'white', fontFamily: 'sans-serif' }}>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>6 City (Google) Report</h1>
-          <DaysCountBadge />
-        </div>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <PlanUpload
-            label="6 City Google Plan"
-            onLoad={handlePlanUpload}
-            loaded={!!planData}
-            count={planData ? Object.keys(planData).length : 0}
-            unit="cities"
-            compact={true}
-          />
-          <button 
-            onClick={fetchData}
-            style={{ 
-              backgroundColor: '#e8733a', 
-              color: 'white', 
-              padding: '10px 20px', 
-              borderRadius: '8px', 
-              border: 'none', 
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            {loading ? 'Generating...' : 'Generate Report'}
-          </button>
-          <button 
-            style={{ 
-              backgroundColor: '#2d3748', 
-              color: 'white', 
-              padding: '10px 20px', 
-              borderRadius: '8px', 
-              border: '1px solid #4a5568', 
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-            onClick={exportCSV}
-          >
-            Export CSV
+    <div style={{ padding: '0 24px 24px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0' }}>6 City (Google)</h1>
+            <DaysCountBadge />
+          </div>
+          <button onClick={exportCSV} className="btn-outline">
+            📥 Export CSV
           </button>
         </div>
       </div>
 
-      {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>Error: {error}</div>}
+      <div className="card" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap' }}>
+        <PlanUpload 
+          label="6 City Plan" 
+          onLoad={handlePlanUpload} 
+          loaded={!!planData} 
+          count={planData ? Object.keys(planData).length : 0} 
+          unit="cities" 
+        />
+        
+        <button 
+          onClick={fetchData} 
+          disabled={loading || !planData}
+          className="btn-primary"
+        >
+          {loading ? '⏳ Loading...' : '🔄 Generate Report'}
+        </button>
+
+        {error && <span style={{ color: 'var(--danger-color)', marginLeft: '12px' }}>{error}</span>}
+      </div>
 
       {data && !loading && (
         <Google6CityTable data={data} planData={planData} />

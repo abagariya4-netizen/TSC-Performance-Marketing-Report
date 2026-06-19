@@ -121,38 +121,38 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
     return (
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h2 style={{ fontSize: '18px', margin: 0 }}>{title}</h2>
-          <button onClick={() => exportCSV(dataMap, periodList, isMonth, filenamePrefix)} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+          <h2 style={{ fontSize: '18px', margin: 0, fontWeight: 600 }}>{title}</h2>
+          <button onClick={() => exportCSV(dataMap, periodList, isMonth, filenamePrefix)} className="btn-outline">
             📥 Export CSV
           </button>
         </div>
-        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', whiteSpace: 'nowrap' }}>
+        <div className="table-wrapper">
+          <table className="modern-table">
             <thead>
-              <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                <th rowSpan={2} style={{ padding: '10px 12px', textAlign: 'left', verticalAlign: 'bottom' }}>Funnel</th>
-                <th colSpan={periodList.length} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>{metricLabel}</th>
+              <tr>
+                <th rowSpan={2} style={{ textAlign: 'left', verticalAlign: 'bottom', borderRight: '1px solid var(--border-color)' }}>Funnel</th>
+                <th colSpan={periodList.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{metricLabel}</th>
                 {extraColumns.map(c => (
-                  <th key={c.key} colSpan={periodList.length} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>{c.label}</th>
+                  <th key={c.key} colSpan={periodList.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{c.label}</th>
                 ))}
-                <th colSpan={3} style={{ padding: '6px', borderBottom: '1px solid #c05621' }}>Comparisons</th>
+                <th colSpan={3} style={{ textAlign: 'center' }}>Comparisons</th>
               </tr>
-              <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
+              <tr>
                 {periodList.map(p => (
-                  <th key={`g1-${p}`} style={{ padding: '10px 12px' }}>
+                  <th key={`g1-${p}`} style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>
                     {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
                   </th>
                 ))}
                 {extraColumns.map(c => (
                   periodList.map(p => (
-                    <th key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px' }}>
+                    <th key={`g2-${c.key}-${p}`} style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>
                       {isMonth ? formatMonthHeader(p) : formatDayHeader(p)}
                     </th>
                   ))
                 ))}
-                <th style={{ padding: '10px 12px' }}>{currentHeader} vs Last {isMonth ? 'Month' : 'Day'}</th>
-                <th style={{ padding: '10px 12px' }}>{currentHeader} vs Avg 3 {isMonth ? 'Months' : 'Days'}</th>
-                <th style={{ padding: '10px 12px' }}>Last 7 Days</th>
+                <th style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>{currentHeader} vs Last {isMonth ? 'Month' : 'Day'}</th>
+                <th style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>{currentHeader} vs Avg 3 {isMonth ? 'Months' : 'Days'}</th>
+                <th style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>Last 7 Days</th>
               </tr>
             </thead>
             <tbody>
@@ -165,12 +165,12 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
                 const last7 = calcLast7Days(dailyData[funnel] || {}, (p) => dailyData[funnel][p] ? metricFn(dailyData[funnel][p]) : null);
 
                 return (
-                  <tr key={funnel} style={{ background: i % 2 === 0 ? '#1a1d27' : '#1f2333' }}>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left', fontWeight: 'bold' }}>
+                  <tr key={funnel}>
+                    <td style={{ textAlign: 'left', fontWeight: 'bold', borderRight: '1px solid var(--border-color)' }}>
                       {funnel.charAt(0).toUpperCase() + funnel.slice(1).toLowerCase()}
                     </td>
                     {periodList.map(p => (
-                      <td key={`g1-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
+                      <td key={`g1-${p}`}>
                         {formatVal(metricByPeriod[p])}
                       </td>
                     ))}
@@ -178,15 +178,15 @@ export default function MetricsReport({ type, monthlyData, dailyData, periods, m
                       periodList.map(p => {
                         const val = rowData[p] ? rowData[p][c.key] : 0;
                         return (
-                          <td key={`g2-${c.key}-${p}`} style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>
+                          <td key={`g2-${c.key}-${p}`}>
                             {c.format ? c.format(val) : val?.toLocaleString('en-IN') || 0}
                           </td>
                         );
                       })
                     ))}
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatPct(vsLastMonth)}</td>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatPct(vsAvg3)}</td>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748' }}>{formatPct(last7)}</td>
+                    <td>{formatPct(vsLastMonth)}</td>
+                    <td>{formatPct(vsAvg3)}</td>
+                    <td>{formatPct(last7)}</td>
                   </tr>
                 );
               })}

@@ -213,66 +213,61 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
   const last3Months = periods.slice(Math.max(0, periods.length - 4), periods.length - 1);
 
   if (periods.length === 0) {
-    return <div style={{ padding: '20px', textAlign: 'center', background: '#1a1d27', borderRadius: '8px' }}>No data available</div>;
+    return <div className="card" style={{ textAlign: 'center' }}>No data available</div>;
   }
-
-  const thStyle = { padding: '6px', borderBottom: '1px solid #c05621', textAlign: 'center' as any };
-  const thSubStyle = { padding: '10px 12px', textAlign: 'center' as any };
-  const tdStyle = { padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'right' as any };
 
   return (
     <div style={{ marginBottom: '32px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ fontSize: '18px', margin: 0 }}>📊 Placements Breakdowns</h2>
-        <button onClick={exportCSV} style={{ background: 'transparent', border: '1px solid #4a5568', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+        <h2 style={{ fontSize: '18px', margin: 0, fontWeight: 600 }}>📊 Placements Breakdowns</h2>
+        <button onClick={exportCSV} className="btn-outline">
           📥 Export CSV
         </button>
       </div>
       
-      <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3748' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
+      <div className="table-wrapper">
+        <table className="modern-table">
           <thead>
-            <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
-              <th rowSpan={2} style={{ padding: '10px 12px', textAlign: 'left', verticalAlign: 'bottom' }}>Placement</th>
-              <th colSpan={periods.length} style={thStyle}>Amount Spent</th>
-              <th colSpan={periods.length} style={thStyle}>Amount Spent Salience (%)</th>
+            <tr>
+              <th rowSpan={2} style={{ textAlign: 'left', verticalAlign: 'bottom', borderRight: '1px solid var(--border-color)' }}>Placement</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Amount Spent</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Amount Spent Salience (%)</th>
               
               {showCategoryRoas && (
                 <>
-                  <th colSpan={periods.length} style={thStyle}>{category === 'All' ? 'Category' : category} ROAS</th>
+                  <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{category === 'All' ? 'Category' : category} ROAS</th>
                 </>
               )}
 
-              <th colSpan={periods.length} style={thStyle}>Overall Purchase ROAS</th>
-              <th colSpan={periods.length} style={thStyle}>Overall Purchase Conv. Value</th>
-              <th colSpan={periods.length} style={thStyle}>Overall Conv. Value Salience (%)</th>
-              <th colSpan={periods.length} style={thStyle}>CTR (%)</th>
-              <th colSpan={periods.length} style={thStyle}>CPC</th>
-              <th colSpan={periods.length} style={thStyle}>CPM</th>
-              <th colSpan={periods.length} style={thStyle}>Link Clicks</th>
-              <th colSpan={periods.length} style={thStyle}>LC to LP (%)</th>
-              <th colSpan={periods.length} style={thStyle}>Landing Page Views</th>
-              <th colSpan={periods.length} style={thStyle}>Impressions</th>
-              <th colSpan={2} style={thStyle}>Comparisons</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Overall Purchase ROAS</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Overall Purchase Conv. Value</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Overall Conv. Value Salience (%)</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>CTR (%)</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>CPC</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>CPM</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Link Clicks</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>LC to LP (%)</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Landing Page Views</th>
+              <th colSpan={periods.length} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>Impressions</th>
+              <th colSpan={2} style={{ textAlign: 'center' }}>Comparisons</th>
             </tr>
-            <tr style={{ background: '#e8733a', color: 'white', fontWeight: 'bold' }}>
+            <tr>
               {/* Amount Spent */}
-              {periods.map(p => <th key={`sp-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)}
+              {periods.map(p => <th key={`sp-${p}`} style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>{formatMonthHeader(p)}</th>)}
               
               {/* Other columns */}
               {[...Array((showCategoryRoas ? 12 : 11))].map((_, i) => (
-                periods.map(p => <th key={`sub-${i}-${p}`} style={thSubStyle}>{formatMonthHeader(p)}</th>)
+                periods.map(p => <th key={`sub-${i}-${p}`} style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>{formatMonthHeader(p)}</th>)
               ))}
               
-              <th style={thSubStyle}>vs Last Month</th>
-              <th style={thSubStyle}>vs Avg 3M</th>
+              <th style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>vs Last Month</th>
+              <th style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)' }}>vs Avg 3M</th>
             </tr>
           </thead>
           <tbody>
             {[...sortedPlacements, 'TOTAL'].map((placement, i) => {
               const isTotal = placement === 'TOTAL';
               const rowMap = isTotal ? totalsByMonth : data[placement];
-              const bg = isTotal ? '#0d2137' : (i % 2 === 0 ? '#1a1d27' : '#1f2333');
               const weight = isTotal ? 'bold' : 'normal';
 
               const currentSpend = rowMap[currentPeriod]?.spend || 0;
@@ -282,19 +277,19 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
                 : 0;
 
               return (
-                <tr key={placement} style={{ background: bg, fontWeight: weight }}>
-                  <td style={{ padding: '10px 12px', borderBottom: '1px solid #2d3748', textAlign: 'left' }}>
+                <tr key={placement} style={{ fontWeight: weight, background: isTotal ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
+                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>
                     {placement}
                   </td>
                   
                   {/* Amount Spent */}
-                  {periods.map(p => <td key={p} style={tdStyle}>{formatINR(rowMap[p]?.spend || 0)}</td>)}
+                  {periods.map(p => <td key={p}>{formatINR(rowMap[p]?.spend || 0)}</td>)}
 
                   {/* Salience Spend */}
                   {periods.map(p => {
                     const total = totalsByMonth[p].spend;
                     const val = rowMap[p]?.spend || 0;
-                    return <td key={p} style={tdStyle}>{total > 0 ? formatPct((val / total) * 100) : '—'}</td>;
+                    return <td key={p}>{total > 0 ? formatPct((val / total) * 100) : '—'}</td>;
                   })}
 
                   {/* Category ROAS */}
@@ -303,11 +298,11 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
                       {periods.map(p => {
                         if (csvRoasData) {
                           const csvVal = csvRoasData[placement]?.[p];
-                          return <td key={p} style={tdStyle}>{csvVal != null ? csvVal : '—'}</td>;
+                          return <td key={p}>{csvVal != null ? csvVal : '—'}</td>;
                         } else {
                           const spend = rowMap[p]?.spend || 0;
                           const conv = rowMap[p]?.category_purchase || 0;
-                          return <td key={p} style={tdStyle}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
+                          return <td key={p}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
                         }
                       })}
                     </>
@@ -317,59 +312,59 @@ export default function PlacementsTable({ data, periods, category, hasCategoryAc
                   {periods.map(p => {
                     const spend = rowMap[p]?.spend || 0;
                     const conv = rowMap[p]?.overall_purchase || 0;
-                    return <td key={p} style={tdStyle}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
+                    return <td key={p}>{spend > 0 ? (conv / spend).toFixed(2) : '—'}</td>;
                   })}
                   
                   {/* Overall Conv Value */}
-                  {periods.map(p => <td key={p} style={tdStyle}>{formatINR(rowMap[p]?.overall_purchase || 0)}</td>)}
+                  {periods.map(p => <td key={p}>{formatINR(rowMap[p]?.overall_purchase || 0)}</td>)}
                   
                   {/* Overall Salience */}
                   {periods.map(p => {
                     const total = totalsByMonth[p].overall_purchase;
                     const val = rowMap[p]?.overall_purchase || 0;
-                    return <td key={p} style={tdStyle}>{total > 0 ? formatPct((val / total) * 100) : '—'}</td>;
+                    return <td key={p}>{total > 0 ? formatPct((val / total) * 100) : '—'}</td>;
                   })}
 
                   {/* CTR */}
                   {periods.map(p => {
                     const imp = rowMap[p]?.impressions || 0;
                     const clicks = rowMap[p]?.clicks || 0;
-                    return <td key={p} style={tdStyle}>{imp > 0 ? formatPct((clicks / imp) * 100) : '—'}</td>;
+                    return <td key={p}>{imp > 0 ? formatPct((clicks / imp) * 100) : '—'}</td>;
                   })}
 
                   {/* CPC */}
                   {periods.map(p => {
                     const spend = rowMap[p]?.spend || 0;
                     const clicks = rowMap[p]?.clicks || 0;
-                    return <td key={p} style={tdStyle}>{clicks > 0 ? `₹${(spend / clicks).toFixed(2)}` : '—'}</td>;
+                    return <td key={p}>{clicks > 0 ? `₹${(spend / clicks).toFixed(2)}` : '—'}</td>;
                   })}
 
                   {/* CPM */}
                   {periods.map(p => {
                     const spend = rowMap[p]?.spend || 0;
                     const imp = rowMap[p]?.impressions || 0;
-                    return <td key={p} style={tdStyle}>{imp > 0 ? `₹${((spend / imp) * 1000).toFixed(2)}` : '—'}</td>;
+                    return <td key={p}>{imp > 0 ? `₹${((spend / imp) * 1000).toFixed(2)}` : '—'}</td>;
                   })}
 
                   {/* Link Clicks */}
-                  {periods.map(p => <td key={p} style={tdStyle}>{Math.round(rowMap[p]?.link_clicks || 0).toLocaleString('en-IN')}</td>)}
+                  {periods.map(p => <td key={p}>{Math.round(rowMap[p]?.link_clicks || 0).toLocaleString('en-IN')}</td>)}
 
                   {/* LC to LP */}
                   {periods.map(p => {
                     const lc = rowMap[p]?.link_clicks || 0;
                     const lp = rowMap[p]?.landing_page_views || 0;
-                    return <td key={p} style={tdStyle}>{lc > 0 ? formatPct((lp / lc) * 100) : '—'}</td>;
+                    return <td key={p}>{lc > 0 ? formatPct((lp / lc) * 100) : '—'}</td>;
                   })}
 
                   {/* Landing Page Views */}
-                  {periods.map(p => <td key={p} style={tdStyle}>{Math.round(rowMap[p]?.landing_page_views || 0).toLocaleString('en-IN')}</td>)}
+                  {periods.map(p => <td key={p}>{Math.round(rowMap[p]?.landing_page_views || 0).toLocaleString('en-IN')}</td>)}
 
                   {/* Impressions */}
-                  {periods.map(p => <td key={p} style={tdStyle}>{Math.round(rowMap[p]?.impressions || 0).toLocaleString('en-IN')}</td>)}
+                  {periods.map(p => <td key={p}>{Math.round(rowMap[p]?.impressions || 0).toLocaleString('en-IN')}</td>)}
 
                   {/* Comparisons */}
-                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, prevSpend))}</td>
-                  <td style={tdStyle}>{formatComp(pctChange(currentSpend, avg3))}</td>
+                  <td>{formatComp(pctChange(currentSpend, prevSpend))}</td>
+                  <td>{formatComp(pctChange(currentSpend, avg3))}</td>
 
                 </tr>
               );

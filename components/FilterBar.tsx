@@ -36,25 +36,15 @@ export default function FilterBar({
     }
   }, [since, until, setSince, setUntil]);
 
-  const selectStyle = {
-    background: '#1a1d27', color: 'white', border: '1px solid #2d3748', 
-    padding: '8px 12px', borderRadius: '6px', outline: 'none'
-  };
-
-  const inputStyle = {
-    ...selectStyle,
-    colorScheme: 'dark'
-  };
-
   return (
-    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+    <div className="card" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '24px', padding: '16px 20px' }}>
       
-      <select style={selectStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
+      <select className="input-field" value={category} onChange={(e) => setCategory(e.target.value)}>
         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
 
       {funnel !== undefined && setFunnel && (
-        <select style={selectStyle} value={funnel} onChange={(e) => setFunnel(e.target.value)}>
+        <select className="input-field" value={funnel} onChange={(e) => setFunnel(e.target.value)}>
           <option value="All">All Funnels</option>
           <option value="TOP">Top</option>
           <option value="MID">Mid</option>
@@ -64,21 +54,19 @@ export default function FilterBar({
         </select>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1d27', padding: '4px 12px', borderRadius: '6px', border: '1px solid #2d3748' }}>
-        <label style={{ color: '#a0aec0', fontSize: '14px' }}>From:</label>
-        <input type="date" style={{ ...inputStyle, border: 'none', background: 'transparent' }} value={since} onChange={e => setSince(e.target.value)} />
-        <label style={{ color: '#a0aec0', fontSize: '14px' }}>To:</label>
-        <input type="date" style={{ ...inputStyle, border: 'none', background: 'transparent' }} value={until} onChange={e => setUntil(e.target.value)} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+        <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>From:</label>
+        <input type="date" className="input-field" style={{ border: 'none', background: 'transparent', padding: 0 }} value={since} onChange={e => setSince(e.target.value)} />
+        <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }}></div>
+        <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>To:</label>
+        <input type="date" className="input-field" style={{ border: 'none', background: 'transparent', padding: 0 }} value={until} onChange={e => setUntil(e.target.value)} />
       </div>
 
       <button 
         onClick={onGenerate} 
         disabled={loading}
-        style={{ 
-          padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-          background: '#e8733a', color: 'white', fontWeight: 700, opacity: loading ? 0.7 : 1,
-          marginLeft: 'auto'
-        }}>
+        className="btn-primary"
+        style={{ marginLeft: 'auto' }}>
         {loading ? '⏳ Fetching...' : '🔄 Generate Report'}
       </button>
     </div>

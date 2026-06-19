@@ -120,11 +120,32 @@ export async function GET() {
         const campaignCategory = getCategoryFromCampaign(campaignName);
         const productCategory = getCategoryForProduct(cleanName);
 
+        const ALLOWED_CROSS_PRODUCTS = [
+          'Recliner Bed',
+          'Recliner Sofa - Revolving',
+          'Height Adjustable Desk',
+          'Onyx Orthopedic Office Chair',
+          'XGen Pro Gaming Chair',
+          'Stylux Ergonomic Office Chair',
+          'UNO Ergonomic Office Chair',
+          'Flex Ergonomic Office Chair',
+          'Ultron Premium Ergonomic Office Chair',
+          'Recliner Sofa - Non-Revolving',
+          'Orthopedic Office Chair',
+          'Ergonomic Office Chair'
+        ];
+
+        const isAllowedCrossProduct = campaignCategory === 'Mattress' && 
+          (ALLOWED_CROSS_PRODUCTS.includes(cleanName) || 
+           cleanName.includes('Ergonomic Office Chair') || 
+           cleanName.includes('Orthopedic Office Chair'));
+
         // Only include the spend if the product actually belongs to the campaign's mapped category.
         // This ensures that:
         // 1. Generic campaigns (defaulting to Mattress) don't pollute the Mattress category with Chairs/Desks.
         // 2. The Chair/Desk categories ONLY receive spend from their designated Chair/Desk campaigns, keeping totals accurate.
-        if (campaignCategory !== productCategory) {
+        // EXCEPT: Explicitly requested cross-products in the Mattress campaign.
+        if (campaignCategory !== productCategory && !isAllowedCrossProduct) {
           return;
         }
 

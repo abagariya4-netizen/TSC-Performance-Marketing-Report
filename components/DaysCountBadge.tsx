@@ -36,15 +36,20 @@ export default function DaysCountBadge() {
 
   return (
     <div style={{ 
-      display: 'inline-block', 
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
       marginTop: '8px', 
       padding: '4px 12px', 
-      backgroundColor: '#2d3748', 
-      borderRadius: '16px', 
-      fontSize: '14px', 
-      color: '#a0aec0' 
+      background: 'rgba(99, 102, 241, 0.1)',
+      border: '1px solid rgba(99, 102, 241, 0.2)',
+      borderRadius: '999px', 
+      fontSize: '13px', 
+      fontWeight: 500,
+      color: 'var(--accent-hover)' 
     }}>
-      {dateInfo.displayDate} | Day {dateInfo.daysPassed} of {dateInfo.totalDays} | {dateInfo.daysRemaining} days remaining
+      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 8px var(--accent-primary)' }}></span>
+      {dateInfo.displayDate} <span style={{ opacity: 0.5 }}>|</span> Day {dateInfo.daysPassed} of {dateInfo.totalDays} <span style={{ opacity: 0.5 }}>|</span> {dateInfo.daysRemaining} days remaining
     </div>
   );
 }
