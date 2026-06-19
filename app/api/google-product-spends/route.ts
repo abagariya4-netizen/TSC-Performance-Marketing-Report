@@ -118,14 +118,9 @@ export async function GET() {
 
         const cleanName = getCleanProductName(rawTitle);
         const campaignCategory = getCategoryFromCampaign(campaignName);
-        const productCategory = getCategoryForProduct(cleanName);
-
-        // Rule: If any product gets spends from a Mattress campaign, it should be tagged under the Mattress category.
-        // For other campaigns (Chair, Desk, etc.), we enforce strict matching to prevent cross-pollination.
-        if (campaignCategory !== 'Mattress' && campaignCategory !== productCategory) {
-          return;
-        }
-
+        
+        // As requested: Any product getting spends from a specific campaign will be 
+        // tagged under that campaign's category, regardless of the product's name.
         const category = campaignCategory;
 
         if (!categoryTotals[category]) categoryTotals[category] = {};
