@@ -115,18 +115,28 @@ export const PRODUCT_TITLE_MAP: Record<string, string> = {
   "Glacier Thermo Fitted Sheet – Thermo Regulated Bedsheet Online King / 78\" x 72\" / White": "Thermo Fitted Sheet",
   "Glacier Thermo Fitted Sheet – Thermo Regulated Bedsheet Online King / 84\" x 72\" / Grey": "Thermo Fitted Sheet",
   "Sunrise Thermo Fitted Sheet - Buy Thermo Regulated Fitted Sheet Online King / 78\" x 72\" / White": "Thermo Fitted Sheet",
+  "The Sleep Company - Ortho Grid Mattress": "Smart Ortho Grid Mattress",
+  "Buy Smart Luxe Pro Latex Mattress – Luxury Comfort": "Smart Luxe Pro Mattress",
+  "Buy Smart Luxe Pro Latex Mattress": "Smart Luxe Pro Mattress",
+  "Smart luxe Pro Mattress Online - Latex + SmartGRID": "Smart Luxe Pro Mattress",
+  "Smart luxe Pro Mattress Online": "Smart Luxe Pro Mattress",
 };
 
 export function getCleanProductName(rawTitle: string): string {
   if (PRODUCT_TITLE_MAP[rawTitle]) return PRODUCT_TITLE_MAP[rawTitle];
   
-  // Fallback: strip common size/color suffixes and try matching base title
-  const stripped = rawTitle
-    .replace(/\s*\/\s*(King|Queen|Single|Diwan)\s*\/.*/i, '')
-    .replace(/\s*\d+\s*(in|inch)\s*\/.*/i, '')
-    .trim();
+  // Try taking everything before the first slash (removes size/color variants)
+  const baseSlash = rawTitle.split(/\s*\/\s*/)[0].trim();
+  if (PRODUCT_TITLE_MAP[baseSlash]) return PRODUCT_TITLE_MAP[baseSlash];
   
-  if (PRODUCT_TITLE_MAP[stripped]) return PRODUCT_TITLE_MAP[stripped];
+  // Try matching if raw title starts with any of our known base keys
+  // Sort by length descending to match the most specific prefix first
+  const keys = Object.keys(PRODUCT_TITLE_MAP).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    if (rawTitle.startsWith(key)) {
+      return PRODUCT_TITLE_MAP[key];
+    }
+  }
   
   // Last resort: return the raw title truncated, flagged for review
   return rawTitle.length > 50 ? rawTitle.substring(0, 50) + '...' : rawTitle;
