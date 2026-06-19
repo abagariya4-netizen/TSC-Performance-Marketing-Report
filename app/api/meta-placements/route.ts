@@ -72,8 +72,8 @@ export async function GET(req: NextRequest) {
        return NextResponse.json({ placements: {}, periods: [] });
     }
 
-    // STEP 2: Fetch breakdown data in chunks of 100 adset IDs, parallelized
-    const CHUNK_SIZE = 100;
+    // STEP 2: Fetch breakdown data in chunks of 50 adset IDs, parallelized
+    const CHUNK_SIZE = 50;
     let allBreakdowns: any[] = [];
     
     const chunks = [];
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
       chunks.push(adsetIdArray.slice(i, i + CHUNK_SIZE));
     }
 
-    const CONCURRENCY = 5;
+    const CONCURRENCY = 3;
     for (let i = 0; i < chunks.length; i += CONCURRENCY) {
       const batch = chunks.slice(i, i + CONCURRENCY);
       const batchPromises = batch.map(async (chunk) => {

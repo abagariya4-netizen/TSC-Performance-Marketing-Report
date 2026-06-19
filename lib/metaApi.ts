@@ -19,9 +19,9 @@ export async function fetchAllPages(url: string, retries = 4): Promise<any[]> {
         
         if (json.error) {
            const msg = json.error.message?.toLowerCase() || '';
-           if (json.error.code === 17 || json.error.code === 4 || msg.includes('limit reached')) {
+           if (json.error.code === 17 || json.error.code === 4 || json.error.code === 1 || json.error.code === 2 || msg.includes('limit reached') || msg.includes('temporarily unavailable') || msg.includes('timeout')) {
              if (attempt >= retries) throw new Error(`Meta API error: ${json.error.message}`);
-             console.warn(`Rate limit hit on page ${page}, waiting ${attempt * 3}s before retry...`);
+             console.warn(`Rate limit or transient error on page ${page}, waiting ${attempt * 3}s before retry...`);
              await delay(attempt * 3000);
              continue; 
            }
