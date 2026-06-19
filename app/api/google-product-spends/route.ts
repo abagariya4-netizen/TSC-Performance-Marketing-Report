@@ -183,8 +183,12 @@ export async function GET() {
         });
       }
 
-      // Sort by most recent day descending
-      productArr.sort((a, b) => b.day1 - a.day1);
+      // Sort by total spend (Sum of Amount spent: month1 + month2 + month3 + mtd) descending
+      productArr.sort((a, b) => {
+        const totalA = a.month1 + a.month2 + a.month3 + a.mtd;
+        const totalB = b.month1 + b.month2 + b.month3 + b.mtd;
+        return totalB - totalA;
+      });
       outputCategories[category] = { products: productArr };
     }
 
