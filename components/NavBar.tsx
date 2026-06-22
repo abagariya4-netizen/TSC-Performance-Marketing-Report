@@ -13,6 +13,7 @@ export default function NavBar() {
     { label: 'LC to LP',                   href: '/meta/lc-to-lp' },
     { label: 'CPM',                        href: '/meta/cpm' },
     { label: 'Placements (Meta)',          href: '/meta/placements' },
+    { label: 'Funnel Level Performance (Meta)', href: '/funnel-level-performance' },
     { label: 'City Level Spends (Google)', href: '/google/city-spends' },
     { label: '6 City (Google)',            href: '/google/6city-spends' },
     { label: 'Product Spends (Google)',    href: '/google/product-spends' },
