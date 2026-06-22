@@ -51,6 +51,9 @@ export default function GoogleCampaignPerformance() {
       }
       const json = await res.json();
       if (json.error) throw new Error(json.error);
+      if (json.campaigns) {
+        json.campaigns.sort((a: any, b: any) => (b.jun?.spend || 0) - (a.jun?.spend || 0));
+      }
       setData(json);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch');

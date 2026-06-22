@@ -100,7 +100,7 @@ export default function BrandImpressionMoM() {
             });
             return entry;
           });
-          finalKeywords.sort((a, b) => a.keyword.localeCompare(b.keyword));
+          finalKeywords.sort((a: any, b: any) => (b.jun?.spend || 0) - (a.jun?.spend || 0));
           
           const totals: any = {
             mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
@@ -127,6 +127,9 @@ export default function BrandImpressionMoM() {
           if (!res.ok) throw new Error('Failed to fetch keyword data');
           const json = await res.json();
           if (json.error) throw new Error(json.error);
+          if (json.keywords) {
+            json.keywords.sort((a: any, b: any) => (b.jun?.spend || 0) - (a.jun?.spend || 0));
+          }
           setData(json);
         }
       } catch (err: any) {
