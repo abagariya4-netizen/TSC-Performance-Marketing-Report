@@ -11,7 +11,7 @@ const fmtPctStr = (val: number) => {
 
 export default function BrandImpressionMoM() {
   const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('All');
   const [data, setData] = useState<any>(null);
   
   const [loadingCamps, setLoadingCamps] = useState(true);
@@ -41,9 +41,7 @@ export default function BrandImpressionMoM() {
         if (json.error) throw new Error(json.error);
         
         setCampaigns(json.campaigns || []);
-        if (json.campaigns && json.campaigns.length > 0) {
-          setSelectedCampaignId(json.campaigns[0].id);
-        }
+        // default is already 'All'
       } catch (err: any) {
         setError(err.message || 'Failed to load campaigns');
       } finally {
@@ -56,17 +54,81 @@ export default function BrandImpressionMoM() {
   // Fetch keyword data when campaign or dates change
   useEffect(() => {
     if (!selectedCampaignId) return;
+    if (selectedCampaignId === 'All' && campaigns.length === 0) return;
 
     const fetchKeywordData = async () => {
       setLoadingData(true);
       setError('');
       try {
-        const qs = new URLSearchParams({ campaignId: selectedCampaignId, startDate, endDate });
-        const res = await fetch(`/api/brand-impression/keywords?${qs.toString()}`);
-        if (!res.ok) throw new Error('Failed to fetch keyword data');
-        const json = await res.json();
-        if (json.error) throw new Error(json.error);
-        setData(json);
+        if (selectedCampaignId === 'All') {
+          const fetchPromises = campaigns.map(c => {
+            const qs = new URLSearchParams({ campaignId: c.id, startDate, endDate });
+            return fetch(`/api/brand-impression/keywords?${qs.toString()}`).then(r => r.ok ? r.json() : null);
+          });
+          const results = await Promise.all(fetchPromises);
+          
+          const mergedKeywords = new Map<string, any>();
+          
+          results.forEach(res => {
+            if (!res || res.error || !res.keywords) return;
+            res.keywords.forEach((k: any) => {
+              if (!mergedKeywords.has(k.keyword)) {
+                mergedKeywords.set(k.keyword, {
+                  keyword: k.keyword,
+                  mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+                  apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+                  may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+                  jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 }
+                });
+              }
+              const entry = mergedKeywords.get(k.keyword);
+              ['mar', 'apr', 'may', 'jun'].forEach(m => {
+                entry[m].spend += k[m].spend || 0;
+                entry[m].impressions += k[m].impressions || 0;
+                if (k[m].impressionShare > 0) {
+                  entry[m].eligibleImpressions += (k[m].impressions / (k[m].impressionShare / 100));
+                }
+              });
+            });
+          });
+          
+          const finalKeywords = Array.from(mergedKeywords.values()).map((entry: any) => {
+            ['mar', 'apr', 'may', 'jun'].forEach(m => {
+              entry[m].impressionShare = entry[m].eligibleImpressions > 0 
+                ? (entry[m].impressions / entry[m].eligibleImpressions) * 100 
+                : 0;
+            });
+            return entry;
+          });
+          finalKeywords.sort((a, b) => a.keyword.localeCompare(b.keyword));
+          
+          const totals: any = {
+            mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+            apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+            may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
+            jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 }
+          };
+          finalKeywords.forEach(k => {
+            ['mar', 'apr', 'may', 'jun'].forEach(m => {
+              totals[m].spend += k[m].spend;
+              totals[m].impressions += k[m].impressions;
+              totals[m].eligibleImpressions += k[m].eligibleImpressions;
+            });
+          });
+          ['mar', 'apr', 'may', 'jun'].forEach(m => {
+            totals[m].impressionShare = totals[m].eligibleImpressions > 0 
+              ? (totals[m].impressions / totals[m].eligibleImpressions) * 100 
+              : 0;
+          });
+          setData({ keywords: finalKeywords, total: totals });
+        } else {
+          const qs = new URLSearchParams({ campaignId: selectedCampaignId, startDate, endDate });
+          const res = await fetch(`/api/brand-impression/keywords?${qs.toString()}`);
+          if (!res.ok) throw new Error('Failed to fetch keyword data');
+          const json = await res.json();
+          if (json.error) throw new Error(json.error);
+          setData(json);
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to fetch keyword data');
       } finally {
@@ -74,7 +136,7 @@ export default function BrandImpressionMoM() {
       }
     };
     fetchKeywordData();
-  }, [selectedCampaignId, startDate, endDate]);
+  }, [selectedCampaignId, startDate, endDate, campaigns]);
 
   const exportCSV = () => {
     if (!data) return;
@@ -131,6 +193,7 @@ export default function BrandImpressionMoM() {
           >
             {loadingCamps && <option value="">Loading campaigns...</option>}
             {!loadingCamps && campaigns.length === 0 && <option value="">No branded campaigns found</option>}
+            {!loadingCamps && campaigns.length > 0 && <option value="All">All</option>}
             {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
