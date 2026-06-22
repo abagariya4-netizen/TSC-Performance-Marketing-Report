@@ -19,6 +19,7 @@ export default function NavBar() {
     { label: '6 City (Google)',            href: '/google/6city-spends' },
     { label: 'Product Spends (Google)',    href: '/google/product-spends' },
     { label: 'Campaign Type (Google)',     href: '/google-campaign-performance' },
+    { label: 'Brand Impression MoM (Google)', href: '/brand-impression' },
   ];
 
   const getIsActive = (href: string) => {
