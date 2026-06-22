@@ -35,18 +35,6 @@ function getCategory(name: string): string {
   return 'All / others';
 }
 
-const CATEGORY_CONVERSION_MAP: Record<string, string> = {
-  'Mattress': 'cl_overall_mattress_purchase',
-  'Chair': 'cl_overall_chair_purchase',
-  'Sofa': 'cl_overall_sofa_purchase',
-  'Desk': 'cl_overall_desk_purchase',
-  'Elite': 'elite_purchase_offline',
-  'Foot Massager': 'cl_overall_foot_massager_purchase',
-  'Accessories': 'omni_purchase',
-  'Bed': 'omni_purchase',
-  'All / others': 'omni_purchase'
-};
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -71,33 +59,15 @@ export async function GET(request: Request) {
       { key: 'jun', start: startD, end: endD }
     ];
 
-    // 1. Fetch Conversion Actions to map resource_name to name
-    const caQuery = `SELECT conversion_action.resource_name, conversion_action.name FROM conversion_action`;
-    const caRes = await queryAllGoogleAdsAccounts(caQuery);
-    const caMap = new Map<string, string>();
-    for (const r of caRes) {
-      if (r.conversionAction?.resourceName && r.conversionAction?.name) {
-        caMap.set(r.conversionAction.resourceName, r.conversionAction.name);
-      }
-    }
-
-    // 2. Build queries for each period
-    const queries = periods.flatMap(p => [
-      {
-        key: p.key,
-        type: 'cost',
-        gaql: `SELECT campaign.name, campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions FROM campaign WHERE segments.date BETWEEN '${p.start}' AND '${p.end}'`
-      },
-      {
-        key: p.key,
-        type: 'conv',
-        gaql: `SELECT campaign.name, segments.conversion_action, metrics.conversions_value, metrics.conversions FROM campaign WHERE segments.date BETWEEN '${p.start}' AND '${p.end}' AND metrics.conversions > 0`
-      }
-    ]);
+    // 1. Build queries for each period (only 1 query per period now, using metrics.conversions_value)
+    const queries = periods.map(p => ({
+      key: p.key,
+      gaql: `SELECT campaign.name, campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '${p.start}' AND '${p.end}'`
+    }));
 
     // Execute all queries in parallel
     const results = await Promise.all(queries.map(q => queryAllGoogleAdsAccounts(q.gaql).catch(e => {
-      console.error(`Error in query ${q.key} ${q.type}:`, e.message);
+      console.error(`Error in query ${q.key}:`, e.message);
       return [];
     })));
 
@@ -121,49 +91,23 @@ export async function GET(request: Request) {
       return campaignsMap.get(name);
     };
 
-    // Process Cost/Clicks/Impressions
+    // Process Cost/Clicks/Impressions/CV
     for (let i = 0; i < queries.length; i++) {
       const q = queries[i];
       const res = results[i];
-      if (q.type === 'cost') {
-        for (const row of res) {
-          const name = row.campaign?.name;
-          if (!name) continue;
-          if (isExcluded(name)) continue;
+      for (const row of res) {
+        const name = row.campaign?.name;
+        if (!name) continue;
+        if (isExcluded(name)) continue;
 
-          const node = getCampNode(name, row.campaign?.advertisingChannelType);
-          node[q.key].spend += Number(row.metrics?.costMicros || 0) / 1000000;
-          node[q.key].clicks += Number(row.metrics?.clicks || 0);
-          node[q.key].impressions += Number(row.metrics?.impressions || 0);
-        }
+        const node = getCampNode(name, row.campaign?.advertisingChannelType);
+        node[q.key].spend += Number(row.metrics?.costMicros || 0) / 1000000;
+        node[q.key].clicks += Number(row.metrics?.clicks || 0);
+        node[q.key].impressions += Number(row.metrics?.impressions || 0);
+        node[q.key].cv += Number(row.metrics?.conversionsValue || 0);
       }
     }
 
-    // Process Conversions
-    for (let i = 0; i < queries.length; i++) {
-      const q = queries[i];
-      const res = results[i];
-      if (q.type === 'conv') {
-        for (const row of res) {
-          const name = row.campaign?.name;
-          if (!name) continue;
-          if (isExcluded(name)) continue;
-          
-          const caResource = row.segments?.conversionAction;
-          const caName = caMap.get(caResource) || '';
-          
-          const node = getCampNode(name);
-          const expectedCaName = CATEGORY_CONVERSION_MAP[node.category];
-
-          // If the conversion action matches the expected one for the category
-          if (caName.toLowerCase() === expectedCaName.toLowerCase()) {
-            node[q.key].cv += Number(row.metrics?.conversionsValue || 0);
-          }
-        }
-      }
-    }
-
-    // Compute derived metrics and filter
     const finalCampaigns = [];
     let totalObj = {
       mar: { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 },
@@ -192,9 +136,10 @@ export async function GET(request: Request) {
       if (categoryFilter !== 'All' && data.category !== categoryFilter) continue;
       if (typeFilter !== 'All' && data.type !== typeFilter) continue;
 
-      // Skip empty rows (no spend, no impressions) across all 4 months
+      // Skip empty rows (no spend, no impressions, no cv) across all 4 months
       if (data.mar.spend===0 && data.apr.spend===0 && data.may.spend===0 && data.jun.spend===0 &&
-          data.mar.impressions===0 && data.apr.impressions===0 && data.may.impressions===0 && data.jun.impressions===0) {
+          data.mar.impressions===0 && data.apr.impressions===0 && data.may.impressions===0 && data.jun.impressions===0 &&
+          data.mar.cv===0 && data.apr.cv===0 && data.may.cv===0 && data.jun.cv===0) {
         continue;
       }
 
