@@ -18,7 +18,7 @@ const CATEGORY_CONVERSION_ACTION: Record<string, string> = {
   'All': 'omni_purchase'
 };
 
-const WALKIN_ACTION = 'offsite_conversion.custom.489677281790128';
+const WALKIN_ACTION = 'cl_walk_in';
 const OVERALL_ROAS_ACTION = 'omni_purchase';
 
 function classifyFunnel(campaignName: string): string {
@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
 
         m.lc += parseInt(actions.find((a: any) => a.action_type === 'link_click')?.value || '0', 10);
         m.lp += parseInt(actions.find((a: any) => a.action_type === 'landing_page_view')?.value || '0', 10);
-        m.walkin += parseInt(actions.find((a: any) => a.action_type === WALKIN_ACTION || a.action_type === `custom.${WALKIN_ACTION}`)?.value || '0', 10);
+        m.walkin += parseFloat(actions.find((a: any) => a.action_type === 'cl_walk_in')?.value || '0');
 
         const expectedAction = CATEGORY_CONVERSION_ACTION[category];
         if (expectedAction) {

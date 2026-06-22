@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 const ACCOUNT_ID = 'act_2240079932900749';
 const BASE_URL = 'https://graph.facebook.com/v19.0';
-const WALKIN_ACTION = 'offsite_conversion.custom.489677281790128';
+const WALKIN_ACTION = 'cl_walk_in';
 
 function classifyFunnel(campaignName: string): string {
   const lower = campaignName.toLowerCase();
@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
         m.spend += parseFloat(row.spend || '0');
 
         const actions = row.actions || [];
-        m.walkin += parseInt(actions.find((a: any) => a.action_type === WALKIN_ACTION || a.action_type === `custom.${WALKIN_ACTION}`)?.value || '0', 10);
+        m.walkin += parseFloat(actions.find((a: any) => a.action_type === 'cl_walk_in')?.value || '0');
       }
     };
 
