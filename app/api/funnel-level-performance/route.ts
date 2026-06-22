@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
 
+export const dynamic = 'force-dynamic';
+
 const ACCOUNT_ID = 'act_2240079932900749';
 const BASE_URL = 'https://graph.facebook.com/v19.0';
 
