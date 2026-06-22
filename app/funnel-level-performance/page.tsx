@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import DaysCountBadge from '@/components/DaysCountBadge';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 const FUNNELS = ['All', 'Top', 'Mid', 'Bottom', 'Growth'];
@@ -24,6 +23,15 @@ export default function FunnelLevelPerformance() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const istString2 = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  const today2 = new Date(istString2);
+  const yesterday2 = new Date(today2.getFullYear(), today2.getMonth(), today2.getDate() - 1);
+  const monthName = yesterday2.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const daysPassed = yesterday2.getDate();
+  const daysTotal = new Date(yesterday2.getFullYear(), yesterday2.getMonth() + 1, 0).getDate();
+  const daysRemaining = daysTotal - daysPassed;
+
 
   const [category, setCategory] = useState('All');
   const [funnel, setFunnel] = useState('All');
@@ -125,33 +133,40 @@ export default function FunnelLevelPerformance() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <h1 style={{ fontSize: '24px', margin: 0 }}>Funnel Level Performance (Meta)</h1>
-          <DaysCountBadge />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
+            <span style={{ backgroundColor: '#1f2333', padding: '6px 12px', borderRadius: '4px', fontSize: '14px', border: '1px solid #2d3348' }}>
+              📅 {monthName} | Day {daysPassed} of {daysTotal} | {daysRemaining} days remaining
+            </span>
+          </div>
         </div>
-        <button onClick={exportCSV} style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>
-          Export CSV
+        <button 
+          onClick={exportCSV}
+          style={{ backgroundColor: '#2d3748', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          📥 Export CSV
         </button>
       </div>
 
       <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }}>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }}>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Funnel</label>
-          <select value={funnel} onChange={e => setFunnel(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }}>
+          <select value={funnel} onChange={e => setFunnel(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }}>
             {FUNNELS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }} />
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }} />
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
       </div>
 
@@ -160,9 +175,9 @@ export default function FunnelLevelPerformance() {
       {loading && !data ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
       ) : (
-        <div style={{ overflowX: 'auto', border: '1px solid #333', borderRadius: '8px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-            <thead>
+        <div style={{ overflowX: 'auto', border: '1px solid #2d3348', borderRadius: '8px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+            <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               <tr>
                 <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Campaign Name</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
@@ -197,83 +212,83 @@ export default function FunnelLevelPerformance() {
               {data?.campaigns.map((c: any, i: number) => {
                 const bg = i % 2 === 0 ? '#1a1d27' : '#1f2333';
                 return (
-                  <tr key={c.name} style={{ background: bg, borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', background: bg, position: 'sticky', left: 0 }}>{c.name}</td>
+                  <tr key={c.name} style={{ background: bg, borderBottom: '1px solid #2d3348' }}>
+                    <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: bg, position: 'sticky', left: 0 }}>{c.name}</td>
                     
                     {/* Spend */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.spend)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.spend)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.spend)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.spend)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.spend)}</td>
                     
                     {/* Category ROAS */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.categoryRoas)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.categoryRoas)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.categoryRoas)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.categoryRoas)}</td>
 
                     {/* Overall ROAS */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.overallRoas)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.overallRoas)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.overallRoas)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.overallRoas)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.overallRoas)}</td>
 
                     {/* CPM */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpm)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpm)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpm)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpm)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpm)}</td>
 
                     {/* CPW */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpw)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpw)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpw)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpw)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpw)}</td>
 
                     {/* Walk-in */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.walkin)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.walkin)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.walkin)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(c.jun.walkin)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.walkin)}</td>
 
                     {/* CTR */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.ctr)}%</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.ctr)}%</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.ctr)}%</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.ctr)}%</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.ctr)}%</td>
 
                     {/* CPC */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpc)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpc)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpc)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpc)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpc)}</td>
 
                     {/* LC to LP% */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.lcToLp)}%</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.lcToLp)}%</td>
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.lcToLp)}%</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.lcToLp)}%</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.lcToLp)}%</td>
 
                     {/* LC */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.lc)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.lc)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.lc)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(c.jun.lc)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.lc)}</td>
 
                     {/* LP */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.lp)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.lp)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.lp)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(c.jun.lp)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.lp)}</td>
 
                     {/* Impressions */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.impressions)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.impressions)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.impressions)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(c.jun.impressions)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.impressions)}</td>
 
                     {/* Comparison */}
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <div>Spend: {renderVs(c.vsLastMonth.spend)}</div>
                         <div>Cat ROAS: {renderVs(c.vsLastMonth.categoryRoas)}</div>
@@ -311,83 +326,83 @@ export default function FunnelLevelPerformance() {
             </tbody>
             {data?.total && (
               <tfoot>
-                <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #333', position: 'sticky', bottom: 0 }}>
-                  <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', position: 'sticky', left: 0, background: '#111' }}>Total</td>
+                <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #2d3348', position: 'sticky', bottom: 0 }}>
+                  <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   
                   {/* Spend */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.spend)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.spend)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.spend)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.spend)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.spend)}</td>
                   
                   {/* Category ROAS */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.categoryRoas)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.categoryRoas)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.categoryRoas)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.categoryRoas)}</td>
 
                   {/* Overall ROAS */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.overallRoas)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.overallRoas)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.overallRoas)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.overallRoas)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.overallRoas)}</td>
 
                   {/* CPM */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpm)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpm)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpm)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpm)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpm)}</td>
 
                   {/* CPW */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpw)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpw)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpw)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpw)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpw)}</td>
 
                   {/* Walk-in */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.walkin)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.walkin)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.walkin)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(data.total.jun.walkin)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.walkin)}</td>
 
                   {/* CTR */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.ctr)}%</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.ctr)}%</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.ctr)}%</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.ctr)}%</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.ctr)}%</td>
 
                   {/* CPC */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpc)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpc)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpc)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpc)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpc)}</td>
 
                   {/* LC to LP% */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.lcToLp)}%</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.lcToLp)}%</td>
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.lcToLp)}%</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.lcToLp)}%</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.lcToLp)}%</td>
 
                   {/* LC */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.lc)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.lc)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.lc)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(data.total.jun.lc)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.lc)}</td>
 
                   {/* LP */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.lp)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.lp)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.lp)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(data.total.jun.lp)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.lp)}</td>
 
                   {/* Impressions */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.impressions)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.impressions)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.impressions)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(data.total.jun.impressions)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.impressions)}</td>
 
                   {/* Comparison */}
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <div>Spend: {renderVs(data.total.vsLastMonth.spend)}</div>
                       <div>Cat ROAS: {renderVs(data.total.vsLastMonth.categoryRoas)}</div>

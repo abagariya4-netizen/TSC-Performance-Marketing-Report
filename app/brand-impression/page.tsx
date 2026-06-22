@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import DaysCountBadge from '@/components/DaysCountBadge';
 
 const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
@@ -17,6 +16,15 @@ export default function BrandImpressionMoM() {
   const [loadingCamps, setLoadingCamps] = useState(true);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState('');
+
+  const istString2 = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  const today2 = new Date(istString2);
+  const yesterday2 = new Date(today2.getFullYear(), today2.getMonth(), today2.getDate() - 1);
+  const monthName = yesterday2.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const daysPassed = yesterday2.getDate();
+  const daysTotal = new Date(yesterday2.getFullYear(), yesterday2.getMonth() + 1, 0).getDate();
+  const daysRemaining = daysTotal - daysPassed;
+
 
   // Date Range (default June 1 to yesterday)
   const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -178,10 +186,17 @@ export default function BrandImpressionMoM() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <h1 style={{ fontSize: '24px', margin: 0 }}>Brand Impression MoM (Google)</h1>
-          <DaysCountBadge />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
+            <span style={{ backgroundColor: '#1f2333', padding: '6px 12px', borderRadius: '4px', fontSize: '14px', border: '1px solid #2d3348' }}>
+              📅 {monthName} | Day {daysPassed} of {daysTotal} | {daysRemaining} days remaining
+            </span>
+          </div>
         </div>
-        <button onClick={exportCSV} style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>
-          Export CSV
+        <button 
+          onClick={exportCSV}
+          style={{ backgroundColor: '#2d3748', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          📥 Export CSV
         </button>
       </div>
 
@@ -192,7 +207,7 @@ export default function BrandImpressionMoM() {
             value={selectedCampaignId} 
             onChange={e => setSelectedCampaignId(e.target.value)} 
             disabled={loadingCamps}
-            style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }}
+            style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }}
           >
             {loadingCamps && <option value="">Loading campaigns...</option>}
             {!loadingCamps && campaigns.length === 0 && <option value="">No branded campaigns found</option>}
@@ -203,11 +218,11 @@ export default function BrandImpressionMoM() {
         
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }} />
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #333' }} />
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
       </div>
 
@@ -216,9 +231,9 @@ export default function BrandImpressionMoM() {
       {loadingData && !data ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading keyword data...</div>
       ) : data && data.keywords ? (
-        <div style={{ overflowX: 'auto', border: '1px solid #333', borderRadius: '8px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-            <thead>
+        <div style={{ overflowX: 'auto', border: '1px solid #2d3348', borderRadius: '8px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+            <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               <tr>
                 <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Keyword</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
@@ -241,20 +256,20 @@ export default function BrandImpressionMoM() {
               {data.keywords.map((k: any, i: number) => {
                 const bg = i % 2 === 0 ? '#1a1d27' : '#1f2333';
                 return (
-                  <tr key={k.keyword} style={{ background: bg, borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', background: bg, position: 'sticky', left: 0 }}>{k.keyword}</td>
+                  <tr key={k.keyword} style={{ background: bg, borderBottom: '1px solid #2d3348' }}>
+                    <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: bg, position: 'sticky', left: 0 }}>{k.keyword}</td>
                     
                     {/* Amount Spent */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(k.mar.spend)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(k.apr.spend)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(k.may.spend)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(k.jun.spend)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(k.jun.spend)}</td>
 
                     {/* Impressions */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(k.mar.impressions)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(k.apr.impressions)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtVal(k.may.impressions)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(k.jun.impressions)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(k.jun.impressions)}</td>
 
                     {/* Impression Share % */}
                     <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.mar.impressionShare)}</td>
@@ -267,20 +282,20 @@ export default function BrandImpressionMoM() {
             </tbody>
             {data.total && (
               <tfoot>
-                <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #333', position: 'sticky', bottom: 0 }}>
-                  <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', position: 'sticky', left: 0, background: '#111' }}>Total</td>
+                <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #2d3348', position: 'sticky', bottom: 0 }}>
+                  <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   
                   {/* Amount Spent */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.spend)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.spend)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.spend)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.spend)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.spend)}</td>
 
                   {/* Impressions */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.impressions)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.impressions)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.impressions)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtVal(data.total.jun.impressions)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.impressions)}</td>
 
                   {/* Impression Share % */}
                   <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.mar.impressionShare)}</td>
