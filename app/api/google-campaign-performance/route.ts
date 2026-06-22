@@ -198,12 +198,12 @@ export async function GET(request: Request) {
         continue;
       }
 
-      for (const m of ['mar', 'apr', 'may', 'jun']) {
+      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
         calcMetrics(data[m]);
-        totalObj[m as keyof typeof totalObj].spend += data[m].spend;
-        totalObj[m as keyof typeof totalObj].clicks += data[m].clicks;
-        totalObj[m as keyof typeof totalObj].impressions += data[m].impressions;
-        totalObj[m as keyof typeof totalObj].cv += data[m].cv;
+        totalObj[m].spend += data[m].spend;
+        totalObj[m].clicks += data[m].clicks;
+        totalObj[m].impressions += data[m].impressions;
+        totalObj[m].cv += data[m].cv;
       }
 
       data.vsLastMonth = {
@@ -232,8 +232,8 @@ export async function GET(request: Request) {
     }
 
     // Calc Total metrics
-    for (const m of ['mar', 'apr', 'may', 'jun']) {
-      calcMetrics(totalObj[m as keyof typeof totalObj]);
+    for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+      calcMetrics(totalObj[m]);
     }
 
     totalObj.vsLastMonth = {

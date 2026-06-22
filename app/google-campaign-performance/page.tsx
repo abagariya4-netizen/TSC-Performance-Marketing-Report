@@ -90,14 +90,14 @@ export default function GoogleCampaignPerformance() {
 
     const csvContent = [
       headers.join(','),
-      ...rows.map((r: any) => r.map((cell: any) => \`"\${String(cell).replace(/"/g, '""')}"\`).join(','))
-    ].join('\\n');
+      ...rows.map((r: any) => r.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', \`Campaign_Type_Performance_\${new Date().getTime()}.csv\`);
+    link.setAttribute('download', `Campaign_Type_Performance_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
