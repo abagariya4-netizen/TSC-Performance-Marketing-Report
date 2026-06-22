@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
 
-const fmtINR = (val: number) => '₹' + Math.round(val).toLocaleString('en-IN');
-const fmtVal = (val: number) => Math.round(val).toLocaleString('en-IN');
+const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 const fmtPctStr = (val: number) => {
   if (!isFinite(val)) return '0.00%';
-  return val.toFixed(2) + '%';
+  return (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 };
 
 export default function BrandImpressionMoM() {

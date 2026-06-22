@@ -5,13 +5,13 @@ import DaysCountBadge from '@/components/DaysCountBadge';
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 const CAMPAIGN_TYPES = ['All', 'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
 
-const fmtINR = (val: number) => '₹' + Math.round(val).toLocaleString('en-IN');
-const fmtVal = (val: number) => Math.round(val).toLocaleString('en-IN');
-const fmtFloat = (val: number) => val.toFixed(2);
+const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
+const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPctStr = (val: number) => {
   if (!isFinite(val)) return '0.00%';
   const prefix = val > 0 ? '+' : '';
-  return prefix + val.toFixed(2) + '%';
+  return prefix + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 };
 
 const renderVs = (val: number) => {

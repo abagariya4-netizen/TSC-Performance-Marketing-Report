@@ -5,9 +5,9 @@ import DaysCountBadge from '@/components/DaysCountBadge';
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 const DAY_TYPES = ['All', 'Weekday', 'Weekend'];
 
-const fmtINR = (val: number) => '₹' + Math.round(val).toLocaleString('en-IN');
-const fmtVal = (val: number) => Math.round(val).toLocaleString('en-IN');
-const fmtFloat = (val: number) => val.toFixed(2);
+const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
+const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function WalkinDashboard() {
   const [data, setData] = useState<any>(null);
@@ -153,10 +153,10 @@ export default function WalkinDashboard() {
                     <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', background: bg, position: 'sticky', left: 0 }}>{f.funnel}</td>
                     
                     {/* CPW */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(f.mar.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(f.apr.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(f.may.cpw)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(f.jun.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(f.mar.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(f.apr.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(f.may.cpw)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(f.jun.cpw)}</td>
 
                     {/* Spend */}
                     <td style={{ padding: '12px 8px' }}>{fmtINR(f.mar.spend)}</td>
@@ -179,10 +179,10 @@ export default function WalkinDashboard() {
                   <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #333', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   
                   {/* CPW */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.cpw)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpw)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpw)}</td>
 
                   {/* Spend */}
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.spend)}</td>

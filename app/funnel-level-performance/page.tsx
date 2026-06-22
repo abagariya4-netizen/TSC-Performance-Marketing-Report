@@ -5,13 +5,13 @@ import DaysCountBadge from '@/components/DaysCountBadge';
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 const FUNNELS = ['All', 'Top', 'Mid', 'Bottom', 'Growth'];
 
-const fmtINR = (val: number) => '₹' + Math.round(val).toLocaleString('en-IN');
-const fmtVal = (val: number) => Math.round(val).toLocaleString('en-IN');
-const fmtFloat = (val: number) => val.toFixed(2);
+const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
+const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPctStr = (val: number) => {
   if (!isFinite(val)) return '0.00%';
   const prefix = val > 0 ? '+' : '';
-  return prefix + val.toFixed(2) + '%';
+  return prefix + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 };
 
 const renderVs = (val: number) => {
@@ -216,16 +216,16 @@ export default function FunnelLevelPerformance() {
                     <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.overallRoas)}</td>
 
                     {/* CPM */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.cpm)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.cpm)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.cpm)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.cpm)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpm)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpm)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpm)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpm)}</td>
 
                     {/* CPW */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.cpw)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpw)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpw)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpw)}</td>
 
                     {/* Walk-in */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.walkin)}</td>
@@ -240,10 +240,10 @@ export default function FunnelLevelPerformance() {
                     <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.ctr)}%</td>
 
                     {/* CPC */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.cpc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.cpc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.cpc)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(c.jun.cpc)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpc)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpc)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpc)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(c.jun.cpc)}</td>
 
                     {/* LC to LP% */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.lcToLp)}%</td>
@@ -330,16 +330,16 @@ export default function FunnelLevelPerformance() {
                   <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.overallRoas)}</td>
 
                   {/* CPM */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.cpm)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.cpm)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.cpm)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.cpm)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpm)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpm)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpm)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpm)}</td>
 
                   {/* CPW */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.cpw)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpw)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpw)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpw)}</td>
 
                   {/* Walk-in */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.walkin)}</td>
@@ -354,10 +354,10 @@ export default function FunnelLevelPerformance() {
                   <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.ctr)}%</td>
 
                   {/* CPC */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.cpc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.cpc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.cpc)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtFloat(data.total.jun.cpc)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpc)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpc)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpc)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #333' }}>{fmtINR(data.total.jun.cpc)}</td>
 
                   {/* LC to LP% */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.lcToLp)}%</td>
