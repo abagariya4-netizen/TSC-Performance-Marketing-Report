@@ -125,7 +125,7 @@ export default function RegionSpendsMattressPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
         <div>
           <h1 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>Region Level Spends - Mattress (Meta)</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
             <span style={{ backgroundColor: '#1f2333', padding: '6px 12px', borderRadius: '4px', fontSize: '14px', border: '1px solid #2d3348' }}>
               📅 {monthName} | Day {daysPassed} of {daysTotal} | {daysRemaining} days remaining
             </span>
@@ -156,32 +156,32 @@ export default function RegionSpendsMattressPage() {
       </div>
 
       <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #2d3348' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '14px' }}>
-          <thead>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+          <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
             <tr style={{ backgroundColor: '#e8733a', color: '#fff' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Region</th>
-              <th style={{ padding: '12px' }}>Overall (Plan)</th>
-              <th style={{ padding: '12px' }}>MTD</th>
-              <th style={{ padding: '12px' }}>Yesterday</th>
-              <th style={{ padding: '12px' }}>Est. Spends</th>
-              <th style={{ padding: '12px' }}>Difference %</th>
-              <th style={{ padding: '12px' }}>Est - Plan</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Over/Under</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Region</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall (Plan)</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>MTD</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Yesterday</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Est. Spends</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Difference %</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Est - Plan</th>
+              <th style={{ background: '#e8733a', color: '#fff', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Over/Under</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r: any, idx: number) => (
               <tr key={r.region} style={{ backgroundColor: idx % 2 === 0 ? '#1a1d27' : '#1f2333', borderBottom: '1px solid #2d3348' }}>
-                <td style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold' }}>{r.region}</td>
-                <td style={{ padding: '12px' }}>{fmt(r.plan)}</td>
-                <td style={{ padding: '12px' }}>{fmt(r.mtd)}</td>
-                <td style={{ padding: '12px' }}>{fmt(r.yesterday)}</td>
-                <td style={{ padding: '12px' }}>{fmt(r.estSpends)}</td>
-                <td style={{ padding: '12px', color: r.diffPct > 0 ? '#48bb78' : '#fc8181' }}>{fmtPct(r.diffPct)}</td>
-                <td style={{ padding: '12px', color: r.estMinusPlan > 0 ? '#fc8181' : '#48bb78' }}>
+                <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: idx % 2 === 0 ? '#1a1d27' : '#1f2333', position: 'sticky', left: 0 }}>{r.region}</td>
+                <td style={{ padding: '12px 8px' }}>{fmt(r.plan)}</td>
+                <td style={{ padding: '12px 8px' }}>{fmt(r.mtd)}</td>
+                <td style={{ padding: '12px 8px' }}>{fmt(r.yesterday)}</td>
+                <td style={{ padding: '12px 8px' }}>{fmt(r.estSpends)}</td>
+                <td style={{ padding: '12px 8px', color: r.diffPct > 0 ? '#48bb78' : '#fc8181' }}>{fmtPct(r.diffPct)}</td>
+                <td style={{ padding: '12px 8px', color: r.estMinusPlan > 0 ? '#fc8181' : '#48bb78' }}>
                   {r.estMinusPlan > 0 ? '+' : ''}{fmt(r.estMinusPlan)}
                 </td>
-                <td style={{ padding: '12px', textAlign: 'center' }}>
+                <td style={{ padding: '12px 8px', textAlign: 'center', borderRight: '1px solid #2d3348' }}>
                   <span style={{ 
                     backgroundColor: r.isOver ? 'rgba(72,187,120,0.2)' : 'rgba(252,129,129,0.2)',
                     color: r.isOver ? '#48bb78' : '#fc8181',
@@ -195,17 +195,17 @@ export default function RegionSpendsMattressPage() {
                 </td>
               </tr>
             ))}
-            <tr style={{ backgroundColor: '#2d3348', fontWeight: 'bold' }}>
-              <td style={{ padding: '12px', textAlign: 'left' }}>Total</td>
-              <td style={{ padding: '12px' }}>{fmt(totals.plan)}</td>
-              <td style={{ padding: '12px' }}>{fmt(totals.mtd)}</td>
-              <td style={{ padding: '12px' }}>{fmt(totals.yesterday)}</td>
-              <td style={{ padding: '12px' }}>{fmt(totals.estSpends)}</td>
-              <td style={{ padding: '12px', color: totals.diffPct > 0 ? '#48bb78' : '#fc8181' }}>{fmtPct(totals.diffPct)}</td>
-              <td style={{ padding: '12px', color: totals.estMinusPlan > 0 ? '#fc8181' : '#48bb78' }}>
+            <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #2d3348', position: 'sticky', bottom: 0 }}>
+              <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
+              <td style={{ padding: '12px 8px' }}>{fmt(totals.plan)}</td>
+              <td style={{ padding: '12px 8px' }}>{fmt(totals.mtd)}</td>
+              <td style={{ padding: '12px 8px' }}>{fmt(totals.yesterday)}</td>
+              <td style={{ padding: '12px 8px' }}>{fmt(totals.estSpends)}</td>
+              <td style={{ padding: '12px 8px', color: totals.diffPct > 0 ? '#48bb78' : '#fc8181' }}>{fmtPct(totals.diffPct)}</td>
+              <td style={{ padding: '12px 8px', color: totals.estMinusPlan > 0 ? '#fc8181' : '#48bb78' }}>
                 {totals.estMinusPlan > 0 ? '+' : ''}{fmt(totals.estMinusPlan)}
               </td>
-              <td style={{ padding: '12px', textAlign: 'center' }}>
+              <td style={{ padding: '12px 8px', textAlign: 'center', borderRight: '1px solid #2d3348' }}>
                 <span style={{ 
                   backgroundColor: totals.isOver ? 'rgba(72,187,120,0.2)' : 'rgba(252,129,129,0.2)',
                   color: totals.isOver ? '#48bb78' : '#fc8181',
