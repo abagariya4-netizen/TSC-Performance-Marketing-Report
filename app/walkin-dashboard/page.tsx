@@ -13,13 +13,19 @@ export default function WalkinDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const istString2 = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-  const today2 = new Date(istString2);
-  const yesterday2 = new Date(today2.getFullYear(), today2.getMonth(), today2.getDate() - 1);
-  const monthName = yesterday2.toLocaleString('default', { month: 'long', year: 'numeric' });
-  const daysPassed = yesterday2.getDate();
-  const daysTotal = new Date(yesterday2.getFullYear(), yesterday2.getMonth() + 1, 0).getDate();
-  const daysRemaining = daysTotal - daysPassed;
+  
+  const [badgeInfo, setBadgeInfo] = useState<{ monthName: string, daysPassed: number, daysTotal: number, daysRemaining: number } | null>(null);
+
+  useEffect(() => {
+    const istString2 = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const today2 = new Date(istString2);
+    const yesterday2 = new Date(today2.getFullYear(), today2.getMonth(), today2.getDate() - 1);
+    const mName = yesterday2.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const dPassed = yesterday2.getDate();
+    const dTotal = new Date(yesterday2.getFullYear(), yesterday2.getMonth() + 1, 0).getDate();
+    setBadgeInfo({ monthName: mName, daysPassed: dPassed, daysTotal: dTotal, daysRemaining: dTotal - dPassed });
+  }, []);
+  
 
 
   const [category, setCategory] = useState('All');
@@ -100,11 +106,13 @@ export default function WalkinDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <h1 style={{ fontSize: '24px', margin: 0 }}>Walkin Dashboard (Meta)</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
-            <span style={{ backgroundColor: '#1f2333', padding: '6px 12px', borderRadius: '4px', fontSize: '14px', border: '1px solid #2d3348' }}>
-              📅 {monthName} | Day {daysPassed} of {daysTotal} | {daysRemaining} days remaining
-            </span>
-          </div>
+          {badgeInfo && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
+              <span style={{ backgroundColor: '#1f2333', padding: '6px 12px', borderRadius: '4px', fontSize: '14px', border: '1px solid #2d3348' }}>
+                📅 {badgeInfo.monthName} | Day {badgeInfo.daysPassed} of {badgeInfo.daysTotal} | {badgeInfo.daysRemaining} days remaining
+              </span>
+            </div>
+          )}
         </div>
         <button 
           onClick={exportCSV}
