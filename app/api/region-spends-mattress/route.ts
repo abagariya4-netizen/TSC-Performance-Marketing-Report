@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
     const daysPassed = yesterday.getDate();
     const daysRemaining = totalDays - daysPassed;
 
-    const mtdUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,region&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: firstDayStr, until: yStr }))}&limit=500&access_token=${token}`;
-    const yesterdayUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,region&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: yStr, until: yStr }))}&limit=500&access_token=${token}`;
+    const mtdUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: firstDayStr, until: yStr }))}&limit=500&access_token=${token}`;
+    const yesterdayUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: yStr, until: yStr }))}&limit=500&access_token=${token}`;
 
     const [mtdData, yesterdayData] = await Promise.all([
       fetchAllPages(mtdUrl),
