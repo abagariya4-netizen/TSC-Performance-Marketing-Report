@@ -16,6 +16,7 @@ export default function NavBar() {
     { label: 'Funnel Level Performance (Meta)', href: '/funnel-level-performance' },
     { label: 'Walkin Dashboard (Meta)',    href: '/walkin-dashboard' },
     { label: 'Region Level Spends - Mattress (Meta)', href: '/region-spends-mattress' },
+    { label: 'Region Level Spends - Growth & Boost (Meta)', href: '/region-spends-growth-boost' },
     { label: 'City Level Spends (Google)', href: '/google/city-spends' },
     { label: '6 City (Google)',            href: '/google/6city-spends' },
     { label: 'Product Spends (Google)',    href: '/google/product-spends' },
