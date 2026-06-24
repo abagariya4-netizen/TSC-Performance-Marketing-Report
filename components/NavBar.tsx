@@ -24,6 +24,7 @@ export default function NavBar() {
     { label: 'Product Spends (Google)',    href: '/google/product-spends' },
     { label: 'Campaign Type (Google)',     href: '/google-campaign-performance' },
     { label: 'Brand Impression MoM (Google)', href: '/brand-impression' },
+    { label: 'Auction Insights (Google)',  href: '/auction-insights' },
   ];
 
   const getIsActive = (href: string) => {
