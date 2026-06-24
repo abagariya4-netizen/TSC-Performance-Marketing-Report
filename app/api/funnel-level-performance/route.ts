@@ -81,14 +81,9 @@ function passesAdsetExclusions(adsetName: string, category: string): boolean {
   }
 }
 
-function isCampaignExcluded(campaignName: string, selectedFunnel: string): boolean {
+function isCampaignExcluded(campaignName: string): boolean {
   const lower = campaignName.toLowerCase();
   if (lower.includes('boost')) return true;
-  if (lower.includes('growth')) {
-    if (selectedFunnel === 'Top' || selectedFunnel === 'Mid' || selectedFunnel === 'Bottom') return true;
-  } else {
-    if (selectedFunnel === 'Growth') return true;
-  }
   return false;
 }
 
@@ -98,7 +93,6 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category') || 'All';
-  const funnel = searchParams.get('funnel') || 'All';
   let startDate = searchParams.get('startDate');
   let endDate = searchParams.get('endDate');
 
@@ -118,18 +112,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const campaignsMap = new Map<string, any>();
-    const getCampNode = (name: string) => {
-      if (!campaignsMap.has(name)) {
-        campaignsMap.set(name, {
-          name,
-          mar: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-          apr: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-          may: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-          jun: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 }
-        });
-      }
-      return campaignsMap.get(name);
-    };
+    const getCampNode = (name: string) => campaignsMap.get(name);
+
+    ['Top', 'Mid', 'Bottom', 'Growth'].forEach(name => {
+      campaignsMap.set(name, {
+        name,
+        mar: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
+        apr: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
+        may: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
+        jun: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 }
+      });
+    });
 
     const fetchPeriod = async (p: any) => {
       const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.since, until: p.until }));
@@ -140,12 +133,12 @@ export async function GET(req: NextRequest) {
         const cName = row.campaign_name || '';
         const aName = row.adset_name || '';
 
-        if (isCampaignExcluded(cName, funnel)) continue;
-        if (funnel !== 'All' && classifyFunnel(cName) !== funnel) continue;
+        if (isCampaignExcluded(cName)) continue;
         if (!passesCategoryFilter(cName, aName, category)) continue;
         if (!passesAdsetExclusions(aName, category)) continue;
 
-        const node = getCampNode(cName);
+        const funnelName = classifyFunnel(cName);
+        const node = getCampNode(funnelName);
         const m = node[p.key];
 
         m.spend += parseFloat(row.spend || '0');
@@ -195,10 +188,6 @@ export async function GET(req: NextRequest) {
     };
 
     for (const [name, data] of Array.from(campaignsMap.entries())) {
-      if (data.mar.spend === 0 && data.apr.spend === 0 && data.may.spend === 0 && data.jun.spend === 0 &&
-          data.mar.impressions === 0 && data.apr.impressions === 0 && data.may.impressions === 0 && data.jun.impressions === 0) {
-        continue;
-      }
 
       for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
         calcMetrics(data[m]);

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
-const FUNNELS = ['All', 'Top', 'Mid', 'Bottom', 'Growth'];
 
 const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
@@ -40,7 +39,6 @@ export default function FunnelLevelPerformance() {
 
 
   const [category, setCategory] = useState('All');
-  const [funnel, setFunnel] = useState('All');
   
   // Date Range (default June 1 to yesterday)
   const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -57,7 +55,7 @@ export default function FunnelLevelPerformance() {
     setLoading(true);
     setError('');
     try {
-      const qs = new URLSearchParams({ category, funnel, startDate, endDate });
+      const qs = new URLSearchParams({ category, startDate, endDate });
       const res = await fetch(`/api/funnel-level-performance?${qs.toString()}`);
       if (!res.ok) {
         const text = await res.text();
@@ -78,13 +76,13 @@ export default function FunnelLevelPerformance() {
 
   useEffect(() => {
     fetchData();
-  }, [category, funnel, startDate, endDate]);
+  }, [category, startDate, endDate]);
 
   const exportCSV = () => {
     if (!data) return;
     
     const headers = [
-      'Campaign Name',
+      'Funnel',
       'Amount Spent Mar', 'Amount Spent Apr', 'Amount Spent May', 'Amount Spent Jun',
       'Category ROAS Mar', 'Category ROAS Apr', 'Category ROAS May', 'Category ROAS Jun',
       'Overall ROAS Mar', 'Overall ROAS Apr', 'Overall ROAS May', 'Overall ROAS Jun',
@@ -104,7 +102,7 @@ export default function FunnelLevelPerformance() {
     const rows = data.campaigns.map((c: any) => [
       c.name,
       c.mar.spend, c.apr.spend, c.may.spend, c.jun.spend,
-      c.mar.categoryRoas, c.apr.categoryRoas, c.may.categoryRoas, c.jun.categoryRoas,
+      c.mar.categoryRoas === c.mar.overallRoas ? '' : c.mar.categoryRoas, c.apr.categoryRoas === c.apr.overallRoas ? '' : c.apr.categoryRoas, c.may.categoryRoas === c.may.overallRoas ? '' : c.may.categoryRoas, c.jun.categoryRoas === c.jun.overallRoas ? '' : c.jun.categoryRoas,
       c.mar.overallRoas, c.apr.overallRoas, c.may.overallRoas, c.jun.overallRoas,
       c.mar.cpm, c.apr.cpm, c.may.cpm, c.jun.cpm,
       c.mar.cpw, c.apr.cpw, c.may.cpw, c.jun.cpw,
@@ -163,12 +161,6 @@ export default function FunnelLevelPerformance() {
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Funnel</label>
-          <select value={funnel} onChange={e => setFunnel(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }}>
-            {FUNNELS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
@@ -187,7 +179,7 @@ export default function FunnelLevelPerformance() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
             <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               <tr>
-                <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Campaign Name</th>
+                <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Funnel</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Category ROAS</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall ROAS</th>
@@ -230,10 +222,10 @@ export default function FunnelLevelPerformance() {
                     <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.spend)}</td>
                     
                     {/* Category ROAS */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.categoryRoas)}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.mar.categoryRoas === c.mar.overallRoas ? '' : fmtFloat(c.mar.categoryRoas)}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.apr.categoryRoas === c.apr.overallRoas ? '' : fmtFloat(c.apr.categoryRoas)}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.may.categoryRoas === c.may.overallRoas ? '' : fmtFloat(c.may.categoryRoas)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{c.jun.categoryRoas === c.jun.overallRoas ? '' : fmtFloat(c.jun.categoryRoas)}</td>
 
                     {/* Overall ROAS */}
                     <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.overallRoas)}</td>
@@ -344,10 +336,10 @@ export default function FunnelLevelPerformance() {
                   <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.spend)}</td>
                   
                   {/* Category ROAS */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.categoryRoas)}</td>
+                  <td style={{ padding: '12px 8px' }}>{data.total.mar.categoryRoas === data.total.mar.overallRoas ? '' : fmtFloat(data.total.mar.categoryRoas)}</td>
+                  <td style={{ padding: '12px 8px' }}>{data.total.apr.categoryRoas === data.total.apr.overallRoas ? '' : fmtFloat(data.total.apr.categoryRoas)}</td>
+                  <td style={{ padding: '12px 8px' }}>{data.total.may.categoryRoas === data.total.may.overallRoas ? '' : fmtFloat(data.total.may.categoryRoas)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{data.total.jun.categoryRoas === data.total.jun.overallRoas ? '' : fmtFloat(data.total.jun.categoryRoas)}</td>
 
                   {/* Overall ROAS */}
                   <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.overallRoas)}</td>
