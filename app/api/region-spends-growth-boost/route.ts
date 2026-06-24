@@ -33,12 +33,6 @@ export async function GET(req: NextRequest) {
     const regionMap = new Map<string, { region: string, mtd: number, yesterday: number }>();
 
     const processRow = (row: any, isMtd: boolean) => {
-      const cName = row.campaign_name || '';
-      const aName = row.adset_name || '';
-      
-      if (!/growth|boost/i.test(cName)) return;
-      if (/growth|boost/i.test(aName)) return;
-
       const reg = row.region || 'Unknown';
       const spend = parseFloat(row.spend || '0');
 
