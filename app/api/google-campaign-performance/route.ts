@@ -39,7 +39,6 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const categoryFilter = searchParams.get('category') || 'All';
-    const typeFilter = searchParams.get('campaignType') || 'All';
     let startD = searchParams.get('startDate');
     let endD = searchParams.get('endDate');
 
@@ -71,25 +70,18 @@ export async function GET(request: Request) {
       return [];
     })));
 
-    // Organize raw data
-    // Map: campaignName -> { mar: metrics, apr: metrics, may: metrics, jun: metrics, type, category }
+    // Map: campaignType -> { mar: metrics, apr: metrics, may: metrics, jun: metrics }
     const campaignsMap = new Map<string, any>();
-
-    const getCampNode = (name: string, channelType?: string) => {
-      if (!campaignsMap.has(name)) {
-        campaignsMap.set(name, {
-          name,
-          channelType: channelType || '',
-          type: '',
-          category: getCategory(name),
-          mar: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-          apr: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-          may: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-          jun: { spend: 0, clicks: 0, impressions: 0, cv: 0 }
-        });
-      }
-      return campaignsMap.get(name);
-    };
+    const TYPES = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    TYPES.forEach(t => {
+      campaignsMap.set(t, {
+        name: t,
+        mar: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
+        apr: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
+        may: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
+        jun: { spend: 0, clicks: 0, impressions: 0, cv: 0 }
+      });
+    });
 
     // Process Cost/Clicks/Impressions/CV
     for (let i = 0; i < queries.length; i++) {
@@ -100,7 +92,12 @@ export async function GET(request: Request) {
         if (!name) continue;
         if (isExcluded(name)) continue;
 
-        const node = getCampNode(name, row.campaign?.advertisingChannelType);
+        const category = getCategory(name);
+        if (categoryFilter !== 'All' && category !== categoryFilter) continue;
+
+        const type = getCampaignType(row.campaign?.advertisingChannelType || '', name);
+        const node = campaignsMap.get(type);
+        if (!node) continue;
         node[q.key].spend += Number(row.metrics?.costMicros || 0) / 1000000;
         node[q.key].clicks += Number(row.metrics?.clicks || 0);
         node[q.key].impressions += Number(row.metrics?.impressions || 0);
@@ -130,18 +127,6 @@ export async function GET(request: Request) {
     };
 
     for (const [name, data] of Array.from(campaignsMap.entries())) {
-      data.type = getCampaignType(data.channelType, name);
-
-      // Apply Filters
-      if (categoryFilter !== 'All' && data.category !== categoryFilter) continue;
-      if (typeFilter !== 'All' && data.type !== typeFilter) continue;
-
-      // Skip empty rows (no spend, no impressions, no cv) across all 4 months
-      if (data.mar.spend===0 && data.apr.spend===0 && data.may.spend===0 && data.jun.spend===0 &&
-          data.mar.impressions===0 && data.apr.impressions===0 && data.may.impressions===0 && data.jun.impressions===0 &&
-          data.mar.cv===0 && data.apr.cv===0 && data.may.cv===0 && data.jun.cv===0) {
-        continue;
-      }
 
       for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
         calcMetrics(data[m]);

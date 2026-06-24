@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
-const CAMPAIGN_TYPES = ['All', 'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
 
 const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
@@ -40,7 +39,6 @@ export default function GoogleCampaignPerformance() {
 
 
   const [category, setCategory] = useState('All');
-  const [campaignType, setCampaignType] = useState('Search');
   
   // Date Range (default June 1 to yesterday)
   const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -57,7 +55,7 @@ export default function GoogleCampaignPerformance() {
     setLoading(true);
     setError('');
     try {
-      const qs = new URLSearchParams({ category, campaignType, startDate, endDate });
+      const qs = new URLSearchParams({ category, startDate, endDate });
       const res = await fetch(`/api/google-campaign-performance?${qs.toString()}`);
       if (!res.ok) {
         const text = await res.text();
@@ -78,13 +76,13 @@ export default function GoogleCampaignPerformance() {
 
   useEffect(() => {
     fetchData();
-  }, [category, campaignType, startDate, endDate]);
+  }, [category, startDate, endDate]);
 
   const exportCSV = () => {
     if (!data) return;
     
     const headers = [
-      'Campaign Name',
+      'Campaign Type',
       'Amount Spent Mar', 'Amount Spent Apr', 'Amount Spent May', 'Amount Spent Jun',
       'Overall ROAS Mar', 'Overall ROAS Apr', 'Overall ROAS May', 'Overall ROAS Jun',
       'CPC Mar', 'CPC Apr', 'CPC May', 'CPC Jun',
@@ -149,12 +147,6 @@ export default function GoogleCampaignPerformance() {
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Campaign Type</label>
-          <select value={campaignType} onChange={e => setCampaignType(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }}>
-            {CAMPAIGN_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
         </div>
@@ -173,7 +165,7 @@ export default function GoogleCampaignPerformance() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right' }}>
             <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               <tr>
-                <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Campaign Name</th>
+                <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Campaign Type</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall ROAS</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPC</th>
