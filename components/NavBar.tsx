@@ -10,6 +10,7 @@ export default function NavBar() {
   const navItems = [
     { label: 'Region Level Spends (Meta)', href: '/meta' },
     { label: '6 City (Meta)',              href: '/meta?tab=6city' },
+    { label: '6 City Filtered (Meta)',     href: '/six-city-meta-filtered' },
     { label: 'LC to LP',                   href: '/meta/lc-to-lp' },
     { label: 'CPM',                        href: '/meta/cpm' },
     { label: 'Placements (Meta)',          href: '/meta/placements' },
