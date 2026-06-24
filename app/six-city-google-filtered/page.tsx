@@ -100,7 +100,7 @@ export default function SixCityGoogleFiltered() {
       diffPercentTotal = ((data.total.mtd / (totalPlan * (daysPassed / totalDays))) - 1) * 100;
     }
 
-    csv += `"${mappedCity} (Total)",${totalPlan || ''},${data.total.mtd.toFixed(2)},${data.total.yesterday.toFixed(2)},${estSpendsTotal.toFixed(2)},${totalPlan ? diffPercentTotal.toFixed(2) + '%' : ''},${totalPlan ? estMinusPlanTotal.toFixed(2) : ''},${totalPlan ? overUnderTotal : ''}\n`;
+    csv += `"${mappedCity} (Total)",${totalPlan || 0},${data.total.mtd.toFixed(2)},${data.total.yesterday.toFixed(2)},${estSpendsTotal.toFixed(2)},${totalPlan ? diffPercentTotal.toFixed(2) + '%' : ''},${totalPlan ? estMinusPlanTotal.toFixed(2) : ''},${totalPlan ? overUnderTotal : ''}\n`;
 
     // Child Rows
     campaignTypes.forEach(type => {
@@ -114,7 +114,7 @@ export default function SixCityGoogleFiltered() {
       if (typePlan > 0 && daysPassed > 0) {
         diffPercent = ((rowData.mtd / (typePlan * (daysPassed / totalDays))) - 1) * 100;
       }
-      csv += `"${type}",${typePlan || ''},${rowData.mtd.toFixed(2)},${rowData.yesterday.toFixed(2)},${estSpends.toFixed(2)},${typePlan ? diffPercent.toFixed(2) + '%' : ''},${typePlan ? estMinusPlan.toFixed(2) : ''},${typePlan ? overUnder : ''}\n`;
+      csv += `"${type}",${typePlan || 0},${rowData.mtd.toFixed(2)},${rowData.yesterday.toFixed(2)},${estSpends.toFixed(2)},${typePlan ? diffPercent.toFixed(2) + '%' : ''},${typePlan ? estMinusPlan.toFixed(2) : ''},${typePlan ? overUnder : ''}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -157,7 +157,7 @@ export default function SixCityGoogleFiltered() {
           <td style={{ textAlign: 'left', paddingLeft: isTotal ? '12px' : '32px', fontWeight: isTotal ? 'bold' : 'normal', borderRight: '1px solid var(--border-color)' }}>
             {isTotal ? `${mappedCity} (Total)` : campaignType}
           </td>
-          <td>{planValue ? formatIndianNum(planValue) : '-'}</td>
+          <td>{planValue > 0 ? formatIndianNum(planValue) : '0'}</td>
           <td>{formatIndianNum(rowData.mtd)}</td>
           <td>{formatIndianNum(rowData.yesterday)}</td>
           <td>{formatIndianNum(estSpends)}</td>
@@ -265,7 +265,7 @@ export default function SixCityGoogleFiltered() {
 
         <button 
           onClick={generateReport} 
-          disabled={loading || !planData}
+          disabled={loading}
           className="btn-primary"
         >
           {loading ? '⏳ Loading...' : '🔄 Generate Report'}
