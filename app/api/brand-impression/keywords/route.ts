@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
           ad_group_criterion.keyword.text,
           metrics.cost_micros,
           metrics.impressions,
+          metrics.clicks,
+          metrics.conversions_value,
           metrics.search_impression_share
         FROM keyword_view
         WHERE campaign.id = '${campaignId}'
@@ -54,10 +56,10 @@ export async function GET(req: NextRequest) {
       if (!keywordsMap.has(keyword)) {
         keywordsMap.set(keyword, {
           keyword,
-          mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-          apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-          may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-          jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 }
+          mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
+          apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
+          may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
+          jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 }
         });
       }
       return keywordsMap.get(keyword);
@@ -76,10 +78,14 @@ export async function GET(req: NextRequest) {
 
         const spend = Number(row.metrics?.costMicros || 0) / 1000000;
         const impressions = Number(row.metrics?.impressions || 0);
+        const clicks = Number(row.metrics?.clicks || 0);
+        const cv = Number(row.metrics?.conversionsValue || 0);
         const impressionShare = Number(row.metrics?.searchImpressionShare || 0);
 
         m.spend += spend;
         m.impressions += impressions;
+        m.clicks += clicks;
+        m.cv += cv;
         // Since we are aggregating potentially across ad groups for the same keyword text
         // we keep track of eligible impressions to compute accurate weighted average.
         if (impressionShare > 0) {
@@ -93,10 +99,10 @@ export async function GET(req: NextRequest) {
 
     const finalKeywords = [];
     const totalObj = {
-      mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-      apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-      may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 },
-      jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0 }
+      mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
+      apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
+      may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
+      jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 }
     };
 
     for (const data of Array.from(keywordsMap.values())) {
@@ -107,15 +113,32 @@ export async function GET(req: NextRequest) {
         
         totalObj[m].spend += monthData.spend;
         totalObj[m].impressions += monthData.impressions;
+        totalObj[m].clicks += monthData.clicks;
+        totalObj[m].cv += monthData.cv;
         totalObj[m].eligibleImpr += monthData.eligibleImpr;
       }
       finalKeywords.push(data);
     }
 
-    // Calc Total Row impression share %
+    // Calc Total Row derived metrics
     for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
-      const monthData = totalObj[m];
-      monthData.impressionShare = monthData.eligibleImpr > 0 ? (monthData.impressions / monthData.eligibleImpr) * 100 : 0;
+      const t = totalObj[m];
+      t.impressionShare = t.eligibleImpr > 0 ? (t.impressions / t.eligibleImpr) * 100 : 0;
+      t.cpc = t.clicks > 0 ? t.spend / t.clicks : 0;
+      t.ctr = t.impressions > 0 ? (t.clicks / t.impressions) * 100 : 0;
+      t.roas = t.spend > 0 ? t.cv / t.spend : 0;
+      t.spendSalience = 100;
+    }
+
+    for (const kw of finalKeywords) {
+      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+        const d = kw[m];
+        const t = totalObj[m];
+        d.cpc = d.clicks > 0 ? d.spend / d.clicks : 0;
+        d.ctr = d.impressions > 0 ? (d.clicks / d.impressions) * 100 : 0;
+        d.roas = d.spend > 0 ? d.cv / d.spend : 0;
+        d.spendSalience = t.spend > 0 ? (d.spend / t.spend) * 100 : 0;
+      }
     }
 
     // Sort by Jun spend descending

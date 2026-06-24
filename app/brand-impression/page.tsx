@@ -7,6 +7,7 @@ const fmtPctStr = (val: number) => {
   if (!isFinite(val)) return '0.00%';
   return (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 };
+const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function BrandImpressionMoM() {
   const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([]);
@@ -89,16 +90,17 @@ export default function BrandImpressionMoM() {
               if (!mergedKeywords.has(k.keyword)) {
                 mergedKeywords.set(k.keyword, {
                   keyword: k.keyword,
-                  mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-                  apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-                  may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-                  jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 }
+                  mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+                  apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+                  may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+                  jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 }
                 });
               }
               const entry = mergedKeywords.get(k.keyword);
-              ['mar', 'apr', 'may', 'jun'].forEach(m => {
                 entry[m].spend += k[m].spend || 0;
                 entry[m].impressions += k[m].impressions || 0;
+                entry[m].clicks += k[m].clicks || 0;
+                entry[m].cv += k[m].cv || 0;
                 if (k[m].impressionShare > 0) {
                   entry[m].eligibleImpressions += (k[m].impressions / (k[m].impressionShare / 100));
                 }
@@ -117,22 +119,36 @@ export default function BrandImpressionMoM() {
           finalKeywords.sort((a: any, b: any) => (b.jun?.spend || 0) - (a.jun?.spend || 0));
           
           const totals: any = {
-            mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-            apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-            may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 },
-            jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0 }
+            mar: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+            apr: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+            may: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 },
+            jun: { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 }
           };
           finalKeywords.forEach(k => {
             ['mar', 'apr', 'may', 'jun'].forEach(m => {
               totals[m].spend += k[m].spend;
               totals[m].impressions += k[m].impressions;
               totals[m].eligibleImpressions += k[m].eligibleImpressions;
+              totals[m].clicks += k[m].clicks;
+              totals[m].cv += k[m].cv;
             });
           });
           ['mar', 'apr', 'may', 'jun'].forEach(m => {
             totals[m].impressionShare = totals[m].eligibleImpressions > 0 
               ? (totals[m].impressions / totals[m].eligibleImpressions) * 100 
               : 0;
+            totals[m].cpc = totals[m].clicks > 0 ? totals[m].spend / totals[m].clicks : 0;
+            totals[m].ctr = totals[m].impressions > 0 ? (totals[m].clicks / totals[m].impressions) * 100 : 0;
+            totals[m].roas = totals[m].spend > 0 ? totals[m].cv / totals[m].spend : 0;
+            totals[m].spendSalience = 100;
+          });
+          finalKeywords.forEach((entry: any) => {
+            ['mar', 'apr', 'may', 'jun'].forEach(m => {
+              entry[m].cpc = entry[m].clicks > 0 ? entry[m].spend / entry[m].clicks : 0;
+              entry[m].ctr = entry[m].impressions > 0 ? (entry[m].clicks / entry[m].impressions) * 100 : 0;
+              entry[m].roas = entry[m].spend > 0 ? entry[m].cv / entry[m].spend : 0;
+              entry[m].spendSalience = totals[m].spend > 0 ? (entry[m].spend / totals[m].spend) * 100 : 0;
+            });
           });
           setData({ keywords: finalKeywords, total: totals });
         } else {
@@ -161,6 +177,10 @@ export default function BrandImpressionMoM() {
     const headers = [
       'Keyword',
       'Amount Spent Mar', 'Amount Spent Apr', 'Amount Spent May', 'Amount Spent Jun',
+      'Spend Salience % Mar', 'Spend Salience % Apr', 'Spend Salience % May', 'Spend Salience % Jun',
+      'CPC Mar', 'CPC Apr', 'CPC May', 'CPC Jun',
+      'CTR Mar', 'CTR Apr', 'CTR May', 'CTR Jun',
+      'ROAS Mar', 'ROAS Apr', 'ROAS May', 'ROAS Jun',
       'Impressions Mar', 'Impressions Apr', 'Impressions May', 'Impressions Jun',
       'Impression Share % Mar', 'Impression Share % Apr', 'Impression Share % May', 'Impression Share % Jun'
     ];
@@ -168,6 +188,10 @@ export default function BrandImpressionMoM() {
     const rows = data.keywords.map((k: any) => [
       k.keyword,
       k.mar.spend, k.apr.spend, k.may.spend, k.jun.spend,
+      k.mar.spendSalience, k.apr.spendSalience, k.may.spendSalience, k.jun.spendSalience,
+      k.mar.cpc, k.apr.cpc, k.may.cpc, k.jun.cpc,
+      k.mar.ctr, k.apr.ctr, k.may.ctr, k.jun.ctr,
+      k.mar.roas, k.apr.roas, k.may.roas, k.jun.roas,
       k.mar.impressions, k.apr.impressions, k.may.impressions, k.jun.impressions,
       k.mar.impressionShare, k.apr.impressionShare, k.may.impressionShare, k.jun.impressionShare
     ]);
@@ -245,17 +269,21 @@ export default function BrandImpressionMoM() {
               <tr>
                 <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Keyword</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
+                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Spend Salience %</th>
+                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPC</th>
+                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CTR</th>
+                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>ROAS</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Impressions</th>
                 <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', textAlign: 'center' }}>Impression Share %</th>
               </tr>
               <tr>
-                {/* 3 Metric blocks x 4 months = 12 headers */}
-                {Array.from({ length: 3 }).map((_, i) => (
+                {/* 7 Metric blocks x 4 months = 28 headers */}
+                {Array.from({ length: 7 }).map((_, i) => (
                   <React.Fragment key={i}>
                     <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Mar</th>
                     <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Apr</th>
                     <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>May</th>
-                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: i === 2 ? 'none' : '1px solid rgba(255,255,255,0.1)' }}>Jun</th>
+                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: i === 6 ? 'none' : '1px solid rgba(255,255,255,0.1)' }}>Jun</th>
                   </React.Fragment>
                 ))}
               </tr>
@@ -272,6 +300,30 @@ export default function BrandImpressionMoM() {
                     <td style={{ padding: '12px 8px' }}>{fmtINR(k.apr.spend)}</td>
                     <td style={{ padding: '12px 8px' }}>{fmtINR(k.may.spend)}</td>
                     <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(k.jun.spend)}</td>
+
+                    {/* Spend Salience % */}
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.mar.spendSalience)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.apr.spendSalience)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.may.spendSalience)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtPctStr(k.jun.spendSalience)}</td>
+
+                    {/* CPC */}
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(k.mar.cpc)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(k.apr.cpc)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtINR(k.may.cpc)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(k.jun.cpc)}</td>
+
+                    {/* CTR */}
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.mar.ctr)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.apr.ctr)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtPctStr(k.may.ctr)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtPctStr(k.jun.ctr)}</td>
+
+                    {/* ROAS */}
+                    <td style={{ padding: '12px 8px' }}>{fmtFloat(k.mar.roas)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtFloat(k.apr.roas)}</td>
+                    <td style={{ padding: '12px 8px' }}>{fmtFloat(k.may.roas)}</td>
+                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(k.jun.roas)}</td>
 
                     {/* Impressions */}
                     <td style={{ padding: '12px 8px' }}>{fmtVal(k.mar.impressions)}</td>
@@ -298,6 +350,30 @@ export default function BrandImpressionMoM() {
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.spend)}</td>
                   <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.spend)}</td>
                   <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.spend)}</td>
+
+                  {/* Spend Salience % */}
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.mar.spendSalience)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.apr.spendSalience)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.may.spendSalience)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtPctStr(data.total.jun.spendSalience)}</td>
+
+                  {/* CPC */}
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpc)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpc)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpc)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpc)}</td>
+
+                  {/* CTR */}
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.mar.ctr)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.apr.ctr)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtPctStr(data.total.may.ctr)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtPctStr(data.total.jun.ctr)}</td>
+
+                  {/* ROAS */}
+                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.roas)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.roas)}</td>
+                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.roas)}</td>
+                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.roas)}</td>
 
                   {/* Impressions */}
                   <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.impressions)}</td>
