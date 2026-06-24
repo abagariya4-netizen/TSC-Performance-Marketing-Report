@@ -20,6 +20,7 @@ export default function NavBar() {
     { label: 'Region Level Spends - Growth & Boost (Meta)', href: '/region-spends-growth-boost' },
     { label: 'City Level Spends (Google)', href: '/google/city-spends' },
     { label: '6 City (Google)',            href: '/google/6city-spends' },
+    { label: '6 City Filtered (Google)',   href: '/six-city-google-filtered' },
     { label: 'Product Spends (Google)',    href: '/google/product-spends' },
     { label: 'Campaign Type (Google)',     href: '/google-campaign-performance' },
     { label: 'Brand Impression MoM (Google)', href: '/brand-impression' },

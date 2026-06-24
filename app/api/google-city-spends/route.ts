@@ -1,12 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { queryGoogleAds, queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
-import { GOOGLE_CITY_MAP, TSC_CITIES } from '@/lib/googleCityMap';
+import { TSC_CITIES } from '@/lib/googleCityMap';
+import { getMappedCity } from '@/lib/googleCityMapping';
 import { getDateParams } from '@/lib/dateUtils';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const mappingParam = searchParams.get('mapping');
+    let customMapping: Record<string, string> | null = null;
+    if (mappingParam) {
+      try { customMapping = JSON.parse(mappingParam); } catch (e) {}
+    }
     const dates = getDateParams();
     const CUSTOMER_ID = '0668722274';
 
@@ -91,8 +98,7 @@ export async function GET() {
         if (resource) {
           const humanName = geoMap.get(resource);
           if (humanName) {
-            const lower = humanName.toLowerCase().trim();
-            const mappedName = GOOGLE_CITY_MAP[lower];
+            const mappedName = getMappedCity(humanName, customMapping);
             if (mappedName && cityBuckets.has(mappedName)) {
               cityBuckets.set(mappedName, cityBuckets.get(mappedName)! + cost);
             }

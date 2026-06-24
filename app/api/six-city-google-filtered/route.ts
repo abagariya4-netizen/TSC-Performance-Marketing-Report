@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const mappingParam = searchParams.get('mapping');
+    const category = searchParams.get('category') || 'All';
+    const city = searchParams.get('city') || 'Maharashtra';
+    
     let customMapping: Record<string, string> | null = null;
     if (mappingParam) {
       try { customMapping = JSON.parse(mappingParam); } catch (e) {}
@@ -63,27 +66,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const campaignTypes = ['Search Non-Brand (New)', 'Search Non-Brand (Old)', 'Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
-    const cities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad', 'Gujarat', 'Delhi+NCR'];
+    const campaignTypes = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
+    
+    const result: any = { rows: {} };
+    campaignTypes.forEach(t => result.rows[t] = { mtd: 0, yesterday: 0 });
+    result.total = { mtd: 0, yesterday: 0 };
 
-    const createCityObject = () => {
-      const obj: any = {};
-      campaignTypes.forEach(t => obj[t] = { mtd: 0, yesterday: 0 });
-      obj.total = { mtd: 0, yesterday: 0 };
-      return obj;
-    };
-
-    const result: any = { cities: {}, grandTotal: { mtd: 0, yesterday: 0 } };
-    cities.forEach(city => result.cities[city] = createCityObject());
-
-    const exclusions = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf', 'chair', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
+    const exclusions = ['vvc', 'r&f', 'foc', 'growth', 'vrc', 'rnf'];
 
     const processResults = (res: any[], timePeriod: 'mtd' | 'yesterday') => {
       for (const row of res) {
         const campaignName = row.campaign?.name || '';
         const nameLower = campaignName.toLowerCase();
         
-        // 1. Check campaign exclusions
         let isExcluded = false;
         for (const ex of exclusions) {
           if (nameLower.includes(ex)) {
@@ -93,17 +88,21 @@ export async function GET(request: NextRequest) {
         }
         if (isExcluded) continue;
 
-        // 2. Check category filter
-        if (!nameLower.includes('mat')) continue;
+        if (category === 'Mattress' && !nameLower.includes('mat')) continue;
+        if (category === 'Chair' && !nameLower.includes('chair')) continue;
+        if (category === 'Sofa' && !nameLower.includes('sofa')) continue;
+        if (category === 'Desk' && !nameLower.includes('desk')) continue;
+        if (category === 'Elite' && !nameLower.includes('elite')) continue;
+        if (category === 'Foot Massager' && !nameLower.includes('foot')) continue;
+        if (category === 'Accessories' && !nameLower.includes('acce')) continue;
+        if (category === 'Bed' && !nameLower.includes('bed')) continue;
 
-        // 3. Resolve geo_target_city
         const resourceName = row.segments?.geoTargetCity;
         if (!resourceName) continue;
         
         const geoData = geoMap.get(resourceName);
         if (!geoData) continue;
 
-        // 4. Run getMappedCity
         const mappedName = getMappedCity(geoData.name, customMapping);
         let cityBucket = mappedName;
         if (['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad'].includes(mappedName)) {
@@ -111,31 +110,27 @@ export async function GET(request: NextRequest) {
         } else if (['Ahmedabad', 'Gandhinagar', 'Surat', 'Rajkot', 'Vadodara'].includes(mappedName)) {
           cityBucket = 'Gujarat';
         }
-        if (!cities.includes(cityBucket)) continue; // Discard Not one of 6 cities
 
-        // 5. Run classifyCampaign
+        const stateToCityBucket: Record<string, string> = {
+          'Maharashtra': 'Mumbai',
+          'Karnataka': 'Bengaluru',
+          'Tamil Nadu': 'Chennai',
+          'Telangana': 'Hyderabad',
+          'Delhi+NCR': 'Delhi+NCR',
+          'Gujarat': 'Gujarat'
+        };
+        const targetBucket = stateToCityBucket[city];
+
+        if (cityBucket !== targetBucket) continue;
+
         const channelType = row.campaign?.advertisingChannelType || '';
         let campType = classifyCampaign(channelType, campaignName);
-        if (!campType) continue; // Discard invalid types
-
-        // 6. For Search Non-Brand, split into New/Old for Mumbai/Bengaluru/Chennai/Hyderabad
-        const newOldCities = ['Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad'];
-        let newOldType: string | null = null;
-        if (campType === 'Search' && newOldCities.includes(cityBucket)) {
-          const isNew = nameLower.includes('mum') || nameLower.includes('beng') ||
-                        nameLower.includes('chen') || nameLower.includes('hyd');
-          newOldType = isNew ? 'Search Non-Brand (New)' : 'Search Non-Brand (Old)';
-        }
+        if (!campType) continue; 
 
         const cost = parseFloat(row.metrics?.costMicros || '0') / 1000000;
 
-        // 7. Add spend — also populate New/Old buckets alongside Search
-        result.cities[cityBucket][campType][timePeriod] += cost;
-        if (newOldType) {
-          result.cities[cityBucket][newOldType][timePeriod] += cost;
-        }
-        result.cities[cityBucket].total[timePeriod] += cost;
-        result.grandTotal[timePeriod] += cost;
+        result.rows[campType][timePeriod] += cost;
+        result.total[timePeriod] += cost;
       }
     };
 
@@ -143,7 +138,7 @@ export async function GET(request: NextRequest) {
     processResults(geoYdayRes, 'yesterday');
 
     result.dateInfo = {
-      monthName: dates.sinceMTD, // Could format better if needed, but keeping simple
+      monthName: dates.sinceMTD, 
       dayOfMonth: dates.daysPassed,
       daysRemaining: dates.daysRemaining,
       totalDays: dates.totalDays,

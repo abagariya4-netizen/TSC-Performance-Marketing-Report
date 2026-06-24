@@ -165,7 +165,12 @@ function PageContent() {
     setLoading(true);
     setError(null);
     try {
-      const res  = await fetch('/api/google-city-spends');
+      let url = '/api/google-city-spends';
+      const mapping = localStorage.getItem('tsc_google_city_mapping');
+      if (mapping) {
+        url += `?mapping=${encodeURIComponent(mapping)}`;
+      }
+      const res  = await fetch(url);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       setData(json);

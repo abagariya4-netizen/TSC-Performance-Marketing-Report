@@ -29,7 +29,12 @@ export default function Google6CitySpends() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/google-6city-spends');
+      let url = '/api/google-6city-spends';
+      const mapping = localStorage.getItem('tsc_google_city_mapping');
+      if (mapping) {
+        url += `?mapping=${encodeURIComponent(mapping)}`;
+      }
+      const res = await fetch(url);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to fetch data');
       setData(json);
