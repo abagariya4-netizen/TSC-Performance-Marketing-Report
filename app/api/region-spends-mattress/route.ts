@@ -15,17 +15,24 @@ function passesFilters(campaignName: string, adsetName: string): boolean {
   const lowerCamp = campaignName.toLowerCase();
   const lowerAdset = adsetName.toLowerCase();
 
+  // Campaign rules
+  if (!lowerCamp.includes('mat')) return false;
+
+  const campExcludes = ['growth', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'chair', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
+  if (campExcludes.some(ex => lowerCamp.includes(ex))) return false;
+
+  // General Adset exclusions
   const adsetExcludes = ['sofa', 'desk', 'chair', 'boost', 'growth'];
   if (adsetExcludes.some(ex => lowerAdset.includes(ex))) return false;
 
+  // Product creative adset rules
   if (isProductCreative(adsetName)) {
-    return lowerAdset.includes('mat');
-  } else {
-    if (!lowerCamp.includes('mat')) return false;
-    const campExcludes = ['sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'chair', 'pillow', 'cushion', 'massa', 'sensai', 'boost', 'growth'];
-    if (campExcludes.some(ex => lowerCamp.includes(ex))) return false;
-    return true;
+    if (!lowerAdset.includes('mat')) return false;
+    const prodCreativeAdsetExcludes = ['sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'chair'];
+    if (prodCreativeAdsetExcludes.some(ex => lowerAdset.includes(ex))) return false;
   }
+
+  return true;
 }
 
 export async function GET(req: NextRequest) {
@@ -36,9 +43,9 @@ export async function GET(req: NextRequest) {
     const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
     const today = new Date(istString);
     const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-    
-    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-    const firstDayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;
+
+    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const firstDayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
 
     const totalDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const daysPassed = yesterday.getDate();
@@ -57,7 +64,7 @@ export async function GET(req: NextRequest) {
     const processRow = (row: any, isMtd: boolean) => {
       const cName = row.campaign_name || '';
       const aName = row.adset_name || '';
-      
+
       if (!passesFilters(cName, aName)) return;
 
       const reg = row.region || 'Unknown';
