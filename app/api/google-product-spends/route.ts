@@ -57,9 +57,9 @@ export async function GET() {
     const daysPassed = yesterday.getDate(); // e.g. 18 if yesterday = 18th
     const daysRemaining = totalDaysInMonth - daysPassed;
 
-    // First 15 days of current month (or up to yesterday if month just started)
-    const first15End = new Date(yesterday.getFullYear(), yesterday.getMonth(), Math.min(15, daysPassed));
-    const first15EndStr = formatDate(first15End);
+    // Up to yesterday for current month
+    const curMonthEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), Math.max(1, daysPassed));
+    const curMonthEndStr = formatDate(curMonthEnd);
 
     // Previous 3 full months (rolling, relative to current month)
     const month1 = new Date(yesterday.getFullYear(), yesterday.getMonth() - 3, 1);
@@ -73,7 +73,7 @@ export async function GET() {
       { key: 'month1', start: formatDate(month1), end: formatDate(month1End) },
       { key: 'month2', start: formatDate(month2), end: formatDate(month2End) },
       { key: 'month3', start: formatDate(month3), end: formatDate(month3End) },
-      { key: 'curMonthFirst15', start: currentMonthStartStr, end: first15EndStr },
+      { key: 'curMonthFirst15', start: currentMonthStartStr, end: curMonthEndStr },
       { key: 'day3', start: day2Before, end: day2Before },
       { key: 'day2', start: day1Before, end: day1Before },
       { key: 'day1', start: yesterdayStr, end: yesterdayStr }, // most recent = "yesterday"
@@ -81,8 +81,8 @@ export async function GET() {
 
     const periodPromises = DATE_RANGES.map(async (range) => {
       const gaql = `
-        SELECT segments.product_title, campaign.name, 
-        campaign.advertising_channel_type, metrics.cost_micros
+        SELECT segments.product_item_id, segments.product_title, campaign.name, 
+        campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions, metrics.conversions_value
         FROM shopping_performance_view
         WHERE segments.date BETWEEN '${range.start}' AND '${range.end}'
         AND campaign.advertising_channel_type IN ('SHOPPING', 'PERFORMANCE_MAX')
@@ -93,8 +93,8 @@ export async function GET() {
 
     const mtdPromise = (async () => {
       const gaql = `
-        SELECT segments.product_title, campaign.name, 
-        campaign.advertising_channel_type, metrics.cost_micros
+        SELECT segments.product_item_id, segments.product_title, campaign.name, 
+        campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions, metrics.conversions_value
         FROM shopping_performance_view
         WHERE segments.date BETWEEN '${currentMonthStartStr}' AND '${yesterdayStr}'
         AND campaign.advertising_channel_type IN ('SHOPPING', 'PERFORMANCE_MAX')
@@ -105,8 +105,19 @@ export async function GET() {
 
     const results = await Promise.all([...periodPromises, mtdPromise]);
 
-    const productSpends: Record<string, Record<string, Record<string, number>>> = {};
-    const categoryTotals: Record<string, Record<string, number>> = {};
+    const productData: Record<string, Record<string, {
+      spends: Record<string, number>,
+      clicks: Record<string, number>,
+      impressions: Record<string, number>,
+      cv: Record<string, number>,
+      variants: Record<string, {
+        spends: Record<string, number>,
+        clicks: Record<string, number>,
+        impressions: Record<string, number>,
+        cv: Record<string, number>
+      }>
+    }>> = {};
+    const categoryTotals: Record<string, Record<string, { spend: number, clicks: number, impressions: number, cv: number }>> = {};
 
     results.forEach(({ key, data }) => {
       data.forEach((row: any) => {
@@ -114,82 +125,181 @@ export async function GET() {
         if (isExcluded(campaignName)) return;
 
         const rawTitle = row.segments?.productTitle || 'Unknown';
+        const variantId = row.segments?.productItemId || row.segments?.productTitle || 'Unknown Variant';
         const cost = Number(row.metrics?.costMicros || 0) / 1000000;
+        const clicks = Number(row.metrics?.clicks || 0);
+        const impressions = Number(row.metrics?.impressions || 0);
+        const cv = Number(row.metrics?.conversionsValue || 0);
 
         const cleanName = getCleanProductName(rawTitle);
         const campaignCategory = getCategoryFromCampaign(campaignName);
         
-        // As requested: Any product getting spends from a specific campaign will be 
-        // tagged under that campaign's category, regardless of the product's name.
         const category = campaignCategory;
 
         if (!categoryTotals[category]) categoryTotals[category] = {};
-        if (!categoryTotals[category][key]) categoryTotals[category][key] = 0;
-        categoryTotals[category][key] += cost;
+        if (!categoryTotals[category][key]) categoryTotals[category][key] = { spend: 0, clicks: 0, impressions: 0, cv: 0 };
+        categoryTotals[category][key].spend += cost;
+        categoryTotals[category][key].clicks += clicks;
+        categoryTotals[category][key].impressions += impressions;
+        categoryTotals[category][key].cv += cv;
 
-        if (!productSpends[category]) productSpends[category] = {};
-        if (!productSpends[category][cleanName]) productSpends[category][cleanName] = {};
-        if (!productSpends[category][cleanName][key]) productSpends[category][cleanName][key] = 0;
+        if (!productData[category]) productData[category] = {};
+        if (!productData[category][cleanName]) productData[category][cleanName] = {
+          spends: {}, clicks: {}, impressions: {}, cv: {}, variants: {}
+        };
+        const pNode = productData[category][cleanName];
+        
+        pNode.spends[key] = (pNode.spends[key] || 0) + cost;
+        pNode.clicks[key] = (pNode.clicks[key] || 0) + clicks;
+        pNode.impressions[key] = (pNode.impressions[key] || 0) + impressions;
+        pNode.cv[key] = (pNode.cv[key] || 0) + cv;
 
-        productSpends[category][cleanName][key] += cost;
+        if (!pNode.variants[variantId]) pNode.variants[variantId] = { spends: {}, clicks: {}, impressions: {}, cv: {} };
+        const vNode = pNode.variants[variantId];
+        vNode.spends[key] = (vNode.spends[key] || 0) + cost;
+        vNode.clicks[key] = (vNode.clicks[key] || 0) + clicks;
+        vNode.impressions[key] = (vNode.impressions[key] || 0) + impressions;
+        vNode.cv[key] = (vNode.cv[key] || 0) + cv;
       });
     });
 
     const outputCategories: any = {};
 
-    for (const [category, products] of Object.entries(productSpends)) {
+    for (const [category, products] of Object.entries(productData)) {
       const productArr = [];
-      for (const [productName, spends] of Object.entries(products)) {
-        const month1Spend = spends['month1'] || 0;
-        const month2Spend = spends['month2'] || 0;
-        const month3Spend = spends['month3'] || 0;
-        const curMonthFirst15 = spends['curMonthFirst15'] || 0;
-        const day3 = spends['day3'] || 0;
-        const day2 = spends['day2'] || 0;
-        const day1 = spends['day1'] || 0; // most recent day = "yesterday"
-        const mtd = spends['mtd'] || 0;
+      for (const [productName, pNode] of Object.entries(products)) {
+        const mapMetrics = (node: any, isCat = false) => {
+          const metrics: any = {};
+          ['month1', 'month2', 'month3', 'curMonthFirst15', 'day3', 'day2', 'day1', 'mtd'].forEach(k => {
+             const spend = isCat ? (node[k]?.spend || 0) : (node.spends[k] || 0);
+             const clicks = isCat ? (node[k]?.clicks || 0) : (node.clicks[k] || 0);
+             const impr = isCat ? (node[k]?.impressions || 0) : (node.impressions[k] || 0);
+             const cv = isCat ? (node[k]?.cv || 0) : (node.cv[k] || 0);
+             
+             metrics[k] = {
+               spend,
+               cpc: clicks > 0 ? spend / clicks : 0,
+               ctr: impr > 0 ? (clicks / impr) * 100 : 0,
+               roas: spend > 0 ? cv / spend : 0
+             };
+          });
+          return metrics;
+        };
 
-        const catMonth1 = categoryTotals[category]['month1'] || 1;
-        const catMonth2 = categoryTotals[category]['month2'] || 1;
-        const catMonth3 = categoryTotals[category]['month3'] || 1;
-        const catCurFirst15 = categoryTotals[category]['curMonthFirst15'] || 1;
-        const catDay3 = categoryTotals[category]['day3'] || 1;
-        const catDay2 = categoryTotals[category]['day2'] || 1;
-        const catDay1 = categoryTotals[category]['day1'] || 1;
+        const pMetrics = mapMetrics(pNode);
+        const catNode = categoryTotals[category] || {};
+        const catMetrics = mapMetrics(catNode, true);
 
-        // Est. Spends = MTD (1st of month to yesterday) + (yesterday's spend * Days Remaining)
-        const estSpends = mtd + (day1 * daysRemaining);
-
-        const avg3Months = (month1Spend + month2Spend + month3Spend) / 3;
+        const estSpends = pMetrics.mtd.spend + (pMetrics.day1.spend * daysRemaining);
+        const avg3Months = (pMetrics.month1.spend + pMetrics.month2.spend + pMetrics.month3.spend) / 3;
         const vsAvg3Months = avg3Months > 0 ? ((estSpends - avg3Months) / avg3Months) * 100 : null;
-        const vsLastMonth = month3Spend > 0 ? ((estSpends - month3Spend) / month3Spend) * 100 : null;
+        const vsLastMonth = pMetrics.month3.spend > 0 ? ((estSpends - pMetrics.month3.spend) / pMetrics.month3.spend) * 100 : null;
+
+        const variantsArr = Object.entries(pNode.variants).map(([vId, vNode]) => {
+           const vM = mapMetrics(vNode);
+           return {
+             name: vId,
+             metrics: vM,
+             salienceMonth1: pMetrics.month1.spend > 0 ? (vM.month1.spend / pMetrics.month1.spend) * 100 : 0,
+             salienceMonth2: pMetrics.month2.spend > 0 ? (vM.month2.spend / pMetrics.month2.spend) * 100 : 0,
+             salienceMonth3: pMetrics.month3.spend > 0 ? (vM.month3.spend / pMetrics.month3.spend) * 100 : 0,
+             salienceCurFirst15: pMetrics.curMonthFirst15.spend > 0 ? (vM.curMonthFirst15.spend / pMetrics.curMonthFirst15.spend) * 100 : 0,
+             salienceDay3: pMetrics.day3.spend > 0 ? (vM.day3.spend / pMetrics.day3.spend) * 100 : 0,
+             salienceDay2: pMetrics.day2.spend > 0 ? (vM.day2.spend / pMetrics.day2.spend) * 100 : 0,
+             salienceDay1: pMetrics.day1.spend > 0 ? (vM.day1.spend / pMetrics.day1.spend) * 100 : 0,
+           };
+        });
+
+        variantsArr.sort((a, b) => {
+           const tA = a.metrics.month1.spend + a.metrics.month2.spend + a.metrics.month3.spend + a.metrics.mtd.spend;
+           const tB = b.metrics.month1.spend + b.metrics.month2.spend + b.metrics.month3.spend + b.metrics.mtd.spend;
+           return tB - tA;
+        });
 
         productArr.push({
           name: productName,
-          month1: month1Spend, month2: month2Spend, month3: month3Spend,
-          curMonthFirst15,
-          day3, day2, day1,
-          salienceMonth1: (month1Spend / catMonth1) * 100,
-          salienceMonth2: (month2Spend / catMonth2) * 100,
-          salienceMonth3: (month3Spend / catMonth3) * 100,
-          salienceCurFirst15: (curMonthFirst15 / catCurFirst15) * 100,
-          salienceDay3: (day3 / catDay3) * 100,
-          salienceDay2: (day2 / catDay2) * 100,
-          salienceDay1: (day1 / catDay1) * 100,
-          mtd,
+          month1: pMetrics.month1.spend, month2: pMetrics.month2.spend, month3: pMetrics.month3.spend,
+          curMonthFirst15: pMetrics.curMonthFirst15.spend,
+          day3: pMetrics.day3.spend, day2: pMetrics.day2.spend, day1: pMetrics.day1.spend, mtd: pMetrics.mtd.spend,
+          cpcMonth1: pMetrics.month1.cpc, ctrMonth1: pMetrics.month1.ctr, roasMonth1: pMetrics.month1.roas,
+          cpcMonth2: pMetrics.month2.cpc, ctrMonth2: pMetrics.month2.ctr, roasMonth2: pMetrics.month2.roas,
+          cpcMonth3: pMetrics.month3.cpc, ctrMonth3: pMetrics.month3.ctr, roasMonth3: pMetrics.month3.roas,
+          cpcCurMonth: pMetrics.curMonthFirst15.cpc, ctrCurMonth: pMetrics.curMonthFirst15.ctr, roasCurMonth: pMetrics.curMonthFirst15.roas,
+          salienceMonth1: catMetrics.month1.spend > 0 ? (pMetrics.month1.spend / catMetrics.month1.spend) * 100 : 0,
+          salienceMonth2: catMetrics.month2.spend > 0 ? (pMetrics.month2.spend / catMetrics.month2.spend) * 100 : 0,
+          salienceMonth3: catMetrics.month3.spend > 0 ? (pMetrics.month3.spend / catMetrics.month3.spend) * 100 : 0,
+          salienceCurFirst15: catMetrics.curMonthFirst15.spend > 0 ? (pMetrics.curMonthFirst15.spend / catMetrics.curMonthFirst15.spend) * 100 : 0,
+          salienceDay3: catMetrics.day3.spend > 0 ? (pMetrics.day3.spend / catMetrics.day3.spend) * 100 : 0,
+          salienceDay2: catMetrics.day2.spend > 0 ? (pMetrics.day2.spend / catMetrics.day2.spend) * 100 : 0,
+          salienceDay1: catMetrics.day1.spend > 0 ? (pMetrics.day1.spend / catMetrics.day1.spend) * 100 : 0,
           estSpends,
           vsAvg3Months,
           vsLastMonth,
+          variants: variantsArr.map(v => ({
+            name: v.name,
+            month1: v.metrics.month1.spend, month2: v.metrics.month2.spend, month3: v.metrics.month3.spend,
+            curMonthFirst15: v.metrics.curMonthFirst15.spend,
+            day3: v.metrics.day3.spend, day2: v.metrics.day2.spend, day1: v.metrics.day1.spend, mtd: v.metrics.mtd.spend,
+            cpcMonth1: v.metrics.month1.cpc, ctrMonth1: v.metrics.month1.ctr, roasMonth1: v.metrics.month1.roas,
+            cpcMonth2: v.metrics.month2.cpc, ctrMonth2: v.metrics.month2.ctr, roasMonth2: v.metrics.month2.roas,
+            cpcMonth3: v.metrics.month3.cpc, ctrMonth3: v.metrics.month3.ctr, roasMonth3: v.metrics.month3.roas,
+            cpcCurMonth: v.metrics.curMonthFirst15.cpc, ctrCurMonth: v.metrics.curMonthFirst15.ctr, roasCurMonth: v.metrics.curMonthFirst15.roas,
+            salienceMonth1: v.salienceMonth1, salienceMonth2: v.salienceMonth2, salienceMonth3: v.salienceMonth3,
+            salienceCurFirst15: v.salienceCurFirst15,
+            salienceDay3: v.salienceDay3, salienceDay2: v.salienceDay2, salienceDay1: v.salienceDay1
+          }))
         });
       }
 
-      // Sort by total spend (Sum of Amount spent: month1 + month2 + month3 + mtd) descending
       productArr.sort((a, b) => {
         const totalA = a.month1 + a.month2 + a.month3 + a.mtd;
         const totalB = b.month1 + b.month2 + b.month3 + b.mtd;
         return totalB - totalA;
       });
-      outputCategories[category] = { products: productArr };
+      
+      const catTotals = categoryTotals[category] || {};
+      const catMetrics = {
+        month1: { spend: catTotals['month1']?.spend || 0, clicks: catTotals['month1']?.clicks || 0, impr: catTotals['month1']?.impressions || 0, cv: catTotals['month1']?.cv || 0 },
+        month2: { spend: catTotals['month2']?.spend || 0, clicks: catTotals['month2']?.clicks || 0, impr: catTotals['month2']?.impressions || 0, cv: catTotals['month2']?.cv || 0 },
+        month3: { spend: catTotals['month3']?.spend || 0, clicks: catTotals['month3']?.clicks || 0, impr: catTotals['month3']?.impressions || 0, cv: catTotals['month3']?.cv || 0 },
+        curMonth: { spend: catTotals['curMonthFirst15']?.spend || 0, clicks: catTotals['curMonthFirst15']?.clicks || 0, impr: catTotals['curMonthFirst15']?.impressions || 0, cv: catTotals['curMonthFirst15']?.cv || 0 },
+        day3: { spend: catTotals['day3']?.spend || 0 },
+        day2: { spend: catTotals['day2']?.spend || 0 },
+        day1: { spend: catTotals['day1']?.spend || 0 },
+        mtd: { spend: catTotals['mtd']?.spend || 0 },
+      };
+
+      const estCatSpends = catMetrics.mtd.spend + (catMetrics.day1.spend * daysRemaining);
+      const avgCat3 = (catMetrics.month1.spend + catMetrics.month2.spend + catMetrics.month3.spend) / 3;
+
+      outputCategories[category] = { 
+        products: productArr,
+        totals: {
+          month1: catMetrics.month1.spend,
+          month2: catMetrics.month2.spend,
+          month3: catMetrics.month3.spend,
+          curMonthFirst15: catMetrics.curMonth.spend,
+          day3: catMetrics.day3.spend,
+          day2: catMetrics.day2.spend,
+          day1: catMetrics.day1.spend,
+          mtd: catMetrics.mtd.spend,
+          cpcMonth1: catMetrics.month1.clicks > 0 ? catMetrics.month1.spend / catMetrics.month1.clicks : 0,
+          ctrMonth1: catMetrics.month1.impr > 0 ? (catMetrics.month1.clicks / catMetrics.month1.impr) * 100 : 0,
+          roasMonth1: catMetrics.month1.spend > 0 ? catMetrics.month1.cv / catMetrics.month1.spend : 0,
+          cpcMonth2: catMetrics.month2.clicks > 0 ? catMetrics.month2.spend / catMetrics.month2.clicks : 0,
+          ctrMonth2: catMetrics.month2.impr > 0 ? (catMetrics.month2.clicks / catMetrics.month2.impr) * 100 : 0,
+          roasMonth2: catMetrics.month2.spend > 0 ? catMetrics.month2.cv / catMetrics.month2.spend : 0,
+          cpcMonth3: catMetrics.month3.clicks > 0 ? catMetrics.month3.spend / catMetrics.month3.clicks : 0,
+          ctrMonth3: catMetrics.month3.impr > 0 ? (catMetrics.month3.clicks / catMetrics.month3.impr) * 100 : 0,
+          roasMonth3: catMetrics.month3.spend > 0 ? catMetrics.month3.cv / catMetrics.month3.spend : 0,
+          cpcCurMonth: catMetrics.curMonth.clicks > 0 ? catMetrics.curMonth.spend / catMetrics.curMonth.clicks : 0,
+          ctrCurMonth: catMetrics.curMonth.impr > 0 ? (catMetrics.curMonth.clicks / catMetrics.curMonth.impr) * 100 : 0,
+          roasCurMonth: catMetrics.curMonth.spend > 0 ? catMetrics.curMonth.cv / catMetrics.curMonth.spend : 0,
+          estSpends: estCatSpends,
+          vsAvg3Months: avgCat3 > 0 ? ((estCatSpends - avgCat3) / avgCat3) * 100 : null,
+          vsLastMonth: catMetrics.month3.spend > 0 ? ((estCatSpends - catMetrics.month3.spend) / catMetrics.month3.spend) * 100 : null,
+        }
+      };
     }
 
     const dateRangesMap: Record<string, any> = {};
@@ -202,7 +312,7 @@ export async function GET() {
       month1: monthNames[month1.getMonth()],
       month2: monthNames[month2.getMonth()],
       month3: monthNames[month3.getMonth()],
-      curMonthFirst15: `${monthNames[currentMonthStart.getMonth()]}(1-${Math.min(15, daysPassed)})`,
+      curMonthFirst15: `${monthNames[currentMonthStart.getMonth()].toUpperCase()} (1-${daysPassed})`,
       day3: `${day2Before.split('-')[2]} ${monthNames[new Date(day2Before).getMonth()]}`,
       day2: `${day1Before.split('-')[2]} ${monthNames[new Date(day1Before).getMonth()]}`,
       day1: `${yesterdayStr.split('-')[2]} ${monthNames[yesterday.getMonth()]}`,

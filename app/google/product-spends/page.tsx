@@ -12,6 +12,10 @@ interface ProductRow {
   day3: number;
   day2: number;
   day1: number;
+  cpcMonth1: number; ctrMonth1: number; roasMonth1: number;
+  cpcMonth2: number; ctrMonth2: number; roasMonth2: number;
+  cpcMonth3: number; ctrMonth3: number; roasMonth3: number;
+  cpcCurMonth: number; ctrCurMonth: number; roasCurMonth: number;
   salienceMonth1: number;
   salienceMonth2: number;
   salienceMonth3: number;
@@ -23,6 +27,7 @@ interface ProductRow {
   estSpends: number;
   vsAvg3Months: number | null;
   vsLastMonth: number | null;
+  variants?: Omit<ProductRow, 'variants'>[];
 }
 
 interface ReportLabels {
@@ -37,30 +42,42 @@ interface ReportLabels {
 }
 
 interface ReportData {
-  categories: Record<string, { products: ProductRow[] }>;
+  categories: Record<string, { products: ProductRow[], totals?: any }>;
   dateRanges: Record<string, { start: string, end: string }>;
   daysRemaining: number;
   daysPassed: number;
   labels: ReportLabels;
 }
 
+const fmtFloat = (val: number | null) => (val === null || !isFinite(val)) ? '0.00' : Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPctStr = (val: number | null) => (val === null || !isFinite(val)) ? '0.00%' : Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+
 const CATEGORIES = ['Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager', 'Bed', 'Elite', 'Sofa'];
 
 function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, selectedCategory: string }) {
   const categoryData = data.categories[selectedCategory] || { products: [] };
   const rows = categoryData.products;
+  const totals = categoryData.totals;
   const labels = data.labels;
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+
+  const toggleProduct = (name: string) => {
+    const next = new Set(expandedProducts);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setExpandedProducts(next);
+  };
 
   const exportCSV = () => {
     const headers = [
       'Product',
-      `${labels.month1} Amount`, `${labels.month1} Salience %`,
-      `${labels.month2} Amount`, `${labels.month2} Salience %`,
-      `${labels.month3} Amount`, `${labels.month3} Salience %`,
-      `${labels.curMonthFirst15} Amount`, `${labels.curMonthFirst15} Salience %`,
-      `${labels.day3} Amount`, `${labels.day3} Salience %`,
-      `${labels.day2} Amount`, `${labels.day2} Salience %`,
-      `${labels.day1} Amount`, `${labels.day1} Salience %`,
+      `${labels.month1} Spend`, `${labels.month1} Salience %`, `${labels.month1} CPC`, `${labels.month1} CTR`, `${labels.month1} ROAS`,
+      `${labels.month2} Spend`, `${labels.month2} Salience %`, `${labels.month2} CPC`, `${labels.month2} CTR`, `${labels.month2} ROAS`,
+      `${labels.month3} Spend`, `${labels.month3} Salience %`, `${labels.month3} CPC`, `${labels.month3} CTR`, `${labels.month3} ROAS`,
+      `${labels.curMonthFirst15} Spend`, `${labels.curMonthFirst15} Salience %`, `${labels.curMonthFirst15} CPC`, `${labels.curMonthFirst15} CTR`, `${labels.curMonthFirst15} ROAS`,
+      `${labels.day3} Spend`, `${labels.day3} Salience %`,
+      `${labels.day2} Spend`, `${labels.day2} Salience %`,
+      `${labels.day1} Spend`, `${labels.day1} Salience %`,
       'MTD', 'Est. Spends', 'vs Avg 3 Months %', `vs ${labels.lastMonth} %`
     ];
 
@@ -68,19 +85,26 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
     lines.push(headers.join(','));
 
     rows.forEach(r => {
-      lines.push([
-        `"${r.name}"`,
-        r.month1, r.salienceMonth1,
-        r.month2, r.salienceMonth2,
-        r.month3, r.salienceMonth3,
-        r.curMonthFirst15, r.salienceCurFirst15,
-        r.day3, r.salienceDay3,
-        r.day2, r.salienceDay2,
-        r.day1, r.salienceDay1,
-        r.mtd, r.estSpends,
-        r.vsAvg3Months !== null ? r.vsAvg3Months : '',
-        r.vsLastMonth !== null ? r.vsLastMonth : ''
-      ].join(','));
+      const getRowData = (row: any) => [
+        `"${row.name}"`,
+        row.month1, row.salienceMonth1, row.cpcMonth1, row.ctrMonth1, row.roasMonth1,
+        row.month2, row.salienceMonth2, row.cpcMonth2, row.ctrMonth2, row.roasMonth2,
+        row.month3, row.salienceMonth3, row.cpcMonth3, row.ctrMonth3, row.roasMonth3,
+        row.curMonthFirst15, row.salienceCurFirst15, row.cpcCurMonth, row.ctrCurMonth, row.roasCurMonth,
+        row.day3, row.salienceDay3,
+        row.day2, row.salienceDay2,
+        row.day1, row.salienceDay1,
+        row.mtd, row.estSpends,
+        row.vsAvg3Months !== null ? row.vsAvg3Months : '',
+        row.vsLastMonth !== null ? row.vsLastMonth : ''
+      ].join(',');
+      
+      lines.push(getRowData(r));
+      if (r.variants) {
+        r.variants.forEach((v: any) => {
+          lines.push(getRowData(v));
+        });
+      }
     });
 
     const csvContent = lines.join('\n');
@@ -112,67 +136,99 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         <table className="modern-table">
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Product ({selectedCategory})</th>
-              <th style={{ textAlign: 'center' }}>{labels.month1}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.month2}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.month3}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.curMonthFirst15}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.day3}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.day2}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>{labels.day1}<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(Amt | Salience)</span></th>
-              <th style={{ textAlign: 'center' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {labels.day1}×Remaining)</span></th>
-              <th style={{ textAlign: 'center' }}>vs Avg 3 Months</th>
-              <th style={{ textAlign: 'center' }}>vs {labels.lastMonth}</th>
+              <th rowSpan={2} style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', minWidth: '200px' }}>Product ({selectedCategory})</th>
+              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month1}</th>
+              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month2}</th>
+              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month3}</th>
+              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.curMonthFirst15}</th>
+              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day3}</th>
+              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day2}</th>
+              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day1}</th>
+              <th rowSpan={2} style={{ textAlign: 'center' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {labels.day1}×Remaining)</span></th>
+              <th rowSpan={2} style={{ textAlign: 'center' }}>vs Avg 3 Months</th>
+              <th rowSpan={2} style={{ textAlign: 'center' }}>vs {labels.lastMonth}</th>
+            </tr>
+            <tr>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
+              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No products found in this category.</td>
+                <td colSpan={29} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No products found in this category.</td>
               </tr>
             )}
             {rows.map((r, i) => (
-              <tr key={r.name}>
-                <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', fontWeight: 500 }}>{r.name}</td>
-                <td>
-                  <div>{formatINR(r.month1)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth1 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.month2)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth2 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.month3)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceMonth3 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.curMonthFirst15)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceCurFirst15 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.day3)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay3 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.day2)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay2 || 0).toFixed(1)}%</div>
-                </td>
-                <td>
-                  <div>{formatINR(r.day1)}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{(r.salienceDay1 || 0).toFixed(1)}%</div>
-                </td>
-                <td style={{ fontWeight: 'bold' }}>
-                  {formatINR(r.estSpends)}
-                </td>
-                <td>
-                  {renderPct(r.vsAvg3Months)}
-                </td>
-                <td>
-                  {renderPct(r.vsLastMonth)}
-                </td>
-              </tr>
+              <React.Fragment key={r.name}>
+                <tr>
+                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                    {r.variants && r.variants.length > 0 ? (
+                      <button 
+                        onClick={() => toggleProduct(r.name)}
+                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginRight: '8px', fontSize: '10px' }}
+                      >
+                        {expandedProducts.has(r.name) ? '▼' : '▶'}
+                      </button>
+                    ) : (
+                      <span style={{ display: 'inline-block', width: '18px', marginRight: '8px' }}></span>
+                    )}
+                    {r.name}
+                  </td>
+                  <td>{formatINR(r.month1)}</td><td>{fmtPctStr(r.salienceMonth1)}</td><td>{formatINR(r.cpcMonth1)}</td><td>{fmtPctStr(r.ctrMonth1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth1)}</td>
+                  <td>{formatINR(r.month2)}</td><td>{fmtPctStr(r.salienceMonth2)}</td><td>{formatINR(r.cpcMonth2)}</td><td>{fmtPctStr(r.ctrMonth2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth2)}</td>
+                  <td>{formatINR(r.month3)}</td><td>{fmtPctStr(r.salienceMonth3)}</td><td>{formatINR(r.cpcMonth3)}</td><td>{fmtPctStr(r.ctrMonth3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth3)}</td>
+                  <td>{formatINR(r.curMonthFirst15)}</td><td>{fmtPctStr(r.salienceCurFirst15)}</td><td>{formatINR(r.cpcCurMonth)}</td><td>{fmtPctStr(r.ctrCurMonth)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasCurMonth)}</td>
+                  
+                  <td>{formatINR(r.day3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay3)}</td>
+                  <td>{formatINR(r.day2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay2)}</td>
+                  <td>{formatINR(r.day1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay1)}</td>
+                  
+                  <td style={{ fontWeight: 'bold' }}>{formatINR(r.estSpends)}</td>
+                  <td>{renderPct(r.vsAvg3Months)}</td>
+                  <td>{renderPct(r.vsLastMonth)}</td>
+                </tr>
+                {expandedProducts.has(r.name) && r.variants && r.variants.map((v, vi) => (
+                  <tr key={v.name} style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', paddingLeft: '32px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      ↳ {v.name}
+                    </td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.month1)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth1)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth1)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth1)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth1)}</td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.month2)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth2)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth2)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth2)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth2)}</td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.month3)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth3)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth3)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth3)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth3)}</td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.curMonthFirst15)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceCurFirst15)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcCurMonth)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrCurMonth)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasCurMonth)}</td>
+                    
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.day3)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay3)}</td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.day2)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay2)}</td>
+                    <td style={{ fontSize: '13px' }}>{formatINR(v.day1)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay1)}</td>
+                    
+                    <td></td><td></td><td></td>
+                  </tr>
+                ))}
+              </React.Fragment>
             ))}
+            {totals && rows.length > 0 && (
+              <tr style={{ background: 'rgba(232, 115, 58, 0.15)', fontWeight: 'bold' }}>
+                <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Total</td>
+                <td>{formatINR(totals.month1)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth1)}</td><td>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth1)}</td>
+                <td>{formatINR(totals.month2)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth2)}</td><td>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth2)}</td>
+                <td>{formatINR(totals.month3)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth3)}</td><td>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth3)}</td>
+                <td>{formatINR(totals.curMonthFirst15)}</td><td>100.00%</td><td>{formatINR(totals.cpcCurMonth)}</td><td>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasCurMonth)}</td>
+                
+                <td>{formatINR(totals.day3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
+                <td>{formatINR(totals.day2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
+                <td>{formatINR(totals.day1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
+                
+                <td>{formatINR(totals.estSpends)}</td>
+                <td>{renderPct(totals.vsAvg3Months)}</td>
+                <td>{renderPct(totals.vsLastMonth)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
