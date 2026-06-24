@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import FilterBar from '@/components/FilterBar';
 import MetricsReport from '@/components/MetricsReport';
-import { calcLCtoLP, Funnel } from '@/lib/metricUtils';
+import { calcLCtoLP, Funnel, FUNNELS } from '@/lib/metricUtils';
 import DaysCountBadge from '@/components/DaysCountBadge';
 
 export default function LCToLPPage() {
@@ -10,8 +10,8 @@ export default function LCToLPPage() {
   const [since, setSince]       = useState('');
   const [until, setUntil]       = useState('');
   
-  const [monthlyData, setMonthlyData] = useState<Record<Funnel, Record<string, any>> | null>(null);
-  const [dailyData, setDailyData]     = useState<Record<Funnel, Record<string, any>> | null>(null);
+  const [monthlyData, setMonthlyData] = useState<Record<Funnel | string, Record<string, any>> | null>(null);
+  const [dailyData, setDailyData]     = useState<Record<Funnel | string, Record<string, any>> | null>(null);
   const [periods, setPeriods]         = useState<{ months: string[], days: string[] } | null>(null);
   
   const [loading, setLoading]         = useState(false);
@@ -27,6 +27,35 @@ export default function LCToLPPage() {
       const data = await res.json();
       
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to fetch data');
+      
+      const addTotal = (dataMap: any) => {
+        const totalFunnel: any = {};
+        const allPeriods = new Set<string>();
+        Object.values(dataMap).forEach((fData: any) => Object.keys(fData).forEach(p => allPeriods.add(p)));
+        
+        allPeriods.forEach(p => {
+          let totalLc = 0;
+          let totalLp = 0;
+          let totalSpend = 0;
+          ['TOP', 'MID', 'BOTTOM', 'GROWTH'].forEach(f => {
+            const fd = dataMap[f]?.[p];
+            if (fd) {
+              totalLc += fd.link_clicks || 0;
+              totalLp += fd.landing_page_views || 0;
+              totalSpend += fd.spend || 0;
+            }
+          });
+          totalFunnel[p] = { link_clicks: totalLc, landing_page_views: totalLp, spend: totalSpend };
+        });
+        dataMap['Total'] = totalFunnel;
+      };
+
+      addTotal(data.monthly);
+      addTotal(data.daily);
+
+      if (!(FUNNELS as any).includes('Total')) {
+        (FUNNELS as any).push('Total');
+      }
       
       setMonthlyData(data.monthly);
       setDailyData(data.daily);

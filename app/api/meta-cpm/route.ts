@@ -164,14 +164,19 @@ export async function GET(req: NextRequest) {
       + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
-    // For day-level data, fetch only the current month (month of 'until')
-    const untilDate = until ? new Date(until) : new Date();
-    const daySinceStr = `${untilDate.getFullYear()}-${String(untilDate.getMonth() + 1).padStart(2, '0')}-01`;
+    // For day-level data, fetch rolling last 30 days window ending yesterday
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const startDay = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate() - 29);
+
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const daySinceStr = fmt(startDay);
+    const dayUntilStr = fmt(yesterday);
 
     const dayUrl = `${BASE}/${accountId}/insights`
       + `?fields=campaign_name,adset_name,spend,impressions`
       + `&time_increment=1`
-      + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until }))}`
+      + `&time_range=${encodeURIComponent(JSON.stringify({ since: daySinceStr, until: dayUntilStr }))}`
       + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
