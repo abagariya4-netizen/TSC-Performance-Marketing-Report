@@ -97,6 +97,7 @@ export default function BrandImpressionMoM() {
                 });
               }
               const entry = mergedKeywords.get(k.keyword);
+              ['mar', 'apr', 'may', 'jun'].forEach(m => {
                 entry[m].spend += k[m].spend || 0;
                 entry[m].impressions += k[m].impressions || 0;
                 entry[m].clicks += k[m].clicks || 0;
