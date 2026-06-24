@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
     const daysPassed = yesterday.getDate();
     const daysRemaining = totalDays - daysPassed;
 
-    const mtdUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,spend&level=campaign&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: firstDayStr, until: yStr }))}&limit=500&access_token=${token}`;
-    const yesterdayUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,spend&level=campaign&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: yStr, until: yStr }))}&limit=500&access_token=${token}`;
+    const mtdUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: firstDayStr, until: yStr }))}&limit=500&access_token=${token}`;
+    const yesterdayUrl = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend&level=adset&breakdowns=region&time_range=${encodeURIComponent(JSON.stringify({ since: yStr, until: yStr }))}&limit=500&access_token=${token}`;
 
     const [mtdData, yesterdayData] = await Promise.all([
       fetchAllPages(mtdUrl),
@@ -34,8 +34,10 @@ export async function GET(req: NextRequest) {
 
     const processRow = (row: any, isMtd: boolean) => {
       const cName = row.campaign_name || '';
+      const aName = row.adset_name || '';
       
       if (!/growth|boost/i.test(cName)) return;
+      if (/growth|boost/i.test(aName)) return;
 
       const reg = row.region || 'Unknown';
       const spend = parseFloat(row.spend || '0');
