@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
+import { getMonthsInRange, getDefaultMonths } from '@/lib/dateRangeUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,21 +16,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (!startD || !endD) {
-      startD = '2026-06-01';
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      endD = yesterday.toISOString().split('T')[0];
+      const def = getDefaultMonths();
+      startD = def[0].startDate;
+      endD = def[def.length - 1].endDate;
     }
 
-    const periods = [
-      { key: 'mar', start: '2026-03-01', end: '2026-03-31' },
-      { key: 'apr', start: '2026-04-01', end: '2026-04-30' },
-      { key: 'may', start: '2026-05-01', end: '2026-05-31' },
-      { key: 'jun', start: startD, end: endD }
-    ];
+    const periods = getMonthsInRange(new Date(startD), new Date(endD));
 
     const queries = periods.map(p => ({
-      key: p.key,
+      key: p.label,
       gaql: `
         SELECT
           ad_group_criterion.keyword.text,
@@ -40,7 +35,7 @@ export async function GET(req: NextRequest) {
           metrics.search_impression_share
         FROM keyword_view
         WHERE campaign.id = '${campaignId}'
-        AND segments.date BETWEEN '${p.start}' AND '${p.end}'
+        AND segments.date BETWEEN '${p.startDate}' AND '${p.endDate}'
         AND ad_group_criterion.status != 'REMOVED'
       `
     }));
@@ -54,13 +49,11 @@ export async function GET(req: NextRequest) {
 
     const getKeywordNode = (keyword: string) => {
       if (!keywordsMap.has(keyword)) {
-        keywordsMap.set(keyword, {
-          keyword,
-          mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
-          apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
-          may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 },
-          jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 }
+        const node: any = { keyword };
+        periods.forEach(p => {
+          node[p.label] = { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 0 };
         });
+        keywordsMap.set(keyword, node);
       }
       return keywordsMap.get(keyword);
     };
@@ -98,16 +91,15 @@ export async function GET(req: NextRequest) {
     }
 
     const finalKeywords = [];
-    const totalObj = {
-      mar: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
-      apr: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
-      may: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 },
-      jun: { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 }
-    };
+    const totalObj: any = {};
+    periods.forEach(p => {
+      totalObj[p.label] = { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 };
+    });
 
     for (const data of Array.from(keywordsMap.values())) {
       // Calculate impression share % for each keyword row
-      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+      for (const p of periods) {
+        const m = p.label;
         const monthData = data[m];
         monthData.impressionShare = monthData.eligibleImpr > 0 ? (monthData.impressions / monthData.eligibleImpr) * 100 : 0;
         
@@ -121,7 +113,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Calc Total Row derived metrics
-    for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+    for (const p of periods) {
+      const m = p.label;
       const t = totalObj[m];
       t.impressionShare = t.eligibleImpr > 0 ? (t.impressions / t.eligibleImpr) * 100 : 0;
       t.cpc = t.clicks > 0 ? t.spend / t.clicks : 0;
@@ -131,7 +124,8 @@ export async function GET(req: NextRequest) {
     }
 
     for (const kw of finalKeywords) {
-      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+      for (const p of periods) {
+        const m = p.label;
         const d = kw[m];
         const t = totalObj[m];
         d.cpc = d.clicks > 0 ? d.spend / d.clicks : 0;
@@ -141,12 +135,16 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Sort by Jun spend descending
-    finalKeywords.sort((a, b) => b.jun.spend - a.jun.spend);
+    // Sort by last month spend descending
+    if (periods.length > 0) {
+      const lastM = periods[periods.length - 1].label;
+      finalKeywords.sort((a, b) => b[lastM].spend - a[lastM].spend);
+    }
 
     return NextResponse.json({
       keywords: finalKeywords,
-      total: totalObj
+      total: totalObj,
+      monthLabels: periods.map(p => p.label)
     });
 
   } catch (err: any) {

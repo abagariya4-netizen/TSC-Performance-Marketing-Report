@@ -1,35 +1,22 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
+import { getMonthsInRange } from '@/lib/dateRangeUtils';
 
 export const dynamic = 'force-dynamic';
-
-function getFourMonths(endDateStr: string) {
-  const endDate = new Date(endDateStr);
-  const months = [];
-  for (let i = 0; i < 4; i++) {
-    const end = new Date(endDate.getFullYear(), endDate.getMonth() - i + 1, i === 0 ? endDate.getDate() : 0);
-    const start = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
-    months.push({
-      label: start.toLocaleString('default', { month: 'short' }).toLowerCase(), // e.g. "jun"
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
-    });
-  }
-  return months.reverse(); // [Month1, Month2, Month3, Month4]
-}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const campaignId = searchParams.get('campaignId');
     const keyword = searchParams.get('keyword');
+    const startDateStr = searchParams.get('startDate');
     const endDateStr = searchParams.get('endDate');
     
-    if (!campaignId || !endDateStr) {
-      return NextResponse.json({ error: 'campaignId and endDate are required' }, { status: 400 });
+    if (!campaignId || !startDateStr || !endDateStr) {
+      return NextResponse.json({ error: 'campaignId, startDate and endDate are required' }, { status: 400 });
     }
 
-    const months = getFourMonths(endDateStr);
+    const months = getMonthsInRange(new Date(startDateStr), new Date(endDateStr));
     
     const fetchMonthData = async (monthObj: any) => {
       let keywordFilter = '';
@@ -46,7 +33,7 @@ export async function GET(request: NextRequest) {
           metrics.conversions_value
         FROM search_term_view
         WHERE campaign.id = '${campaignId}'
-        AND segments.date BETWEEN '${monthObj.start}' AND '${monthObj.end}'
+        AND segments.date BETWEEN '${monthObj.startDate}' AND '${monthObj.endDate}'
         ${keywordFilter}
       `;
 

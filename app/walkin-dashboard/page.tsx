@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import DateRangePicker from '@/components/DateRangePicker';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 const DAY_TYPES = ['All', 'Weekday', 'Weekend'];
@@ -135,14 +136,16 @@ export default function WalkinDashboard() {
             {DAY_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
-        </div>
+        <DateRangePicker 
+          onApply={(start, end) => {
+            setStartDate(new Date(start).toISOString().split('T')[0]);
+            setEndDate(new Date(end).toISOString().split('T')[0]);
+          }}
+          onReset={() => {
+            setStartDate(defStart);
+            setEndDate(defEnd);
+          }}
+        />
       </div>
 
       {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>{error}</div>}

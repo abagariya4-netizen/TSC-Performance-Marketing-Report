@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import DateRangePicker from '@/components/DateRangePicker';
+import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 const formatIndianNum = (num: number | undefined | null) => {
   if (num === undefined || num === null) return '—';
@@ -30,23 +32,17 @@ export default function SQRPage() {
   const [keywordSearch, setKeywordSearch] = useState('');
   const [isKeywordDropdownOpen, setIsKeywordDropdownOpen] = useState(false);
   
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const defMonths = getDefaultMonths();
+  const [startDate, setStartDate] = useState(defMonths[0].startDate);
+  const [endDate, setEndDate] = useState(defMonths[defMonths.length - 1].endDate);
   
   const [data, setData] = useState<{searchTerms: any[], total: any, monthLabels: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize dates
+  // Initialize
   useEffect(() => {
-    const today = new Date();
-    const yday = new Date(today);
-    yday.setDate(yday.getDate() - 1);
-    setEndDate(yday.toISOString().split('T')[0]);
-    
-    // Default start date to June 1st of current year, or just 1st of current month
-    const start = new Date(today.getFullYear(), 5, 1); // June 1st (month is 0-indexed)
-    setStartDate(start.toISOString().split('T')[0]);
+    // defaults set in state initialization
   }, []);
 
   // Fetch campaigns on category change
@@ -241,27 +237,28 @@ export default function SQRPage() {
           </div>
         </div>
 
-        {/* Date Range Start */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Start:</label>
-          <input 
-            type="date" 
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="input-field"
-          />
-        </div>
-
-        {/* Date Range End */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>End:</label>
-          <input 
-            type="date" 
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="input-field"
-          />
-        </div>
+        <DateRangePicker 
+          onApply={(start, end) => {
+            const yday = new Date();
+            yday.setDate(yday.getDate() - 1);
+            
+            const startD = new Date(start);
+            let endD = new Date(end);
+            endD = new Date(endD.getFullYear(), endD.getMonth() + 1, 0); // End of month
+            
+            if (endD > yday) {
+              endD = yday;
+            }
+            
+            setStartDate(startD.toISOString().split('T')[0]);
+            setEndDate(endD.toISOString().split('T')[0]);
+          }}
+          onReset={() => {
+            const def = getDefaultMonths();
+            setStartDate(def[0].startDate);
+            setEndDate(def[def.length - 1].endDate);
+          }}
+        />
 
         <button 
           onClick={handleGenerate} 

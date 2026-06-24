@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
 import { PRODUCT_TITLE_MAP, getCleanProductName } from '@/lib/productTitleMap';
 import { PRODUCT_CATEGORY_MAP, getCategoryForProduct } from '@/lib/productCategoryMap';
@@ -40,11 +40,19 @@ function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Dynamic date calculation based on actual current date
-    const now = new Date();
-    const yesterday = addDays(now, -1); // "yesterday relative to today"
+    const { searchParams } = new URL(request.url);
+    const endDateStrParam = searchParams.get('endDate');
+
+    let yesterday: Date;
+    let now = new Date();
+    
+    if (endDateStrParam) {
+      yesterday = new Date(endDateStrParam);
+    } else {
+      yesterday = addDays(now, -1);
+    }
 
     const yesterdayStr = formatDate(yesterday);
     const day1Before = formatDate(addDays(yesterday, -1)); // 2 days ago

@@ -1,5 +1,7 @@
 import React from 'react';
 import { getDefaultDateRange } from '@/lib/metricUtils';
+import DateRangePicker from '@/components/DateRangePicker';
+import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 export const CATEGORIES = [
   'All', 'Mattress', 'Sofa', 'Desk', 'Chair', 'Elite', 
@@ -54,13 +56,17 @@ export default function FilterBar({
         </select>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-        <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>From:</label>
-        <input type="date" className="input-field" style={{ border: 'none', background: 'transparent', padding: 0 }} value={since} onChange={e => setSince(e.target.value)} />
-        <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }}></div>
-        <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>To:</label>
-        <input type="date" className="input-field" style={{ border: 'none', background: 'transparent', padding: 0 }} value={until} onChange={e => setUntil(e.target.value)} />
-      </div>
+      <DateRangePicker 
+        onApply={(start, end) => {
+          setSince(new Date(start).toISOString().split('T')[0]);
+          setUntil(new Date(end).toISOString().split('T')[0]);
+        }}
+        onReset={() => {
+          const def = getDefaultMonths();
+          setSince(def[0].startDate);
+          setUntil(def[def.length - 1].endDate);
+        }}
+      />
 
       <button 
         onClick={onGenerate} 

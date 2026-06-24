@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import DateRangePicker from '@/components/DateRangePicker';
+import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 const formatPercent = (val: number | undefined | null) => {
   if (val === undefined || val === null) return '—';
@@ -19,19 +21,16 @@ export default function AuctionInsightsPage() {
   const [keywordSearch, setKeywordSearch] = useState('');
   const [isKeywordDropdownOpen, setIsKeywordDropdownOpen] = useState(false);
   
-  const [endDate, setEndDate] = useState('');
+  const defMonths = getDefaultMonths();
+  const [startDate, setStartDate] = useState(defMonths[0].startDate);
+  const [endDate, setEndDate] = useState(defMonths[defMonths.length - 1].endDate);
   
   const [data, setData] = useState<{domains: any[], monthLabels: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize dates
+  // Initialize campaigns
   useEffect(() => {
-    const today = new Date();
-    const yday = new Date(today);
-    yday.setDate(yday.getDate() - 1);
-    setEndDate(yday.toISOString().split('T')[0]);
-    
     fetchCampaigns();
   }, []);
 
@@ -52,8 +51,8 @@ export default function AuctionInsightsPage() {
     if (selectedCampaignId) {
       fetchKeywords(selectedCampaignId);
       setSelectedKeyword('All Keywords');
-      if (endDate) {
-        fetchData(selectedCampaignId, 'All Keywords', endDate);
+      if (startDate && endDate) {
+        fetchData(selectedCampaignId, 'All Keywords', startDate, endDate);
       }
     }
   }, [selectedCampaignId]);
@@ -70,11 +69,11 @@ export default function AuctionInsightsPage() {
     }
   };
 
-  const fetchData = async (cid: string, kw: string, endD: string) => {
+  const fetchData = async (cid: string, kw: string, startD: string, endD: string) => {
     setLoading(true);
     setError(null);
     try {
-      const url = `/api/auction-insights/data?campaignId=${cid}&endDate=${endD}${kw !== 'All Keywords' ? `&keyword=${encodeURIComponent(kw)}` : ''}`;
+      const url = `/api/auction-insights/data?campaignId=${cid}&startDate=${startD}&endDate=${endD}${kw !== 'All Keywords' ? `&keyword=${encodeURIComponent(kw)}` : ''}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
@@ -87,8 +86,8 @@ export default function AuctionInsightsPage() {
   };
 
   const handleGenerate = () => {
-    if (selectedCampaignId && endDate) {
-      fetchData(selectedCampaignId, selectedKeyword, endDate);
+    if (selectedCampaignId && startDate && endDate) {
+      fetchData(selectedCampaignId, selectedKeyword, startDate, endDate);
     }
   };
 
@@ -219,16 +218,28 @@ export default function AuctionInsightsPage() {
           </div>
         </div>
 
-        {/* Date Range End */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>End Date:</label>
-          <input 
-            type="date" 
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="input-field"
-          />
-        </div>
+        <DateRangePicker 
+          onApply={(start, end) => {
+            const yday = new Date();
+            yday.setDate(yday.getDate() - 1);
+            
+            const startD = new Date(start);
+            let endD = new Date(end);
+            endD = new Date(endD.getFullYear(), endD.getMonth() + 1, 0); // End of month
+            
+            if (endD > yday) {
+              endD = yday;
+            }
+            
+            setStartDate(startD.toISOString().split('T')[0]);
+            setEndDate(endD.toISOString().split('T')[0]);
+          }}
+          onReset={() => {
+            const def = getDefaultMonths();
+            setStartDate(def[0].startDate);
+            setEndDate(def[def.length - 1].endDate);
+          }}
+        />
 
         <button 
           onClick={handleGenerate} 

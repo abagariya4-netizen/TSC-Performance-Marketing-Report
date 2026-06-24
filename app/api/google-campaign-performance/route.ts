@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryAllGoogleAdsAccounts } from '@/lib/googleAdsAuth';
+import { getMonthsInRange, getDefaultMonths } from '@/lib/dateRangeUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,25 +44,17 @@ export async function GET(request: Request) {
     let endD = searchParams.get('endDate');
 
     if (!startD || !endD) {
-      // Default to June 1 to yesterday
-      startD = '2026-06-01';
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      endD = yesterday.toISOString().split('T')[0];
+      const def = getDefaultMonths();
+      startD = def[0].startDate;
+      endD = def[def.length - 1].endDate;
     }
 
-    // Hardcode 4 months as specified
-    const periods = [
-      { key: 'mar', start: '2026-03-01', end: '2026-03-31' },
-      { key: 'apr', start: '2026-04-01', end: '2026-04-30' },
-      { key: 'may', start: '2026-05-01', end: '2026-05-31' },
-      { key: 'jun', start: startD, end: endD }
-    ];
+    const periods = getMonthsInRange(new Date(startD), new Date(endD));
 
     // 1. Build queries for each period (only 1 query per period now, using metrics.conversions_value)
     const queries = periods.map(p => ({
-      key: p.key,
-      gaql: `SELECT campaign.name, campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '${p.start}' AND '${p.end}'`
+      key: p.label, // use dynamic label
+      gaql: `SELECT campaign.name, campaign.advertising_channel_type, metrics.cost_micros, metrics.clicks, metrics.impressions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '${p.startDate}' AND '${p.endDate}'`
     }));
 
     // Execute all queries in parallel
@@ -70,17 +63,15 @@ export async function GET(request: Request) {
       return [];
     })));
 
-    // Map: campaignType -> { mar: metrics, apr: metrics, may: metrics, jun: metrics }
+    // Map: campaignType -> { [monthLabel]: metrics }
     const campaignsMap = new Map<string, any>();
     const TYPES = ['Search', 'Branded Search', 'Demand Gen Clicks', 'Demand Gen Video', 'Performance Max', 'Shopping', 'Display'];
     TYPES.forEach(t => {
-      campaignsMap.set(t, {
-        name: t,
-        mar: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-        apr: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-        may: { spend: 0, clicks: 0, impressions: 0, cv: 0 },
-        jun: { spend: 0, clicks: 0, impressions: 0, cv: 0 }
+      const node: any = { name: t };
+      periods.forEach(p => {
+        node[p.label] = { spend: 0, clicks: 0, impressions: 0, cv: 0 };
       });
+      campaignsMap.set(t, node);
     });
 
     // Process Cost/Clicks/Impressions/CV
@@ -106,14 +97,13 @@ export async function GET(request: Request) {
     }
 
     const finalCampaigns = [];
-    let totalObj = {
-      mar: { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 },
-      apr: { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 },
-      may: { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 },
-      jun: { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 },
+    let totalObj: any = {
       vsLastMonth: { spend: 0, roas: 0, cpc: 0, ctr: 0, impressions: 0 },
       vsAvg3M: { spend: 0, roas: 0, cpc: 0, ctr: 0, impressions: 0 }
     };
+    periods.forEach(p => {
+      totalObj[p.label] = { spend: 0, clicks: 0, impressions: 0, cv: 0, roas: 0, cpc: 0, ctr: 0 };
+    });
 
     const calcMetrics = (m: any) => {
       m.cpc = m.clicks > 0 ? m.spend / m.clicks : 0;
@@ -128,7 +118,8 @@ export async function GET(request: Request) {
 
     for (const [name, data] of Array.from(campaignsMap.entries())) {
 
-      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+      for (const p of periods) {
+        const m = p.label;
         calcMetrics(data[m]);
         totalObj[m].spend += data[m].spend;
         totalObj[m].clicks += data[m].clicks;
@@ -136,61 +127,84 @@ export async function GET(request: Request) {
         totalObj[m].cv += data[m].cv;
       }
 
-      data.vsLastMonth = {
-        spend: calcVs(data.jun.spend, data.may.spend),
-        roas: calcVs(data.jun.roas, data.may.roas),
-        cpc: calcVs(data.jun.cpc, data.may.cpc),
-        ctr: calcVs(data.jun.ctr, data.may.ctr),
-        impressions: calcVs(data.jun.impressions, data.may.impressions),
-      };
+      if (periods.length >= 2) {
+        const lastM = periods[periods.length - 1].label;
+        const prevM = periods[periods.length - 2].label;
+        data.vsLastMonth = {
+          spend: calcVs(data[lastM].spend, data[prevM].spend),
+          roas: calcVs(data[lastM].roas, data[prevM].roas),
+          cpc: calcVs(data[lastM].cpc, data[prevM].cpc),
+          ctr: calcVs(data[lastM].ctr, data[prevM].ctr),
+          impressions: calcVs(data[lastM].impressions, data[prevM].impressions),
+        };
+      }
 
-      const avg3M_spend = (data.mar.spend + data.apr.spend + data.may.spend) / 3;
-      const avg3M_roas = (data.mar.roas + data.apr.roas + data.may.roas) / 3;
-      const avg3M_cpc = (data.mar.cpc + data.apr.cpc + data.may.cpc) / 3;
-      const avg3M_ctr = (data.mar.ctr + data.apr.ctr + data.may.ctr) / 3;
-      const avg3M_impressions = (data.mar.impressions + data.apr.impressions + data.may.impressions) / 3;
+      if (periods.length >= 4) {
+        const lastM = periods[periods.length - 1].label;
+        const m3 = periods[periods.length - 2].label;
+        const m2 = periods[periods.length - 3].label;
+        const m1 = periods[periods.length - 4].label;
+        
+        const avg3M_spend = (data[m1].spend + data[m2].spend + data[m3].spend) / 3;
+        const avg3M_roas = (data[m1].roas + data[m2].roas + data[m3].roas) / 3;
+        const avg3M_cpc = (data[m1].cpc + data[m2].cpc + data[m3].cpc) / 3;
+        const avg3M_ctr = (data[m1].ctr + data[m2].ctr + data[m3].ctr) / 3;
+        const avg3M_impressions = (data[m1].impressions + data[m2].impressions + data[m3].impressions) / 3;
 
-      data.vsAvg3M = {
-        spend: calcVs(data.jun.spend, avg3M_spend),
-        roas: calcVs(data.jun.roas, avg3M_roas),
-        cpc: calcVs(data.jun.cpc, avg3M_cpc),
-        ctr: calcVs(data.jun.ctr, avg3M_ctr),
-        impressions: calcVs(data.jun.impressions, avg3M_impressions),
-      };
+        data.vsAvg3M = {
+          spend: calcVs(data[lastM].spend, avg3M_spend),
+          roas: calcVs(data[lastM].roas, avg3M_roas),
+          cpc: calcVs(data[lastM].cpc, avg3M_cpc),
+          ctr: calcVs(data[lastM].ctr, avg3M_ctr),
+          impressions: calcVs(data[lastM].impressions, avg3M_impressions),
+        };
+      }
 
       finalCampaigns.push(data);
     }
 
     // Calc Total metrics
-    for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
-      calcMetrics(totalObj[m]);
+    for (const p of periods) {
+      calcMetrics(totalObj[p.label]);
     }
 
-    totalObj.vsLastMonth = {
-      spend: calcVs(totalObj.jun.spend, totalObj.may.spend),
-      roas: calcVs(totalObj.jun.roas, totalObj.may.roas),
-      cpc: calcVs(totalObj.jun.cpc, totalObj.may.cpc),
-      ctr: calcVs(totalObj.jun.ctr, totalObj.may.ctr),
-      impressions: calcVs(totalObj.jun.impressions, totalObj.may.impressions),
-    };
+    if (periods.length >= 2) {
+      const lastM = periods[periods.length - 1].label;
+      const prevM = periods[periods.length - 2].label;
+      totalObj.vsLastMonth = {
+        spend: calcVs(totalObj[lastM].spend, totalObj[prevM].spend),
+        roas: calcVs(totalObj[lastM].roas, totalObj[prevM].roas),
+        cpc: calcVs(totalObj[lastM].cpc, totalObj[prevM].cpc),
+        ctr: calcVs(totalObj[lastM].ctr, totalObj[prevM].ctr),
+        impressions: calcVs(totalObj[lastM].impressions, totalObj[prevM].impressions),
+      };
+    }
 
-    const avg3MTotal_spend = (totalObj.mar.spend + totalObj.apr.spend + totalObj.may.spend) / 3;
-    const avg3MTotal_roas = (totalObj.mar.roas + totalObj.apr.roas + totalObj.may.roas) / 3;
-    const avg3MTotal_cpc = (totalObj.mar.cpc + totalObj.apr.cpc + totalObj.may.cpc) / 3;
-    const avg3MTotal_ctr = (totalObj.mar.ctr + totalObj.apr.ctr + totalObj.may.ctr) / 3;
-    const avg3MTotal_impressions = (totalObj.mar.impressions + totalObj.apr.impressions + totalObj.may.impressions) / 3;
+    if (periods.length >= 4) {
+      const lastM = periods[periods.length - 1].label;
+      const m3 = periods[periods.length - 2].label;
+      const m2 = periods[periods.length - 3].label;
+      const m1 = periods[periods.length - 4].label;
+      
+      const avg3MTotal_spend = (totalObj[m1].spend + totalObj[m2].spend + totalObj[m3].spend) / 3;
+      const avg3MTotal_roas = (totalObj[m1].roas + totalObj[m2].roas + totalObj[m3].roas) / 3;
+      const avg3MTotal_cpc = (totalObj[m1].cpc + totalObj[m2].cpc + totalObj[m3].cpc) / 3;
+      const avg3MTotal_ctr = (totalObj[m1].ctr + totalObj[m2].ctr + totalObj[m3].ctr) / 3;
+      const avg3MTotal_impressions = (totalObj[m1].impressions + totalObj[m2].impressions + totalObj[m3].impressions) / 3;
 
-    totalObj.vsAvg3M = {
-      spend: calcVs(totalObj.jun.spend, avg3MTotal_spend),
-      roas: calcVs(totalObj.jun.roas, avg3MTotal_roas),
-      cpc: calcVs(totalObj.jun.cpc, avg3MTotal_cpc),
-      ctr: calcVs(totalObj.jun.ctr, avg3MTotal_ctr),
-      impressions: calcVs(totalObj.jun.impressions, avg3MTotal_impressions),
-    };
+      totalObj.vsAvg3M = {
+        spend: calcVs(totalObj[lastM].spend, avg3MTotal_spend),
+        roas: calcVs(totalObj[lastM].roas, avg3MTotal_roas),
+        cpc: calcVs(totalObj[lastM].cpc, avg3MTotal_cpc),
+        ctr: calcVs(totalObj[lastM].ctr, avg3MTotal_ctr),
+        impressions: calcVs(totalObj[lastM].impressions, avg3MTotal_impressions),
+      };
+    }
 
     return NextResponse.json({
       campaigns: finalCampaigns,
-      total: totalObj
+      total: totalObj,
+      monthLabels: periods.map(p => p.label)
     });
 
   } catch (err: any) {

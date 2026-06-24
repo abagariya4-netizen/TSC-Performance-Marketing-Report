@@ -1,5 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import DateRangePicker from '@/components/DateRangePicker';
+import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 
@@ -40,16 +42,9 @@ export default function FunnelLevelPerformance() {
 
   const [category, setCategory] = useState('All');
   
-  // Date Range (default June 1 to yesterday)
-  const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-  const today = new Date(istString);
-  const yday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-  
-  const defStart = '2026-06-01'; // Default as requested
-  const defEnd = `${yday.getFullYear()}-${String(yday.getMonth()+1).padStart(2,'0')}-${String(yday.getDate()).padStart(2,'0')}`;
-  
-  const [startDate, setStartDate] = useState(defStart);
-  const [endDate, setEndDate] = useState(defEnd);
+  const defMonths = getDefaultMonths();
+  const [startDate, setStartDate] = useState(defMonths[0].startDate);
+  const [endDate, setEndDate] = useState(defMonths[defMonths.length - 1].endDate);
 
   const fetchData = async () => {
     setLoading(true);
@@ -63,8 +58,9 @@ export default function FunnelLevelPerformance() {
       }
       const json = await res.json();
       if (json.error) throw new Error(json.error);
-      if (json.campaigns) {
-        json.campaigns.sort((a: any, b: any) => (b.jun?.spend || 0) - (a.jun?.spend || 0));
+      if (json.campaigns && json.monthLabels) {
+        const lastM = json.monthLabels[json.monthLabels.length - 1];
+        json.campaigns.sort((a: any, b: any) => (b[lastM]?.spend || 0) - (a[lastM]?.spend || 0));
       }
       setData(json);
     } catch (err: any) {
@@ -81,45 +77,51 @@ export default function FunnelLevelPerformance() {
   const exportCSV = () => {
     if (!data) return;
     
+    const mLabels = data.monthLabels || [];
+
+    let headerM = '';
+    mLabels.forEach((m: string) => headerM += `Amount Spent ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `Category ROAS ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `Overall ROAS ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `CPM ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `CPW ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `Walk-in (Absolute) ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `CTR ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `CPC ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `LC to LP% ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `LC ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `LP ${m.toUpperCase()},`);
+    mLabels.forEach((m: string) => headerM += `Impressions ${m.toUpperCase()},`);
+
     const headers = [
       'Funnel',
-      'Amount Spent Mar', 'Amount Spent Apr', 'Amount Spent May', 'Amount Spent Jun',
-      'Category ROAS Mar', 'Category ROAS Apr', 'Category ROAS May', 'Category ROAS Jun',
-      'Overall ROAS Mar', 'Overall ROAS Apr', 'Overall ROAS May', 'Overall ROAS Jun',
-      'CPM Mar', 'CPM Apr', 'CPM May', 'CPM Jun',
-      'CPW Mar', 'CPW Apr', 'CPW May', 'CPW Jun',
-      'Walk-in (Absolute) Mar', 'Walk-in (Absolute) Apr', 'Walk-in (Absolute) May', 'Walk-in (Absolute) Jun',
-      'CTR Mar', 'CTR Apr', 'CTR May', 'CTR Jun',
-      'CPC Mar', 'CPC Apr', 'CPC May', 'CPC Jun',
-      'LC to LP% Mar', 'LC to LP% Apr', 'LC to LP% May', 'LC to LP% Jun',
-      'LC Mar', 'LC Apr', 'LC May', 'LC Jun',
-      'LP Mar', 'LP Apr', 'LP May', 'LP Jun',
-      'Impressions Mar', 'Impressions Apr', 'Impressions May', 'Impressions Jun',
-      'Vs Last Month (Spend)', 'Vs Last Month (Category ROAS)', 'Vs Last Month (Overall ROAS)', 'Vs Last Month (CPM)', 'Vs Last Month (CPW)', 'Vs Last Month (Walk-in)', 'Vs Last Month (CTR)', 'Vs Last Month (CPC)', 'Vs Last Month (LC to LP%)', 'Vs Last Month (LC)', 'Vs Last Month (LP)', 'Vs Last Month (Impressions)',
-      'Vs Avg 3M (Spend)', 'Vs Avg 3M (Category ROAS)', 'Vs Avg 3M (Overall ROAS)', 'Vs Avg 3M (CPM)', 'Vs Avg 3M (CPW)', 'Vs Avg 3M (Walk-in)', 'Vs Avg 3M (CTR)', 'Vs Avg 3M (CPC)', 'Vs Avg 3M (LC to LP%)', 'Vs Avg 3M (LC)', 'Vs Avg 3M (LP)', 'Vs Avg 3M (Impressions)'
+      headerM +
+      'Vs Last Month (Spend),Vs Last Month (Category ROAS),Vs Last Month (Overall ROAS),Vs Last Month (CPM),Vs Last Month (CPW),Vs Last Month (Walk-in),Vs Last Month (CTR),Vs Last Month (CPC),Vs Last Month (LC to LP%),Vs Last Month (LC),Vs Last Month (LP),Vs Last Month (Impressions),' +
+      'Vs Avg 3M (Spend),Vs Avg 3M (Category ROAS),Vs Avg 3M (Overall ROAS),Vs Avg 3M (CPM),Vs Avg 3M (CPW),Vs Avg 3M (Walk-in),Vs Avg 3M (CTR),Vs Avg 3M (CPC),Vs Avg 3M (LC to LP%),Vs Avg 3M (LC),Vs Avg 3M (LP),Vs Avg 3M (Impressions)'
     ];
 
-    const rows = data.campaigns.map((c: any) => [
-      c.name,
-      c.mar.spend, c.apr.spend, c.may.spend, c.jun.spend,
-      c.mar.categoryRoas === c.mar.overallRoas ? '' : c.mar.categoryRoas, c.apr.categoryRoas === c.apr.overallRoas ? '' : c.apr.categoryRoas, c.may.categoryRoas === c.may.overallRoas ? '' : c.may.categoryRoas, c.jun.categoryRoas === c.jun.overallRoas ? '' : c.jun.categoryRoas,
-      c.mar.overallRoas, c.apr.overallRoas, c.may.overallRoas, c.jun.overallRoas,
-      c.mar.cpm, c.apr.cpm, c.may.cpm, c.jun.cpm,
-      c.mar.cpw, c.apr.cpw, c.may.cpw, c.jun.cpw,
-      c.mar.walkin, c.apr.walkin, c.may.walkin, c.jun.walkin,
-      c.mar.ctr, c.apr.ctr, c.may.ctr, c.jun.ctr,
-      c.mar.cpc, c.apr.cpc, c.may.cpc, c.jun.cpc,
-      c.mar.lcToLp, c.apr.lcToLp, c.may.lcToLp, c.jun.lcToLp,
-      c.mar.lc, c.apr.lc, c.may.lc, c.jun.lc,
-      c.mar.lp, c.apr.lp, c.may.lp, c.jun.lp,
-      c.mar.impressions, c.apr.impressions, c.may.impressions, c.jun.impressions,
-      c.vsLastMonth.spend, c.vsLastMonth.categoryRoas, c.vsLastMonth.overallRoas, c.vsLastMonth.cpm, c.vsLastMonth.cpw, c.vsLastMonth.walkin, c.vsLastMonth.ctr, c.vsLastMonth.cpc, c.vsLastMonth.lcToLp, c.vsLastMonth.lc, c.vsLastMonth.lp, c.vsLastMonth.impressions,
-      c.vsAvg3M.spend, c.vsAvg3M.categoryRoas, c.vsAvg3M.overallRoas, c.vsAvg3M.cpm, c.vsAvg3M.cpw, c.vsAvg3M.walkin, c.vsAvg3M.ctr, c.vsAvg3M.cpc, c.vsAvg3M.lcToLp, c.vsAvg3M.lc, c.vsAvg3M.lp, c.vsAvg3M.impressions
-    ]);
+    const rows = data.campaigns.map((c: any) => {
+      let row = `"${c.name}",`;
+      mLabels.forEach((m: string) => row += `${c[m].spend},`);
+      mLabels.forEach((m: string) => row += `${c[m].categoryRoas === c[m].overallRoas ? '' : c[m].categoryRoas},`);
+      mLabels.forEach((m: string) => row += `${c[m].overallRoas},`);
+      mLabels.forEach((m: string) => row += `${c[m].cpm},`);
+      mLabels.forEach((m: string) => row += `${c[m].cpw},`);
+      mLabels.forEach((m: string) => row += `${c[m].walkin},`);
+      mLabels.forEach((m: string) => row += `${c[m].ctr},`);
+      mLabels.forEach((m: string) => row += `${c[m].cpc},`);
+      mLabels.forEach((m: string) => row += `${c[m].lcToLp},`);
+      mLabels.forEach((m: string) => row += `${c[m].lc},`);
+      mLabels.forEach((m: string) => row += `${c[m].lp},`);
+      mLabels.forEach((m: string) => row += `${c[m].impressions},`);
+      row += `${c.vsLastMonth?.spend || 0},${c.vsLastMonth?.categoryRoas || 0},${c.vsLastMonth?.overallRoas || 0},${c.vsLastMonth?.cpm || 0},${c.vsLastMonth?.cpw || 0},${c.vsLastMonth?.walkin || 0},${c.vsLastMonth?.ctr || 0},${c.vsLastMonth?.cpc || 0},${c.vsLastMonth?.lcToLp || 0},${c.vsLastMonth?.lc || 0},${c.vsLastMonth?.lp || 0},${c.vsLastMonth?.impressions || 0},`;
+      row += `${c.vsAvg3M?.spend || 0},${c.vsAvg3M?.categoryRoas || 0},${c.vsAvg3M?.overallRoas || 0},${c.vsAvg3M?.cpm || 0},${c.vsAvg3M?.cpw || 0},${c.vsAvg3M?.walkin || 0},${c.vsAvg3M?.ctr || 0},${c.vsAvg3M?.cpc || 0},${c.vsAvg3M?.lcToLp || 0},${c.vsAvg3M?.lc || 0},${c.vsAvg3M?.lp || 0},${c.vsAvg3M?.impressions || 0}`;
+      return row;
+    });
 
     const csvContent = [
       headers.join(','),
-      ...rows.map((r: any) => r.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ...rows
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -160,14 +162,28 @@ export default function FunnelLevelPerformance() {
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: '#1f2333', color: '#fff', border: '1px solid #2d3348' }} />
-        </div>
+        <DateRangePicker 
+          onApply={(start, end) => {
+            const yday = new Date();
+            yday.setDate(yday.getDate() - 1);
+            
+            const startD = new Date(start);
+            let endD = new Date(end);
+            endD = new Date(endD.getFullYear(), endD.getMonth() + 1, 0); // End of month
+            
+            if (endD > yday) {
+              endD = yday;
+            }
+            
+            setStartDate(startD.toISOString().split('T')[0]);
+            setEndDate(endD.toISOString().split('T')[0]);
+          }}
+          onReset={() => {
+            const def = getDefaultMonths();
+            setStartDate(def[0].startDate);
+            setEndDate(def[def.length - 1].endDate);
+          }}
+        />
       </div>
 
       {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>{error}</div>}
@@ -180,28 +196,27 @@ export default function FunnelLevelPerformance() {
             <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               <tr>
                 <th rowSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '12px 16px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, zIndex: 10 }}>Funnel</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Category ROAS</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall ROAS</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPM</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPW</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Walk-in (Absolute)</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CTR</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPC</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LC to LP%</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LC</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LP</th>
-                <th colSpan={4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Impressions</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Amount Spent</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Category ROAS</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall ROAS</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPM</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPW</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Walk-in (Absolute)</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CTR</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPC</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LC to LP%</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LC</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LP</th>
+                <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Impressions</th>
                 <th colSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '8px', textAlign: 'center' }}>Comparison</th>
               </tr>
               <tr>
-                {/* 12 Metric blocks x 4 months = 48 headers */}
+                {/* 12 Metric blocks */}
                 {Array.from({ length: 12 }).map((_, i) => (
                   <React.Fragment key={i}>
-                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Mar</th>
-                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Apr</th>
-                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>May</th>
-                    <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Jun</th>
+                    {data?.monthLabels?.map((m: string) => (
+                      <th key={`${i}-${m}`} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m}</th>
+                    ))}
                   </React.Fragment>
                 ))}
                 <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Vs Last Month</th>
@@ -216,76 +231,40 @@ export default function FunnelLevelPerformance() {
                     <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: bg, position: 'sticky', left: 0 }}>{c.name}</td>
                     
                     {/* Spend */}
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.spend)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.spend)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.spend)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.spend)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`sp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(c[m]?.spend)}</td>)}
                     
                     {/* Category ROAS */}
-                    <td style={{ padding: '12px 8px' }}>{c.mar.categoryRoas === c.mar.overallRoas ? '' : fmtFloat(c.mar.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{c.apr.categoryRoas === c.apr.overallRoas ? '' : fmtFloat(c.apr.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{c.may.categoryRoas === c.may.overallRoas ? '' : fmtFloat(c.may.categoryRoas)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{c.jun.categoryRoas === c.jun.overallRoas ? '' : fmtFloat(c.jun.categoryRoas)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`croas-${m}`} style={{ padding: '12px 8px' }}>{c[m]?.categoryRoas === c[m]?.overallRoas ? '' : fmtFloat(c[m]?.categoryRoas)}</td>)}
 
                     {/* Overall ROAS */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.overallRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.overallRoas)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.overallRoas)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.overallRoas)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`oroas-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(c[m]?.overallRoas)}</td>)}
 
                     {/* CPM */}
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpm)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpm)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpm)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpm)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`cpm-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(c[m]?.cpm)}</td>)}
 
                     {/* CPW */}
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpw)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpw)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpw)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`cpw-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(c[m]?.cpw)}</td>)}
 
                     {/* Walk-in */}
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.walkin)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.walkin)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.walkin)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.walkin)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`wi-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.walkin)}</td>)}
 
                     {/* CTR */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.ctr)}%</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.ctr)}%</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.ctr)}%</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.ctr)}%</td>
+                    {data.monthLabels?.map((m: string) => <td key={`ctr-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(c[m]?.ctr)}%</td>)}
 
                     {/* CPC */}
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.mar.cpc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.apr.cpc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtINR(c.may.cpc)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(c.jun.cpc)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`cpc-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(c[m]?.cpc)}</td>)}
 
                     {/* LC to LP% */}
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.mar.lcToLp)}%</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.apr.lcToLp)}%</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtFloat(c.may.lcToLp)}%</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(c.jun.lcToLp)}%</td>
+                    {data.monthLabels?.map((m: string) => <td key={`lclp-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(c[m]?.lcToLp)}%</td>)}
 
                     {/* LC */}
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.lc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.lc)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.lc)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.lc)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`lc-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.lc)}</td>)}
 
                     {/* LP */}
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.lp)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.lp)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.lp)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.lp)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`lp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.lp)}</td>)}
 
                     {/* Impressions */}
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.mar.impressions)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.apr.impressions)}</td>
-                    <td style={{ padding: '12px 8px' }}>{fmtVal(c.may.impressions)}</td>
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(c.jun.impressions)}</td>
+                    {data.monthLabels?.map((m: string) => <td key={`imp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.impressions)}</td>)}
 
                     {/* Comparison */}
                     <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
@@ -330,76 +309,40 @@ export default function FunnelLevelPerformance() {
                   <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   
                   {/* Spend */}
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.spend)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.spend)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.spend)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.spend)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tsp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.spend)}</td>)}
                   
                   {/* Category ROAS */}
-                  <td style={{ padding: '12px 8px' }}>{data.total.mar.categoryRoas === data.total.mar.overallRoas ? '' : fmtFloat(data.total.mar.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{data.total.apr.categoryRoas === data.total.apr.overallRoas ? '' : fmtFloat(data.total.apr.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{data.total.may.categoryRoas === data.total.may.overallRoas ? '' : fmtFloat(data.total.may.categoryRoas)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{data.total.jun.categoryRoas === data.total.jun.overallRoas ? '' : fmtFloat(data.total.jun.categoryRoas)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tcroas-${m}`} style={{ padding: '12px 8px' }}>{data.total[m]?.categoryRoas === data.total[m]?.overallRoas ? '' : fmtFloat(data.total[m]?.categoryRoas)}</td>)}
 
                   {/* Overall ROAS */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.overallRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.overallRoas)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.overallRoas)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.overallRoas)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`toroas-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(data.total[m]?.overallRoas)}</td>)}
 
                   {/* CPM */}
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpm)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpm)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpm)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpm)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tcpm-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.cpm)}</td>)}
 
                   {/* CPW */}
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpw)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpw)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpw)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tcpw-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.cpw)}</td>)}
 
                   {/* Walk-in */}
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.walkin)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.walkin)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.walkin)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.walkin)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`twi-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.walkin)}</td>)}
 
                   {/* CTR */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.ctr)}%</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.ctr)}%</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.ctr)}%</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.ctr)}%</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tctr-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(data.total[m]?.ctr)}%</td>)}
 
                   {/* CPC */}
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.mar.cpc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.apr.cpc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtINR(data.total.may.cpc)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtINR(data.total.jun.cpc)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tcpc-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.cpc)}</td>)}
 
                   {/* LC to LP% */}
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.mar.lcToLp)}%</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.apr.lcToLp)}%</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtFloat(data.total.may.lcToLp)}%</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtFloat(data.total.jun.lcToLp)}%</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tlclp-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(data.total[m]?.lcToLp)}%</td>)}
 
                   {/* LC */}
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.lc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.lc)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.lc)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.lc)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tlc-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.lc)}</td>)}
 
                   {/* LP */}
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.lp)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.lp)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.lp)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.lp)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`tlp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.lp)}</td>)}
 
                   {/* Impressions */}
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.mar.impressions)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.apr.impressions)}</td>
-                  <td style={{ padding: '12px 8px' }}>{fmtVal(data.total.may.impressions)}</td>
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>{fmtVal(data.total.jun.impressions)}</td>
+                  {data.monthLabels?.map((m: string) => <td key={`timp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.impressions)}</td>)}
 
                   {/* Comparison */}
                   <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>

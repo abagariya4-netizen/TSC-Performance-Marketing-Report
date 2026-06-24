@@ -2,6 +2,8 @@
 import React, { useState, Suspense } from 'react';
 import { formatINR } from '@/lib/calculations';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import DateRangePicker from '@/components/DateRangePicker';
+import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 interface ProductRow {
   name: string;
@@ -242,12 +244,16 @@ function PageContent() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('Mattress');
+  
+  const defMonths = getDefaultMonths();
+  const [startDate, setStartDate] = useState(defMonths[0].startDate);
+  const [endDate, setEndDate] = useState(defMonths[defMonths.length - 1].endDate);
 
   const generateReport = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/google-product-spends');
+      const res = await fetch(`/api/google-product-spends?endDate=${endDate}`);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       setData(json);
@@ -274,6 +280,18 @@ function PageContent() {
         >
           {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
         </select>
+
+        <DateRangePicker 
+          onApply={(start, end) => {
+            setStartDate(new Date(start).toISOString().split('T')[0]);
+            setEndDate(new Date(end).toISOString().split('T')[0]);
+          }}
+          onReset={() => {
+            const def = getDefaultMonths();
+            setStartDate(def[0].startDate);
+            setEndDate(def[def.length - 1].endDate);
+          }}
+        />
 
         <button
           onClick={generateReport}

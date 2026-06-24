@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
+import { getMonthsInRange, getDefaultMonths } from '@/lib/dateRangeUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,31 +98,23 @@ export async function GET(req: NextRequest) {
   let endDate = searchParams.get('endDate');
 
   if (!startDate || !endDate) {
-    startDate = '2026-06-01';
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    endDate = yesterday.toISOString().split('T')[0];
+    const def = getDefaultMonths();
+    startDate = def[0].startDate;
+    endDate = def[def.length - 1].endDate;
   }
 
-  const periods = [
-    { key: 'mar', since: '2026-03-01', until: '2026-03-31' },
-    { key: 'apr', since: '2026-04-01', until: '2026-04-30' },
-    { key: 'may', since: '2026-05-01', until: '2026-05-31' },
-    { key: 'jun', since: startDate, until: endDate },
-  ];
+  const periods = getMonthsInRange(new Date(startDate), new Date(endDate));
 
   try {
     const campaignsMap = new Map<string, any>();
     const getCampNode = (name: string) => campaignsMap.get(name);
 
     ['Top', 'Mid', 'Bottom', 'Growth'].forEach(name => {
-      campaignsMap.set(name, {
-        name,
-        mar: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-        apr: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-        may: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-        jun: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 }
+      const node: any = { name };
+      periods.forEach(p => {
+        node[p.label] = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 };
       });
+      campaignsMap.set(name, node);
     });
 
     const fetchPeriod = async (p: any) => {
@@ -139,7 +132,7 @@ export async function GET(req: NextRequest) {
 
         const funnelName = classifyFunnel(cName);
         const node = getCampNode(funnelName);
-        const m = node[p.key];
+        const m = node[p.label];
 
         m.spend += parseFloat(row.spend || '0');
         m.impressions += parseInt(row.impressions || '0', 10);
@@ -163,14 +156,13 @@ export async function GET(req: NextRequest) {
     await Promise.all(periods.map(fetchPeriod));
 
     const finalCampaigns = [];
-    const totalObj = {
-      mar: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-      apr: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-      may: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
-      jun: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 },
+    const totalObj: any = {
       vsLastMonth: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0 },
       vsAvg3M: { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0 }
     };
+    periods.forEach(p => {
+      totalObj[p.label] = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 };
+    });
 
     const calcMetrics = (m: any) => {
       m.cpm = m.impressions > 0 ? (m.spend / m.impressions) * 1000 : 0;
@@ -189,7 +181,8 @@ export async function GET(req: NextRequest) {
 
     for (const [name, data] of Array.from(campaignsMap.entries())) {
 
-      for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
+      for (const p of periods) {
+        const m = p.label;
         calcMetrics(data[m]);
         totalObj[m].spend += data[m].spend;
         totalObj[m].impressions += data[m].impressions;
@@ -201,80 +194,102 @@ export async function GET(req: NextRequest) {
         totalObj[m].overallValue += data[m].overallValue;
       }
 
-      data.vsLastMonth = {
-        spend: calcVs(data.jun.spend, data.may.spend),
-        impressions: calcVs(data.jun.impressions, data.may.impressions),
-        lc: calcVs(data.jun.lc, data.may.lc),
-        lp: calcVs(data.jun.lp, data.may.lp),
-        walkin: calcVs(data.jun.walkin, data.may.walkin),
-        cpm: calcVs(data.jun.cpm, data.may.cpm),
-        cpc: calcVs(data.jun.cpc, data.may.cpc),
-        ctr: calcVs(data.jun.ctr, data.may.ctr),
-        lcToLp: calcVs(data.jun.lcToLp, data.may.lcToLp),
-        categoryRoas: calcVs(data.jun.categoryRoas, data.may.categoryRoas),
-        overallRoas: calcVs(data.jun.overallRoas, data.may.overallRoas),
-        cpw: calcVs(data.jun.cpw, data.may.cpw)
-      };
+      data.vsLastMonth = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0 };
+      data.vsAvg3M = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0 };
 
-      const avg3M = (key: string) => (data.mar[key] + data.apr[key] + data.may[key]) / 3;
+      if (periods.length >= 2) {
+        const lastM = periods[periods.length - 1].label;
+        const prevM = periods[periods.length - 2].label;
+        data.vsLastMonth = {
+          spend: calcVs(data[lastM].spend, data[prevM].spend),
+          impressions: calcVs(data[lastM].impressions, data[prevM].impressions),
+          lc: calcVs(data[lastM].lc, data[prevM].lc),
+          lp: calcVs(data[lastM].lp, data[prevM].lp),
+          walkin: calcVs(data[lastM].walkin, data[prevM].walkin),
+          cpm: calcVs(data[lastM].cpm, data[prevM].cpm),
+          cpc: calcVs(data[lastM].cpc, data[prevM].cpc),
+          ctr: calcVs(data[lastM].ctr, data[prevM].ctr),
+          lcToLp: calcVs(data[lastM].lcToLp, data[prevM].lcToLp),
+          categoryRoas: calcVs(data[lastM].categoryRoas, data[prevM].categoryRoas),
+          overallRoas: calcVs(data[lastM].overallRoas, data[prevM].overallRoas),
+          cpw: calcVs(data[lastM].cpw, data[prevM].cpw)
+        };
 
-      data.vsAvg3M = {
-        spend: calcVs(data.jun.spend, avg3M('spend')),
-        impressions: calcVs(data.jun.impressions, avg3M('impressions')),
-        lc: calcVs(data.jun.lc, avg3M('lc')),
-        lp: calcVs(data.jun.lp, avg3M('lp')),
-        walkin: calcVs(data.jun.walkin, avg3M('walkin')),
-        cpm: calcVs(data.jun.cpm, avg3M('cpm')),
-        cpc: calcVs(data.jun.cpc, avg3M('cpc')),
-        ctr: calcVs(data.jun.ctr, avg3M('ctr')),
-        lcToLp: calcVs(data.jun.lcToLp, avg3M('lcToLp')),
-        categoryRoas: calcVs(data.jun.categoryRoas, avg3M('categoryRoas')),
-        overallRoas: calcVs(data.jun.overallRoas, avg3M('overallRoas')),
-        cpw: calcVs(data.jun.cpw, avg3M('cpw'))
-      };
+        const prevPeriods = periods.slice(0, -1).slice(-3);
+        const avg3M = (key: string) => {
+          let sum = 0;
+          prevPeriods.forEach(p => sum += data[p.label][key]);
+          return sum / prevPeriods.length;
+        };
+
+        data.vsAvg3M = {
+          spend: calcVs(data[lastM].spend, avg3M('spend')),
+          impressions: calcVs(data[lastM].impressions, avg3M('impressions')),
+          lc: calcVs(data[lastM].lc, avg3M('lc')),
+          lp: calcVs(data[lastM].lp, avg3M('lp')),
+          walkin: calcVs(data[lastM].walkin, avg3M('walkin')),
+          cpm: calcVs(data[lastM].cpm, avg3M('cpm')),
+          cpc: calcVs(data[lastM].cpc, avg3M('cpc')),
+          ctr: calcVs(data[lastM].ctr, avg3M('ctr')),
+          lcToLp: calcVs(data[lastM].lcToLp, avg3M('lcToLp')),
+          categoryRoas: calcVs(data[lastM].categoryRoas, avg3M('categoryRoas')),
+          overallRoas: calcVs(data[lastM].overallRoas, avg3M('overallRoas')),
+          cpw: calcVs(data[lastM].cpw, avg3M('cpw'))
+        };
+      }
 
       finalCampaigns.push(data);
     }
 
-    for (const m of ['mar', 'apr', 'may', 'jun'] as const) {
-      calcMetrics(totalObj[m]);
+    for (const p of periods) {
+      calcMetrics(totalObj[p.label]);
     }
 
-    totalObj.vsLastMonth = {
-      spend: calcVs(totalObj.jun.spend, totalObj.may.spend),
-      impressions: calcVs(totalObj.jun.impressions, totalObj.may.impressions),
-      lc: calcVs(totalObj.jun.lc, totalObj.may.lc),
-      lp: calcVs(totalObj.jun.lp, totalObj.may.lp),
-      walkin: calcVs(totalObj.jun.walkin, totalObj.may.walkin),
-      cpm: calcVs(totalObj.jun.cpm, totalObj.may.cpm),
-      cpc: calcVs(totalObj.jun.cpc, totalObj.may.cpc),
-      ctr: calcVs(totalObj.jun.ctr, totalObj.may.ctr),
-      lcToLp: calcVs(totalObj.jun.lcToLp, totalObj.may.lcToLp),
-      categoryRoas: calcVs(totalObj.jun.categoryRoas, totalObj.may.categoryRoas),
-      overallRoas: calcVs(totalObj.jun.overallRoas, totalObj.may.overallRoas),
-      cpw: calcVs(totalObj.jun.cpw, totalObj.may.cpw)
-    };
+    if (periods.length >= 2) {
+      const lastM = periods[periods.length - 1].label;
+      const prevM = periods[periods.length - 2].label;
+      totalObj.vsLastMonth = {
+        spend: calcVs(totalObj[lastM].spend, totalObj[prevM].spend),
+        impressions: calcVs(totalObj[lastM].impressions, totalObj[prevM].impressions),
+        lc: calcVs(totalObj[lastM].lc, totalObj[prevM].lc),
+        lp: calcVs(totalObj[lastM].lp, totalObj[prevM].lp),
+        walkin: calcVs(totalObj[lastM].walkin, totalObj[prevM].walkin),
+        cpm: calcVs(totalObj[lastM].cpm, totalObj[prevM].cpm),
+        cpc: calcVs(totalObj[lastM].cpc, totalObj[prevM].cpc),
+        ctr: calcVs(totalObj[lastM].ctr, totalObj[prevM].ctr),
+        lcToLp: calcVs(totalObj[lastM].lcToLp, totalObj[prevM].lcToLp),
+        categoryRoas: calcVs(totalObj[lastM].categoryRoas, totalObj[prevM].categoryRoas),
+        overallRoas: calcVs(totalObj[lastM].overallRoas, totalObj[prevM].overallRoas),
+        cpw: calcVs(totalObj[lastM].cpw, totalObj[prevM].cpw)
+      };
 
-    const avg3MTotal = (key: string) => (totalObj.mar[key as keyof typeof totalObj.mar] as number + totalObj.apr[key as keyof typeof totalObj.apr] as number + totalObj.may[key as keyof typeof totalObj.may] as number) / 3;
+      const prevPeriods = periods.slice(0, -1).slice(-3);
+      const avg3MTotal = (key: string) => {
+        let sum = 0;
+        prevPeriods.forEach(p => sum += totalObj[p.label][key]);
+        return sum / prevPeriods.length;
+      };
 
-    totalObj.vsAvg3M = {
-      spend: calcVs(totalObj.jun.spend, avg3MTotal('spend')),
-      impressions: calcVs(totalObj.jun.impressions, avg3MTotal('impressions')),
-      lc: calcVs(totalObj.jun.lc, avg3MTotal('lc')),
-      lp: calcVs(totalObj.jun.lp, avg3MTotal('lp')),
-      walkin: calcVs(totalObj.jun.walkin, avg3MTotal('walkin')),
-      cpm: calcVs(totalObj.jun.cpm, avg3MTotal('cpm')),
-      cpc: calcVs(totalObj.jun.cpc, avg3MTotal('cpc')),
-      ctr: calcVs(totalObj.jun.ctr, avg3MTotal('ctr')),
-      lcToLp: calcVs(totalObj.jun.lcToLp, avg3MTotal('lcToLp')),
-      categoryRoas: calcVs(totalObj.jun.categoryRoas, avg3MTotal('categoryRoas')),
-      overallRoas: calcVs(totalObj.jun.overallRoas, avg3MTotal('overallRoas')),
-      cpw: calcVs(totalObj.jun.cpw, avg3MTotal('cpw'))
-    };
+      totalObj.vsAvg3M = {
+        spend: calcVs(totalObj[lastM].spend, avg3MTotal('spend')),
+        impressions: calcVs(totalObj[lastM].impressions, avg3MTotal('impressions')),
+        lc: calcVs(totalObj[lastM].lc, avg3MTotal('lc')),
+        lp: calcVs(totalObj[lastM].lp, avg3MTotal('lp')),
+        walkin: calcVs(totalObj[lastM].walkin, avg3MTotal('walkin')),
+        cpm: calcVs(totalObj[lastM].cpm, avg3MTotal('cpm')),
+        cpc: calcVs(totalObj[lastM].cpc, avg3MTotal('cpc')),
+        ctr: calcVs(totalObj[lastM].ctr, avg3MTotal('ctr')),
+        lcToLp: calcVs(totalObj[lastM].lcToLp, avg3MTotal('lcToLp')),
+        categoryRoas: calcVs(totalObj[lastM].categoryRoas, avg3MTotal('categoryRoas')),
+        overallRoas: calcVs(totalObj[lastM].overallRoas, avg3MTotal('overallRoas')),
+        cpw: calcVs(totalObj[lastM].cpw, avg3MTotal('cpw'))
+      };
+    }
 
     return NextResponse.json({
       campaigns: finalCampaigns,
-      total: totalObj
+      total: totalObj,
+      monthLabels: periods.map(p => p.label)
     });
 
   } catch (err: any) {
