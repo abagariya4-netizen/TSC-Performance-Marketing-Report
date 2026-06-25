@@ -11,6 +11,25 @@ export async function GET(req: NextRequest) {
     const accountId = process.env.META_AD_ACCOUNT_ID!;
     const dates     = getDateParams();
 
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const fmt = (dObj: Date) => {
+      const y = dObj.getFullYear();
+      const m = String(dObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
+
+    const firstDay = new Date(today);
+    firstDay.setDate(1);
+
+    dates.sinceMTD = fmt(firstDay);
+    dates.untilMTD = fmt(yesterday);
+    dates.sinceYday = fmt(yesterday);
+    dates.untilYday = fmt(yesterday);
+
     const mtdUrl  = buildCampaignUrl(accountId, token, dates.sinceMTD,  dates.untilMTD);
     const ydayUrl = buildCampaignUrl(accountId, token, dates.sinceYday, dates.untilYday);
 
