@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { classifyFunnel } from '@/lib/metricUtils';
 
 // Campaign name rules
 const CAMPAIGN_RULES: Record<string, { contains?: string; excludes: string[] }> = {
