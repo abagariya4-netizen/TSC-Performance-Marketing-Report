@@ -94,7 +94,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
       `${labels.month1} CPC`, `${labels.month2} CPC`, `${labels.month3} CPC`, `${mtdLabel} CPC`, `${day3Label} CPC`, `${day2Label} CPC`, `${day1Label} CPC`,
       `${labels.month1} CTR`, `${labels.month2} CTR`, `${labels.month3} CTR`, `${mtdLabel} CTR`, `${day3Label} CTR`, `${day2Label} CTR`, `${day1Label} CTR`,
       `${labels.month1} ROAS`, `${labels.month2} ROAS`, `${labels.month3} ROAS`, `${mtdLabel} ROAS`, `${day3Label} ROAS`, `${day2Label} ROAS`, `${day1Label} ROAS`,
-      'MTD', 'Est. Spends', 'vs Avg 3 Months %', `vs ${labels.lastMonth} %`
+      'MTD', 'Est. Spends'
     ];
 
     const lines: string[] = [];
@@ -107,9 +107,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         row.cpcMonth1, row.cpcMonth2, row.cpcMonth3, row.cpcCurMonth, row.cpcDay3, row.cpcDay2, row.cpcDay1,
         row.ctrMonth1, row.ctrMonth2, row.ctrMonth3, row.ctrCurMonth, row.ctrDay3, row.ctrDay2, row.ctrDay1,
         row.roasMonth1, row.roasMonth2, row.roasMonth3, row.roasCurMonth, row.roasDay3, row.roasDay2, row.roasDay1,
-        row.mtd, row.estSpends,
-        row.vsAvg3Months !== null ? row.vsAvg3Months : '',
-        row.vsLastMonth !== null ? row.vsLastMonth : ''
+        row.mtd, row.estSpends
       ].join(',');
       
       lines.push(getRowData(r));
@@ -179,9 +177,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         {/* ROAS */}
         <td style={cellStyle}>{fmtFloat(r.roasMonth1)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth2)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth3)}</td><td style={cellStyle}>{fmtFloat(r.roasCurMonth)}</td><td style={cellStyle}>{fmtFloat(r.roasDay3)}</td><td style={cellStyle}>{fmtFloat(r.roasDay2)}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasDay1)}</td>
         
-        <td style={{ ...cellStyle, fontWeight: isVariant ? 'normal' : 'bold' }}>{formatINR(r.estSpends)}</td>
-        <td style={cellStyle}>{renderPct(r.vsAvg3Months)}</td>
-        <td style={cellStyle}>{renderPct(r.vsLastMonth)}</td>
+        <td style={{ ...cellStyle, fontWeight: isVariant ? 'normal' : 'bold', borderRight: '1px solid var(--border-color)' }}>{formatINR(r.estSpends)}</td>
       </tr>
     );
   };
@@ -203,9 +199,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
               <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>CPC</th>
               <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>CTR</th>
               <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>ROAS</th>
-              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {day1Label}×Remaining)</span></th>
-              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>vs Avg 3 Months</th>
-              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>vs {labels.lastMonth}</th>
+              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336', borderRight: '1px solid var(--border-color)' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {day1Label}×Remaining)</span></th>
             </tr>
             <tr>
               {/* SPEND */}
@@ -247,10 +241,7 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
                 <td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrDay3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrDay2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(totals.ctrDay1)}</td>
                 {/* ROAS */}
                 <td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasDay3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasDay2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasDay1)}</td>
-                
-                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.estSpends)}</td>
-                <td style={{ backgroundColor: '#281d18' }}>{renderPct(totals.vsAvg3Months)}</td>
-                <td style={{ backgroundColor: '#281d18' }}>{renderPct(totals.vsLastMonth)}</td>
+                <td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{formatINR(totals.estSpends)}</td>
               </tr>
             )}
           </tfoot>
