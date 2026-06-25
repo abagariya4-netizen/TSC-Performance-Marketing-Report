@@ -3,20 +3,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
 import DateRangePicker from '@/components/DateRangePicker';
-import { getDefaultMonths } from '@/lib/dateRangeUtils';
 
 const formatIndianNum = (num: number | undefined | null) => {
-  if (num === undefined || num === null) return '—';
+  if (num === undefined || num === null || isNaN(num)) return '—';
   return '₹' + new Intl.NumberFormat('en-IN').format(Math.round(num));
 };
 
 const formatDecimal = (num: number | undefined | null) => {
-  if (num === undefined || num === null) return '—';
+  if (num === undefined || num === null || isNaN(num)) return '—';
   return num.toFixed(2);
 };
 
+const formatINRDecimal = (num: number | undefined | null) => {
+  if (num === undefined || num === null || isNaN(num)) return '—';
+  return '₹' + num.toFixed(2);
+};
+
 const formatPercent = (num: number | undefined | null) => {
-  if (num === undefined || num === null) return '—';
+  if (num === undefined || num === null || isNaN(num)) return '—';
   return num.toFixed(2) + '%';
 };
 
@@ -32,18 +36,25 @@ export default function SQRPage() {
   const [keywordSearch, setKeywordSearch] = useState('');
   const [isKeywordDropdownOpen, setIsKeywordDropdownOpen] = useState(false);
   
-  const defMonths = getDefaultMonths();
-  const [startDate, setStartDate] = useState(defMonths[0].startDate);
-  const [endDate, setEndDate] = useState(defMonths[defMonths.length - 1].endDate);
+  // Calculate exact 4 dynamically computed months
+  const today = useMemo(() => new Date(), []);
+  const defaultDates = useMemo(() => {
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const m1Start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    return {
+      start: formatDate(m1Start),
+      end: formatDate(yesterday)
+    };
+  }, [today]);
+
+  const [startDate, setStartDate] = useState(defaultDates.start);
+  const [endDate, setEndDate] = useState(defaultDates.end);
   
   const [data, setData] = useState<{searchTerms: any[], total: any, monthLabels: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Initialize
-  useEffect(() => {
-    // defaults set in state initialization
-  }, []);
 
   // Fetch campaigns on category change
   useEffect(() => {
@@ -71,7 +82,11 @@ export default function SQRPage() {
   // Fetch keywords on campaign change
   useEffect(() => {
     const fetchKeywords = async () => {
-      if (!selectedCampaignId) return;
+      if (!selectedCampaignId || selectedCampaignId === 'All') {
+        setKeywords([]);
+        setSelectedKeyword('All Keywords');
+        return;
+      }
       try {
         const res = await fetch(`/api/sqr/keywords?campaignId=${selectedCampaignId}`);
         const json = await res.json();
@@ -86,22 +101,131 @@ export default function SQRPage() {
     fetchKeywords();
   }, [selectedCampaignId]);
 
-  const handleGenerate = async () => {
-    if (!selectedCampaignId || !endDate) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const url = `/api/sqr/data?campaignId=${selectedCampaignId}&startDate=${startDate}&endDate=${endDate}${selectedKeyword !== 'All Keywords' ? `&keyword=${encodeURIComponent(selectedKeyword)}` : ''}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.error) throw new Error(json.error);
-      setData(json);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Auto-fetch data on filter changes
+  useEffect(() => {
+    if (!selectedCampaignId || !startDate || !endDate || campaigns.length === 0) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        let campaignsToFetch = selectedCampaignId === 'All' 
+          ? campaigns.filter(c => c.id !== 'All').map(c => c.id)
+          : [selectedCampaignId];
+
+        if (campaignsToFetch.length === 0) {
+           setData({searchTerms: [], total: {}, monthLabels: []});
+           setLoading(false);
+           return;
+        }
+
+        const fetchPromises = campaignsToFetch.map(cid => {
+          const url = `/api/sqr/data?campaignId=${cid}&startDate=${startDate}&endDate=${endDate}${selectedKeyword !== 'All Keywords' ? \`&keyword=\${encodeURIComponent(selectedKeyword)}\` : ''}`;
+          return fetch(url).then(r => r.json());
+        });
+
+        const results = await Promise.all(fetchPromises);
+        
+        let aggregatedSearchTerms = new Map();
+        let aggregatedTotal: any = {};
+        let monthLabels: string[] = [];
+        
+        for (const json of results) {
+          if (json.error) throw new Error(json.error);
+          if (monthLabels.length === 0 && json.monthLabels) {
+            monthLabels = json.monthLabels;
+            monthLabels.forEach(m => {
+               aggregatedTotal[m] = { spend: 0, clicks: 0, impressions: 0, convValue: 0 };
+            });
+          }
+          
+          json.searchTerms?.forEach((row: any) => {
+             const term = row.term;
+             if (!aggregatedSearchTerms.has(term)) {
+               const newRow: any = { term };
+               monthLabels.forEach(m => {
+                 newRow[m] = { spend: 0, clicks: 0, impressions: 0, convValue: 0 };
+               });
+               aggregatedSearchTerms.set(term, newRow);
+             }
+             
+             const existingRow = aggregatedSearchTerms.get(term);
+             
+             monthLabels.forEach(m => {
+                const mData = row[m] || {};
+                const spend = mData.spend || 0;
+                const roas = mData.roas || 0;
+                const cpc = mData.cpc || 0;
+                const ctr = mData.ctr || 0;
+
+                const convValue = spend * roas;
+                const clicks = cpc > 0 ? spend / cpc : 0;
+                const impressions = ctr > 0 ? (clicks / ctr) * 100 : 0;
+
+                existingRow[m].spend += spend;
+                existingRow[m].convValue += convValue;
+                existingRow[m].clicks += clicks;
+                existingRow[m].impressions += impressions;
+             });
+          });
+          
+          if (json.total) {
+             monthLabels.forEach(m => {
+                const tData = json.total[m] || {};
+                const spend = tData.spend || 0;
+                const roas = tData.roas || 0;
+                const cpc = tData.cpc || 0;
+                const ctr = tData.ctr || 0;
+
+                const convValue = spend * roas;
+                const clicks = cpc > 0 ? spend / cpc : 0;
+                const impressions = ctr > 0 ? (clicks / ctr) * 100 : 0;
+
+                aggregatedTotal[m].spend += spend;
+                aggregatedTotal[m].convValue += convValue;
+                aggregatedTotal[m].clicks += clicks;
+                aggregatedTotal[m].impressions += impressions;
+             });
+          }
+        }
+        
+        // Finalize rows
+        const finalSearchTerms = Array.from(aggregatedSearchTerms.values()).map((row: any) => {
+           const finalRow: any = { term: row.term };
+           monthLabels.forEach(m => {
+              const r = row[m];
+              finalRow[m] = {
+                 spend: r.spend,
+                 roas: r.spend > 0 ? r.convValue / r.spend : 0,
+                 cpc: r.clicks > 0 ? r.spend / r.clicks : 0,
+                 ctr: r.impressions > 0 ? (r.clicks / r.impressions) * 100 : 0
+              };
+           });
+           return finalRow;
+        });
+        
+        // Finalize total
+        const finalTotal: any = {};
+        monthLabels.forEach(m => {
+           const t = aggregatedTotal[m];
+           finalTotal[m] = {
+              spend: t.spend,
+              roas: t.spend > 0 ? t.convValue / t.spend : 0,
+              cpc: t.clicks > 0 ? t.spend / t.clicks : 0,
+              ctr: t.impressions > 0 ? (t.clicks / t.impressions) * 100 : 0
+           };
+        });
+
+        setData({ searchTerms: finalSearchTerms, total: finalTotal, monthLabels });
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [selectedCampaignId, startDate, endDate, selectedKeyword, campaigns]);
 
   const filteredKeywords = useMemo(() => {
     const allKw = [{ text: 'All Keywords', matchType: '' }, ...keywords];
@@ -110,7 +234,7 @@ export default function SQRPage() {
   }, [keywords, keywordSearch]);
 
   const sortedSearchTerms = useMemo(() => {
-    if (!data || !data.searchTerms) return [];
+    if (!data || !data.searchTerms || data.monthLabels.length === 0) return [];
     const lastMonthLabel = data.monthLabels[data.monthLabels.length - 1];
     
     return [...data.searchTerms].sort((a, b) => {
@@ -124,27 +248,55 @@ export default function SQRPage() {
     if (!data || sortedSearchTerms.length === 0) return;
     
     let csv = 'Search Term,';
-    data.monthLabels.forEach(m => {
-      csv += `${m.toUpperCase()} Spend,${m.toUpperCase()} ROAS,${m.toUpperCase()} CTR,${m.toUpperCase()} CPC,`;
-    });
-    csv += '\\n';
     
+    // Write headers
+    data.monthLabels.forEach(m => csv += `AMOUNT SPENT ${m.toUpperCase()},`);
+    data.monthLabels.forEach(m => csv += `CPC ${m.toUpperCase()},`);
+    data.monthLabels.forEach(m => csv += `CTR ${m.toUpperCase()},`);
+    data.monthLabels.forEach(m => csv += `ROAS ${m.toUpperCase()},`);
+    csv += '\n';
+    
+    // Write rows
     sortedSearchTerms.forEach(row => {
-      csv += `"${row.term}",`;
+      csv += `"${row.term.replace(/"/g, '""')}",`;
       data.monthLabels.forEach(m => {
         const mData = row[m] || {};
-        csv += `${mData.spend || 0},${mData.roas || 0},${mData.ctr || 0},${mData.cpc || 0},`;
+        csv += `${Math.round(mData.spend || 0)},`;
       });
-      csv += '\\n';
+      data.monthLabels.forEach(m => {
+        const mData = row[m] || {};
+        csv += `${(mData.cpc || 0).toFixed(2)},`;
+      });
+      data.monthLabels.forEach(m => {
+        const mData = row[m] || {};
+        csv += `${(mData.ctr || 0).toFixed(2)}%,`;
+      });
+      data.monthLabels.forEach(m => {
+        const mData = row[m] || {};
+        csv += `${(mData.roas || 0).toFixed(2)},`;
+      });
+      csv += '\n';
     });
 
-    // Total row
+    // Write Total
     csv += '"Total",';
     data.monthLabels.forEach(m => {
       const tData = data.total[m] || {};
-      csv += `${tData.spend || 0},${tData.roas || 0},${tData.ctr || 0},${tData.cpc || 0},`;
+      csv += `${Math.round(tData.spend || 0)},`;
     });
-    csv += '\\n';
+    data.monthLabels.forEach(m => {
+      const tData = data.total[m] || {};
+      csv += `${(tData.cpc || 0).toFixed(2)},`;
+    });
+    data.monthLabels.forEach(m => {
+      const tData = data.total[m] || {};
+      csv += `${(tData.ctr || 0).toFixed(2)}%,`;
+    });
+    data.monthLabels.forEach(m => {
+      const tData = data.total[m] || {};
+      csv += `${(tData.roas || 0).toFixed(2)},`;
+    });
+    csv += '\n';
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -244,74 +396,70 @@ export default function SQRPage() {
             
             const startD = new Date(start);
             let endD = new Date(end);
-            endD = new Date(endD.getFullYear(), endD.getMonth() + 1, 0); // End of month
-            
-            if (endD > yday) {
-              endD = yday;
-            }
+            endD = new Date(endD.getFullYear(), endD.getMonth() + 1, 0);
+            if (endD > yday) endD = yday;
             
             setStartDate(startD.toISOString().split('T')[0]);
             setEndDate(endD.toISOString().split('T')[0]);
           }}
           onReset={() => {
-            const def = getDefaultMonths();
-            setStartDate(def[0].startDate);
-            setEndDate(def[def.length - 1].endDate);
+            setStartDate(defaultDates.start);
+            setEndDate(defaultDates.end);
           }}
         />
 
-        <button 
-          onClick={handleGenerate} 
-          disabled={loading || !selectedCampaignId}
-          className="btn-primary"
-          style={{ marginLeft: 'auto' }}
-        >
-          {loading ? '⏳ Loading...' : '🔄 Generate Report'}
-        </button>
-
+        {loading && <span style={{ color: '#94a3b8', marginLeft: 'auto' }}>⏳ Loading...</span>}
         {error && <span style={{ color: 'var(--danger-color)', marginLeft: '12px' }}>{error}</span>}
       </div>
 
       {data && !loading && (
-        <div className="table-wrapper" style={{ overflowX: 'auto', position: 'relative', zIndex: 1 }}>
-          <table className="modern-table" style={{ width: '100%', minWidth: '1200px' }}>
-            <thead>
+        <div className="table-wrapper" style={{ overflowX: 'auto', position: 'relative', zIndex: 1, border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+          <table className="modern-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr>
-                <th rowSpan={2} style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', minWidth: '200px', position: 'sticky', left: 0, background: '#e8733a', zIndex: 5 }}>Search Term</th>
-                {data.monthLabels.map(m => (
-                  <th key={m} colSpan={4} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>
-                    {m.toUpperCase()}
-                  </th>
-                ))}
+                <th rowSpan={2} style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', maxWidth: '250px', width: '250px', position: 'sticky', left: 0, background: '#e8733a', zIndex: 15, padding: '12px 16px', color: '#fff' }}>SEARCH TERM</th>
+                <th colSpan={data.monthLabels.length} style={{ textAlign: 'center', background: '#e8733a', borderRight: '1px solid var(--border-color)', padding: '8px', color: '#fff' }}>AMOUNT SPENT</th>
+                <th colSpan={data.monthLabels.length} style={{ textAlign: 'center', background: '#e8733a', borderRight: '1px solid var(--border-color)', padding: '8px', color: '#fff' }}>CPC</th>
+                <th colSpan={data.monthLabels.length} style={{ textAlign: 'center', background: '#e8733a', borderRight: '1px solid var(--border-color)', padding: '8px', color: '#fff' }}>CTR</th>
+                <th colSpan={data.monthLabels.length} style={{ textAlign: 'center', background: '#e8733a', padding: '8px', color: '#fff' }}>ROAS</th>
               </tr>
               <tr>
-                {data.monthLabels.map(m => (
-                  <React.Fragment key={`${m}-sub`}>
-                    <th style={{ fontSize: '12px', textAlign: 'center' }}>Amount Spent</th>
-                    <th style={{ fontSize: '12px', textAlign: 'center' }}>ROAS</th>
-                    <th style={{ fontSize: '12px', textAlign: 'center' }}>CTR</th>
-                    <th style={{ fontSize: '12px', textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>CPC</th>
-                  </React.Fragment>
-                ))}
+                {data.monthLabels.map(m => <th key={`sp-${m}`} style={{ fontSize: '12px', textAlign: 'center', background: '#e8733a', padding: '8px', color: '#fff', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m.toUpperCase()}</th>)}
+                {data.monthLabels.map(m => <th key={`cpc-${m}`} style={{ fontSize: '12px', textAlign: 'center', background: '#e8733a', padding: '8px', color: '#fff', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m.toUpperCase()}</th>)}
+                {data.monthLabels.map(m => <th key={`ctr-${m}`} style={{ fontSize: '12px', textAlign: 'center', background: '#e8733a', padding: '8px', color: '#fff', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m.toUpperCase()}</th>)}
+                {data.monthLabels.map(m => <th key={`roas-${m}`} style={{ fontSize: '12px', textAlign: 'center', background: '#e8733a', padding: '8px', color: '#fff', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m.toUpperCase()}</th>)}
               </tr>
             </thead>
             <tbody>
               {sortedSearchTerms.map((row, i) => (
-                <tr key={row.term} style={{ backgroundColor: i % 2 === 0 ? '#1a1d27' : '#1f2333' }}>
-                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: i % 2 === 0 ? '#1a1d27' : '#1f2333', zIndex: 2 }}>
+                <tr key={row.term} style={{ backgroundColor: i % 2 === 0 ? '#1a1d27' : '#1f2333', borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', maxWidth: '250px', width: '250px', wordBreak: 'break-word', position: 'sticky', left: 0, background: i % 2 === 0 ? '#1a1d27' : '#1f2333', zIndex: 2, padding: '12px 16px' }}>
                     {row.term}
                   </td>
-                  {data.monthLabels.map(m => {
-                    const mData = row[m] || {};
-                    return (
-                      <React.Fragment key={`${row.term}-${m}`}>
-                        <td style={{ textAlign: 'center' }}>{formatIndianNum(mData.spend)}</td>
-                        <td style={{ textAlign: 'center' }}>{formatDecimal(mData.roas)}</td>
-                        <td style={{ textAlign: 'center' }}>{formatPercent(mData.ctr)}</td>
-                        <td style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{formatDecimal(mData.cpc)}</td>
-                      </React.Fragment>
-                    );
-                  })}
+                  {/* AMOUNT SPENT */}
+                  {data.monthLabels.map(m => (
+                    <td key={`sp-${m}`} style={{ textAlign: 'center', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                      {formatIndianNum(row[m]?.spend)}
+                    </td>
+                  ))}
+                  {/* CPC */}
+                  {data.monthLabels.map(m => (
+                    <td key={`cpc-${m}`} style={{ textAlign: 'center', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                      {formatINRDecimal(row[m]?.cpc)}
+                    </td>
+                  ))}
+                  {/* CTR */}
+                  {data.monthLabels.map(m => (
+                    <td key={`ctr-${m}`} style={{ textAlign: 'center', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                      {formatPercent(row[m]?.ctr)}
+                    </td>
+                  ))}
+                  {/* ROAS */}
+                  {data.monthLabels.map(m => (
+                    <td key={`roas-${m}`} style={{ textAlign: 'center', padding: '12px 8px', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                      {formatDecimal(row[m]?.roas)}
+                    </td>
+                  ))}
                 </tr>
               ))}
               {sortedSearchTerms.length === 0 && (
@@ -321,26 +469,41 @@ export default function SQRPage() {
                   </td>
                 </tr>
               )}
-              {/* Pinned Total Row */}
-              {sortedSearchTerms.length > 0 && data.total && (
+            </tbody>
+            {/* Pinned Total Row */}
+            {sortedSearchTerms.length > 0 && data.total && (
+              <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 10 }}>
                 <tr style={{ backgroundColor: 'var(--accent-primary)', color: 'white', fontWeight: 'bold' }}>
-                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: 'var(--accent-primary)', zIndex: 3 }}>
+                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', maxWidth: '250px', width: '250px', position: 'sticky', left: 0, background: 'var(--accent-primary)', zIndex: 15, padding: '12px 16px' }}>
                     Total
                   </td>
-                  {data.monthLabels.map(m => {
-                    const tData = data.total[m] || {};
-                    return (
-                      <React.Fragment key={`total-${m}`}>
-                        <td style={{ textAlign: 'center' }}>{formatIndianNum(tData.spend)}</td>
-                        <td style={{ textAlign: 'center' }}>{formatDecimal(tData.roas)}</td>
-                        <td style={{ textAlign: 'center' }}>{formatPercent(tData.ctr)}</td>
-                        <td style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{formatDecimal(tData.cpc)}</td>
-                      </React.Fragment>
-                    );
-                  })}
+                  {/* AMOUNT SPENT */}
+                  {data.monthLabels.map(m => (
+                    <td key={`tsp-${m}`} style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--accent-primary)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                      {formatIndianNum(data.total[m]?.spend)}
+                    </td>
+                  ))}
+                  {/* CPC */}
+                  {data.monthLabels.map(m => (
+                    <td key={`tcpc-${m}`} style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--accent-primary)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                      {formatINRDecimal(data.total[m]?.cpc)}
+                    </td>
+                  ))}
+                  {/* CTR */}
+                  {data.monthLabels.map(m => (
+                    <td key={`tctr-${m}`} style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--accent-primary)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                      {formatPercent(data.total[m]?.ctr)}
+                    </td>
+                  ))}
+                  {/* ROAS */}
+                  {data.monthLabels.map(m => (
+                    <td key={`troas-${m}`} style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--accent-primary)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                      {formatDecimal(data.total[m]?.roas)}
+                    </td>
+                  ))}
                 </tr>
-              )}
-            </tbody>
+              </tfoot>
+            )}
           </table>
         </div>
       )}

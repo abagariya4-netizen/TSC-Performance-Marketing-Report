@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
     campaigns.sort((a, b) => a.name.localeCompare(b.name));
     
     const unique = Array.from(new Map(campaigns.map(item => [item.id, item])).values());
+    unique.unshift({ id: 'All', name: 'All' });
     
     return NextResponse.json({ campaigns: unique });
   } catch (err: any) {
