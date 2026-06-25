@@ -1,11 +1,115 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PlanUpload from '@/components/PlanUpload';
 import DaysCountBadge from '@/components/DaysCountBadge';
 
 const formatIndianNum = (num: number) => {
   return new Intl.NumberFormat('en-IN').format(Math.round(num));
+};
+
+const CityDropdown = ({ city, setCity, cities }: { city: string, setCity: (c: string) => void, cities: string[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredCities = cities.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', minWidth: '200px' }}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="input-field"
+        style={{
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: '#1A2336',
+          border: '1px solid #2D3A57',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '4px'
+        }}
+      >
+        <span>{city}</span>
+        <span style={{ fontSize: '12px' }}>▼</span>
+      </div>
+      
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          marginTop: '4px',
+          backgroundColor: '#1A2336',
+          border: '1px solid #2D3A57',
+          borderRadius: '4px',
+          zIndex: 50,
+          boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+          maxHeight: '300px',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid #2D3A57' }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search city..."
+              style={{
+                width: '100%',
+                backgroundColor: '#0D1220',
+                border: '1px solid #2D3A57',
+                color: 'white',
+                padding: '6px 8px',
+                borderRadius: '4px',
+                outline: 'none'
+              }}
+              autoFocus
+            />
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {filteredCities.map(c => (
+              <div
+                key={c}
+                onClick={() => {
+                  setCity(c);
+                  setIsOpen(false);
+                  setSearch('');
+                }}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  color: 'white'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#243050'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                {c}
+              </div>
+            ))}
+            {filteredCities.length === 0 && (
+              <div style={{ padding: '8px 12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                No cities found
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default function SixCityGoogleFiltered() {
@@ -15,10 +119,21 @@ export default function SixCityGoogleFiltered() {
   const [planData, setPlanData] = useState<Record<string, Record<string, number>> | null>(null);
 
   const [category, setCategory] = useState('All');
-  const [city, setCity] = useState('Maharashtra');
+  const [city, setCity] = useState('Bengaluru');
 
   const categories = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
-  const cities = ['Maharashtra', 'Karnataka', 'Tamil Nadu', 'Telangana', 'Delhi+NCR', 'Gujarat'];
+  const cities = [
+    'Bengaluru', 'Hyderabad', 'Mumbai', 'Chennai', 'Delhi', 'Pune', 'Noida',
+    'Ahmedabad', 'Kolkata', 'Lucknow', 'Gurgaon', 'Indore', 'Jaipur', 'Kochi',
+    'Coimbatore', 'Bhubaneswar', 'Surat', 'Visakhapatnam', 'Vijayawada',
+    'Guwahati', 'Thiruvananthapuram', 'Guntur', 'Vadodara', 'Faridabad',
+    'Ghaziabad', 'Ludhiana', 'Mangaluru', 'Warangal', 'Rajkot', 'Nashik',
+    'Mysore', 'Goa', 'Mohali', 'Nagpur', 'Dehradun', 'Patna', 'Thrissur',
+    'Kozhikode', 'Madurai', 'Hubballi', 'Salem', 'Sambhaji Nagar', 'Kanpur',
+    'Tiruchirappalli', 'Belgaum', 'Kakinada', 'Kolhapur', 'Bhopal', 'Kota',
+    'Tiruppur', 'Tirupati', 'Rajahmundry', 'Udaipur', 'Sangli', 'KarimNagar',
+    'Ballari', 'Hosur', 'Chandigarh', 'Raipur'
+  ];
 
   useEffect(() => {
     const savedPlan = localStorage.getItem('tsc_six_city_google_filtered_plan');
@@ -88,7 +203,7 @@ export default function SixCityGoogleFiltered() {
       'Maharashtra': 'Mumbai', 'Karnataka': 'Bengaluru', 'Tamil Nadu': 'Chennai',
       'Telangana': 'Hyderabad', 'Delhi+NCR': 'Delhi+NCR', 'Gujarat': 'Gujarat'
     };
-    const mappedCity = stateToCityBucket[city];
+    const mappedCity = stateToCityBucket[city] || city;
     const cityPlan = planData?.[mappedCity] || {};
     const totalPlan = cityPlan['Total'] || 0;
     
@@ -135,7 +250,7 @@ export default function SixCityGoogleFiltered() {
       'Maharashtra': 'Mumbai', 'Karnataka': 'Bengaluru', 'Tamil Nadu': 'Chennai',
       'Telangana': 'Hyderabad', 'Delhi+NCR': 'Delhi+NCR', 'Gujarat': 'Gujarat'
     };
-    const mappedCity = stateToCityBucket[city];
+    const mappedCity = stateToCityBucket[city] || city;
     const cityPlan = planData?.[mappedCity] || {};
     const totalPlan = cityPlan['Total'] || 0;
 
@@ -253,14 +368,7 @@ export default function SixCityGoogleFiltered() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <label style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>City:</label>
-          <select 
-            value={city} 
-            onChange={(e) => setCity(e.target.value)}
-            className="input-field"
-            style={{ minWidth: '140px' }}
-          >
-            {cities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <CityDropdown city={city} setCity={setCity} cities={cities} />
         </div>
 
         <button 
