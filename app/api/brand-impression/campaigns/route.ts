@@ -16,7 +16,7 @@ export async function GET() {
       SELECT campaign.id, campaign.name
       FROM campaign
       WHERE campaign.advertising_channel_type = 'SEARCH'
-      AND campaign.name LIKE '%brand%'
+      AND campaign.name REGEXP_MATCH '(?i).*brand.*'
       AND campaign.status != 'REMOVED'
     `;
 

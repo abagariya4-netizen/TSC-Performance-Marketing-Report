@@ -99,6 +99,7 @@ export default function BrandImpressionMoM() {
                 entry[m].cv += k[m].cv || 0;
                 if (k[m].impressionShare > 0) {
                   entry[m].eligibleImpressions += (k[m].impressions / (k[m].impressionShare / 100));
+                  entry[m].impressionsWithIS = (entry[m].impressionsWithIS || 0) + k[m].impressions;
                 }
               });
             });
@@ -109,7 +110,7 @@ export default function BrandImpressionMoM() {
           const finalKeywords = Array.from(mergedKeywords.values()).map((entry: any) => {
             mLabels.forEach((m: string) => {
               entry[m].impressionShare = entry[m].eligibleImpressions > 0 
-                ? (entry[m].impressions / entry[m].eligibleImpressions) * 100 
+                ? ((entry[m].impressionsWithIS || 0) / entry[m].eligibleImpressions) * 100 
                 : 0;
             });
             return entry;
@@ -119,20 +120,21 @@ export default function BrandImpressionMoM() {
           
           const totals: any = {};
           mLabels.forEach((m: string) => {
-            totals[m] = { spend: 0, impressions: 0, eligibleImpressions: 0, impressionShare: 0, clicks: 0, cv: 0 };
+            totals[m] = { spend: 0, impressions: 0, eligibleImpressions: 0, impressionsWithIS: 0, impressionShare: 0, clicks: 0, cv: 0 };
           });
           finalKeywords.forEach(k => {
             mLabels.forEach((m: string) => {
               totals[m].spend += k[m].spend;
               totals[m].impressions += k[m].impressions;
-              totals[m].eligibleImpressions += k[m].eligibleImpressions;
+              totals[m].eligibleImpressions += (k[m].eligibleImpressions || 0);
+              totals[m].impressionsWithIS += (k[m].impressionsWithIS || 0);
               totals[m].clicks += k[m].clicks;
               totals[m].cv += k[m].cv;
             });
           });
           mLabels.forEach((m: string) => {
             totals[m].impressionShare = totals[m].eligibleImpressions > 0 
-              ? (totals[m].impressions / totals[m].eligibleImpressions) * 100 
+              ? (totals[m].impressionsWithIS / totals[m].eligibleImpressions) * 100 
               : 0;
             totals[m].cpc = totals[m].clicks > 0 ? totals[m].spend / totals[m].clicks : 0;
             totals[m].ctr = totals[m].impressions > 0 ? (totals[m].clicks / totals[m].impressions) * 100 : 0;

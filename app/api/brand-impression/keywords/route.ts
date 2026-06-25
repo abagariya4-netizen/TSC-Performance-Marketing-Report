@@ -79,13 +79,9 @@ export async function GET(req: NextRequest) {
         m.impressions += impressions;
         m.clicks += clicks;
         m.cv += cv;
-        // Since we are aggregating potentially across ad groups for the same keyword text
-        // we keep track of eligible impressions to compute accurate weighted average.
         if (impressionShare > 0) {
           m.eligibleImpr += impressions / impressionShare;
-        } else if (impressions > 0 && impressionShare === 0) {
-          // If impression share is exactly 0 but there are impressions, it's typically < 10%.
-          // In Google Ads API, < 10% is returned as 0.0999 usually, but if 0, we can't reliably compute.
+          m.impressionsWithIS = (m.impressionsWithIS || 0) + impressions;
         }
       }
     }
@@ -93,7 +89,7 @@ export async function GET(req: NextRequest) {
     const finalKeywords = [];
     const totalObj: any = {};
     periods.forEach(p => {
-      totalObj[p.label] = { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 };
+      totalObj[p.label] = { spend: 0, impressions: 0, impressionShare: 0, eligibleImpr: 0, impressionsWithIS: 0, clicks: 0, cv: 0, cpc: 0, ctr: 0, roas: 0, spendSalience: 100 };
     });
 
     for (const data of Array.from(keywordsMap.values())) {
@@ -101,13 +97,14 @@ export async function GET(req: NextRequest) {
       for (const p of periods) {
         const m = p.label;
         const monthData = data[m];
-        monthData.impressionShare = monthData.eligibleImpr > 0 ? (monthData.impressions / monthData.eligibleImpr) * 100 : 0;
+        monthData.impressionShare = monthData.eligibleImpr > 0 ? ((monthData.impressionsWithIS || 0) / monthData.eligibleImpr) * 100 : 0;
         
         totalObj[m].spend += monthData.spend;
         totalObj[m].impressions += monthData.impressions;
         totalObj[m].clicks += monthData.clicks;
         totalObj[m].cv += monthData.cv;
         totalObj[m].eligibleImpr += monthData.eligibleImpr;
+        totalObj[m].impressionsWithIS += (monthData.impressionsWithIS || 0);
       }
       finalKeywords.push(data);
     }
@@ -116,7 +113,7 @@ export async function GET(req: NextRequest) {
     for (const p of periods) {
       const m = p.label;
       const t = totalObj[m];
-      t.impressionShare = t.eligibleImpr > 0 ? (t.impressions / t.eligibleImpr) * 100 : 0;
+      t.impressionShare = t.eligibleImpr > 0 ? (t.impressionsWithIS / t.eligibleImpr) * 100 : 0;
       t.cpc = t.clicks > 0 ? t.spend / t.clicks : 0;
       t.ctr = t.impressions > 0 ? (t.clicks / t.impressions) * 100 : 0;
       t.roas = t.spend > 0 ? t.cv / t.spend : 0;
