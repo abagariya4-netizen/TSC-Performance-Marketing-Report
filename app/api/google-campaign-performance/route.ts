@@ -40,30 +40,16 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const categoryFilter = searchParams.get('category') || 'All';
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+    let startD = searchParams.get('startDate');
+    let endD = searchParams.get('endDate');
 
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const formatDate = (d: Date): string => { return d.toISOString().split('T')[0]; };
-
-    const periods: { label: string; startDate: string; endDate: string }[] = [];
-    for (let i = 3; i >= 1; i--) {
-      const mStart = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const mEnd = new Date(today.getFullYear(), today.getMonth() - i + 1, 0);
-      periods.push({
-        label: monthNames[mStart.getMonth()],
-        startDate: formatDate(mStart),
-        endDate: formatDate(mEnd)
-      });
+    if (!startD || !endD) {
+      const def = getDefaultMonths();
+      startD = def[0].startDate;
+      endD = def[def.length - 1].endDate;
     }
 
-    const curMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    periods.push({
-      label: monthNames[curMonthStart.getMonth()],
-      startDate: formatDate(curMonthStart),
-      endDate: formatDate(yesterday)
-    });
+    const periods = getMonthsInRange(new Date(startD), new Date(endD));
 
     // 1. Build queries for each period (only 1 query per period now, using metrics.conversions_value)
     const queries = periods.map(p => ({
