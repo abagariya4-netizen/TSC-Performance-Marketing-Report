@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
     const mtdData: Record<string, number> = { 'Top': 0, 'Mid': 0, 'Bottom': 0, 'RNF': 0, 'Group': 0 };
     const ydayData: Record<string, number> = { 'Top': 0, 'Mid': 0, 'Bottom': 0, 'RNF': 0, 'Group': 0 };
 
-    const allowedRegions = SIX_CITIES[regionFilter] || [];
+    const allowedRegions = SIX_CITIES[regionFilter] || [regionFilter];
 
     const processRows = (rows: any[], target: Record<string, number>) => {
       for (const row of rows) {
@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
         const aName = row.adset_name || '';
         const rowRegion = row.region || '';
 
-        if (!allowedRegions.includes(rowRegion)) continue;
+        if (regionFilter !== 'All' && !allowedRegions.includes(rowRegion)) continue;
         if (!passesCategoryFilter(cName, aName, categoryFilter)) continue;
 
         const funnel = getFunnel(cName, regionFilter);
