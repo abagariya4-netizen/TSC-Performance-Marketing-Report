@@ -18,6 +18,9 @@ interface ProductRow {
   cpcMonth2: number; ctrMonth2: number; roasMonth2: number;
   cpcMonth3: number; ctrMonth3: number; roasMonth3: number;
   cpcCurMonth: number; ctrCurMonth: number; roasCurMonth: number;
+  cpcDay3: number; ctrDay3: number; roasDay3: number;
+  cpcDay2: number; ctrDay2: number; roasDay2: number;
+  cpcDay1: number; ctrDay1: number; roasDay1: number;
   salienceMonth1: number;
   salienceMonth2: number;
   salienceMonth3: number;
@@ -101,10 +104,9 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
       const getRowData = (row: any) => [
         `"${row.name}"`,
         row.month1, row.month2, row.month3, row.curMonthFirst15, row.day3, row.day2, row.day1,
-        row.salienceMonth1, row.salienceMonth2, row.salienceMonth3, row.salienceCurFirst15, row.salienceDay3, row.salienceDay2, row.salienceDay1,
-        row.cpcMonth1, row.cpcMonth2, row.cpcMonth3, row.cpcCurMonth, '', '', '',
-        row.ctrMonth1, row.ctrMonth2, row.ctrMonth3, row.ctrCurMonth, '', '', '',
-        row.roasMonth1, row.roasMonth2, row.roasMonth3, row.roasCurMonth, '', '', '',
+        row.cpcMonth1, row.cpcMonth2, row.cpcMonth3, row.cpcCurMonth, row.cpcDay3, row.cpcDay2, row.cpcDay1,
+        row.ctrMonth1, row.ctrMonth2, row.ctrMonth3, row.ctrCurMonth, row.ctrDay3, row.ctrDay2, row.ctrDay1,
+        row.roasMonth1, row.roasMonth2, row.roasMonth3, row.roasCurMonth, row.roasDay3, row.roasDay2, row.roasDay1,
         row.mtd, row.estSpends,
         row.vsAvg3Months !== null ? row.vsAvg3Months : '',
         row.vsLastMonth !== null ? row.vsLastMonth : ''
@@ -171,11 +173,11 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
         {/* SALIENCE */}
         <td style={salienceStyle}>{fmtPctStr(r.salienceMonth1)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceMonth2)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceMonth3)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceCurFirst15)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceDay3)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceDay2)}</td><td style={{ ...salienceStyle, borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay1)}</td>
         {/* CPC */}
-        <td style={cellStyle}>{formatINR(r.cpcMonth1)}</td><td style={cellStyle}>{formatINR(r.cpcMonth2)}</td><td style={cellStyle}>{formatINR(r.cpcMonth3)}</td><td style={cellStyle}>{formatINR(r.cpcCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        <td style={cellStyle}>{formatINR(r.cpcMonth1)}</td><td style={cellStyle}>{formatINR(r.cpcMonth2)}</td><td style={cellStyle}>{formatINR(r.cpcMonth3)}</td><td style={cellStyle}>{formatINR(r.cpcCurMonth)}</td><td style={cellStyle}>{formatINR(r.cpcDay3)}</td><td style={cellStyle}>{formatINR(r.cpcDay2)}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{formatINR(r.cpcDay1)}</td>
         {/* CTR */}
-        <td style={cellStyle}>{fmtPctStr(r.ctrMonth1)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth2)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth3)}</td><td style={cellStyle}>{fmtPctStr(r.ctrCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        <td style={cellStyle}>{fmtPctStr(r.ctrMonth1)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth2)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth3)}</td><td style={cellStyle}>{fmtPctStr(r.ctrCurMonth)}</td><td style={cellStyle}>{fmtPctStr(r.ctrDay3)}</td><td style={cellStyle}>{fmtPctStr(r.ctrDay2)}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.ctrDay1)}</td>
         {/* ROAS */}
-        <td style={cellStyle}>{fmtFloat(r.roasMonth1)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth2)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth3)}</td><td style={cellStyle}>{fmtFloat(r.roasCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        <td style={cellStyle}>{fmtFloat(r.roasMonth1)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth2)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth3)}</td><td style={cellStyle}>{fmtFloat(r.roasCurMonth)}</td><td style={cellStyle}>{fmtFloat(r.roasDay3)}</td><td style={cellStyle}>{fmtFloat(r.roasDay2)}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasDay1)}</td>
         
         <td style={{ ...cellStyle, fontWeight: isVariant ? 'normal' : 'bold' }}>{formatINR(r.estSpends)}</td>
         <td style={cellStyle}>{renderPct(r.vsAvg3Months)}</td>
@@ -240,11 +242,11 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
                 {/* SALIENCE */}
                 <td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>100.00%</td>
                 {/* CPC */}
-                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcDay3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcDay2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{formatINR(totals.cpcDay1)}</td>
                 {/* CTR */}
-                <td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrDay3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrDay2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(totals.ctrDay1)}</td>
                 {/* ROAS */}
-                <td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasDay3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasDay2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasDay1)}</td>
                 
                 <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.estSpends)}</td>
                 <td style={{ backgroundColor: '#281d18' }}>{renderPct(totals.vsAvg3Months)}</td>
