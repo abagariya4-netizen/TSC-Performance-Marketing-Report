@@ -5,6 +5,7 @@ import { getDefaultMonths } from '@/lib/dateRangeUtils';
 import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtSpend = (val: number) => '₹' + Math.round(Number(val) || 0).toLocaleString('en-IN');
 const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 const fmtPctStr = (val: number) => {
   if (!isFinite(val)) return '0.00%';
@@ -320,7 +321,7 @@ export default function BrandImpressionMoM() {
                     <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: bg, position: 'sticky', left: 0 }}>{k.keyword}</td>
                     
                     {/* Amount Spent */}
-                    {data.monthLabels?.map((m: string) => <td key={`sp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(k[m]?.spend)}</td>)}
+                    {data.monthLabels?.map((m: string) => <td key={`sp-${m}`} style={{ padding: '12px 8px' }}>{fmtSpend(k[m]?.spend)}</td>)}
                     {/* Spend Salience % */}
                     {data.monthLabels?.map((m: string) => <td key={`sal-${m}`} style={{ padding: '12px 8px' }}>{fmtPctStr(k[m]?.spendSalience)}</td>)}
                     {/* CPC */}
@@ -343,7 +344,7 @@ export default function BrandImpressionMoM() {
                   <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   
                   {/* Amount Spent */}
-                  {data.monthLabels?.map((m: string) => <td key={`tsp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.spend)}</td>)}
+                  {data.monthLabels?.map((m: string) => <td key={`tsp-${m}`} style={{ padding: '12px 8px' }}>{fmtSpend(data.total[m]?.spend)}</td>)}
                   {/* Spend Salience % */}
                   {data.monthLabels?.map((m: string) => <td key={`tsal-${m}`} style={{ padding: '12px 8px' }}>{fmtPctStr(data.total[m]?.spendSalience)}</td>)}
                   {/* CPC */}
