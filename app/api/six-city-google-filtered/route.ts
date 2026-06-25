@@ -104,24 +104,9 @@ export async function GET(request: NextRequest) {
         if (!geoData) continue;
 
         const mappedName = getMappedCity(geoData.name, customMapping);
-        let cityBucket = mappedName;
-        if (['Delhi', 'Noida', 'Gurgaon', 'Ghaziabad', 'Faridabad'].includes(mappedName)) {
-          cityBucket = 'Delhi+NCR';
-        } else if (['Ahmedabad', 'Gandhinagar', 'Surat', 'Rajkot', 'Vadodara'].includes(mappedName)) {
-          cityBucket = 'Gujarat';
-        }
+        const targetBucket = city;
 
-        const stateToCityBucket: Record<string, string> = {
-          'Maharashtra': 'Mumbai',
-          'Karnataka': 'Bengaluru',
-          'Tamil Nadu': 'Chennai',
-          'Telangana': 'Hyderabad',
-          'Delhi+NCR': 'Delhi+NCR',
-          'Gujarat': 'Gujarat'
-        };
-        const targetBucket = stateToCityBucket[city];
-
-        if (cityBucket !== targetBucket) continue;
+        if (mappedName !== targetBucket) continue;
 
         const channelType = row.campaign?.advertisingChannelType || '';
         let campType = classifyCampaign(channelType, campaignName);
