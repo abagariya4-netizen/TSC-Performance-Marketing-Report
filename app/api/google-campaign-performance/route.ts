@@ -45,9 +45,9 @@ export async function GET(request: Request) {
     yesterday.setDate(today.getDate() - 1);
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    function formatDate(d: Date): string { return d.toISOString().split('T')[0]; }
+    const formatDate = (d: Date): string => { return d.toISOString().split('T')[0]; };
 
-    const periods = [];
+    const periods: { label: string; startDate: string; endDate: string }[] = [];
     for (let i = 3; i >= 1; i--) {
       const mStart = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const mEnd = new Date(today.getFullYear(), today.getMonth() - i + 1, 0);

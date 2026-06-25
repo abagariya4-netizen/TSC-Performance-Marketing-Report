@@ -120,7 +120,7 @@ export default function SQRPage() {
         }
 
         const fetchPromises = campaignsToFetch.map(cid => {
-          const url = `/api/sqr/data?campaignId=${cid}&startDate=${startDate}&endDate=${endDate}${selectedKeyword !== 'All Keywords' ? \`&keyword=\${encodeURIComponent(selectedKeyword)}\` : ''}`;
+          const url = `/api/sqr/data?campaignId=${cid}&startDate=${startDate}&endDate=${endDate}${selectedKeyword !== 'All Keywords' ? `&keyword=${encodeURIComponent(selectedKeyword)}` : ''}`;
           return fetch(url).then(r => r.json());
         });
 
