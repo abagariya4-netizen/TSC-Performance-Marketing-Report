@@ -6,6 +6,7 @@ import { getDefaultMonths } from '@/lib/dateRangeUtils';
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 
 const fmtINR = (val: number) => '₹' + (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtINRRound = (val: number) => '₹' + Math.round(Number(val) || 0).toLocaleString('en-IN');
 const fmtVal = (val: number) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPctStr = (val: number) => {
@@ -88,21 +89,17 @@ export default function GoogleCampaignPerformance() {
 
     const headers = [
       'Campaign Type',
-      headerM +
-      'Vs Last Month (Spend),Vs Last Month (ROAS),Vs Last Month (CPC),Vs Last Month (CTR),Vs Last Month (Impressions),' +
-      'Vs Avg 3M (Spend),Vs Avg 3M (ROAS),Vs Avg 3M (CPC),Vs Avg 3M (CTR),Vs Avg 3M (Impressions)'
+      headerM.slice(0, -1)
     ];
 
     const rows = data.campaigns.map((c: any) => {
       let row = `"${c.name}",`;
-      mLabels.forEach((m: string) => row += `${c[m].spend},`);
+      mLabels.forEach((m: string) => row += `${Math.round(Number(c[m].spend) || 0)},`);
       mLabels.forEach((m: string) => row += `${c[m].roas},`);
       mLabels.forEach((m: string) => row += `${c[m].cpc},`);
       mLabels.forEach((m: string) => row += `${c[m].ctr},`);
       mLabels.forEach((m: string) => row += `${c[m].impressions},`);
-      row += `${c.vsLastMonth?.spend || 0},${c.vsLastMonth?.roas || 0},${c.vsLastMonth?.cpc || 0},${c.vsLastMonth?.ctr || 0},${c.vsLastMonth?.impressions || 0},`;
-      row += `${c.vsAvg3M?.spend || 0},${c.vsAvg3M?.roas || 0},${c.vsAvg3M?.cpc || 0},${c.vsAvg3M?.ctr || 0},${c.vsAvg3M?.impressions || 0}`;
-      return row;
+      return row.slice(0, -1);
     });
 
     const csvContent = [
@@ -186,8 +183,7 @@ export default function GoogleCampaignPerformance() {
                 <th colSpan={data.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Overall ROAS</th>
                 <th colSpan={data.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CPC</th>
                 <th colSpan={data.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>CTR</th>
-                <th colSpan={data.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Impressions</th>
-                <th colSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '8px', textAlign: 'center' }}>Comparison</th>
+                <th colSpan={data.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', textAlign: 'center' }}>Impressions</th>
               </tr>
               <tr>
                 {/* Spend */}
@@ -199,10 +195,7 @@ export default function GoogleCampaignPerformance() {
                 {/* CTR */}
                 {data.monthLabels?.map((m: string) => <th key={`ctr-${m}`} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m}</th>)}
                 {/* Impressions */}
-                {data.monthLabels?.map((m: string) => <th key={`imp-${m}`} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>{m}</th>)}
-                {/* Comparison */}
-                <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Vs Last Month</th>
-                <th style={{ background: '#e8733a', color: '#fff', padding: '8px' }}>Vs Avg 3M</th>
+                {data.monthLabels?.map((m: string, idx: number) => <th key={`imp-${m}`} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: idx === data.monthLabels.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.1)' }}>{m}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -212,7 +205,7 @@ export default function GoogleCampaignPerformance() {
                   <tr key={c.name} style={{ background: bg, borderBottom: '1px solid #2d3348' }}>
                     <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', background: bg, position: 'sticky', left: 0 }}>{c.name}</td>
                     {/* Spend */}
-                    {data.monthLabels?.map((m: string) => <td key={`sp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(c[m]?.spend)}</td>)}
+                    {data.monthLabels?.map((m: string) => <td key={`sp-${m}`} style={{ padding: '12px 8px' }}>{fmtINRRound(c[m]?.spend)}</td>)}
                     {/* ROAS */}
                     {data.monthLabels?.map((m: string) => <td key={`roas-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(c[m]?.roas)}</td>)}
                     {/* CPC */}
@@ -221,25 +214,6 @@ export default function GoogleCampaignPerformance() {
                     {data.monthLabels?.map((m: string) => <td key={`ctr-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(c[m]?.ctr)}%</td>)}
                     {/* Impressions */}
                     {data.monthLabels?.map((m: string) => <td key={`imp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.impressions)}</td>)}
-                    {/* Comparison */}
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div>Spend: {renderVs(c.vsLastMonth.spend)}</div>
-                        <div>ROAS: {renderVs(c.vsLastMonth.roas)}</div>
-                        <div>CPC: {renderVs(c.vsLastMonth.cpc)}</div>
-                        <div>CTR: {renderVs(c.vsLastMonth.ctr)}</div>
-                        <div>Impr: {renderVs(c.vsLastMonth.impressions)}</div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div>Spend: {renderVs(c.vsAvg3M.spend)}</div>
-                        <div>ROAS: {renderVs(c.vsAvg3M.roas)}</div>
-                        <div>CPC: {renderVs(c.vsAvg3M.cpc)}</div>
-                        <div>CTR: {renderVs(c.vsAvg3M.ctr)}</div>
-                        <div>Impr: {renderVs(c.vsAvg3M.impressions)}</div>
-                      </div>
-                    </td>
                   </tr>
                 );
               })}
@@ -249,7 +223,7 @@ export default function GoogleCampaignPerformance() {
                 <tr style={{ background: '#111', fontWeight: 'bold', borderTop: '2px solid #2d3348', position: 'sticky', bottom: 0 }}>
                   <td style={{ padding: '12px 16px', textAlign: 'left', borderRight: '1px solid #2d3348', position: 'sticky', left: 0, background: '#111' }}>Total</td>
                   {/* Spend */}
-                  {data.monthLabels?.map((m: string) => <td key={`tsp-${m}`} style={{ padding: '12px 8px' }}>{fmtINR(data.total[m]?.spend)}</td>)}
+                  {data.monthLabels?.map((m: string) => <td key={`tsp-${m}`} style={{ padding: '12px 8px' }}>{fmtINRRound(data.total[m]?.spend)}</td>)}
                   {/* ROAS */}
                   {data.monthLabels?.map((m: string) => <td key={`troas-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(data.total[m]?.roas)}</td>)}
                   {/* CPC */}
@@ -258,25 +232,6 @@ export default function GoogleCampaignPerformance() {
                   {data.monthLabels?.map((m: string) => <td key={`tctr-${m}`} style={{ padding: '12px 8px' }}>{fmtFloat(data.total[m]?.ctr)}%</td>)}
                   {/* Impressions */}
                   {data.monthLabels?.map((m: string) => <td key={`timp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.impressions)}</td>)}
-                  {/* Comparison */}
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div>Spend: {renderVs(data.total.vsLastMonth.spend)}</div>
-                      <div>ROAS: {renderVs(data.total.vsLastMonth.roas)}</div>
-                      <div>CPC: {renderVs(data.total.vsLastMonth.cpc)}</div>
-                      <div>CTR: {renderVs(data.total.vsLastMonth.ctr)}</div>
-                      <div>Impr: {renderVs(data.total.vsLastMonth.impressions)}</div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px 8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div>Spend: {renderVs(data.total.vsAvg3M.spend)}</div>
-                      <div>ROAS: {renderVs(data.total.vsAvg3M.roas)}</div>
-                      <div>CPC: {renderVs(data.total.vsAvg3M.cpc)}</div>
-                      <div>CTR: {renderVs(data.total.vsAvg3M.ctr)}</div>
-                      <div>Impr: {renderVs(data.total.vsAvg3M.impressions)}</div>
-                    </div>
-                  </td>
                 </tr>
               </tfoot>
             )}
