@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import DateRangePicker from '@/components/DateRangePicker';
 import { getDefaultMonths } from '@/lib/dateRangeUtils';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
 
@@ -118,8 +119,9 @@ export default function GoogleCampaignPerformance() {
   };
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#0f1117', minHeight: '100vh', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+    <GoogleAdsGate>
+      <div style={{ padding: '24px', backgroundColor: '#0f1117', minHeight: '100vh', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <h1 style={{ fontSize: '24px', margin: 0 }}>Campaign Type Performance (Google)</h1>
           {badgeInfo && (
@@ -238,6 +240,7 @@ export default function GoogleCampaignPerformance() {
           </table>
         </div>
       )}
-    </div>
+      </div>
+    </GoogleAdsGate>
   );
 }

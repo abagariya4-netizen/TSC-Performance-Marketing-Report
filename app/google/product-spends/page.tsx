@@ -4,6 +4,7 @@ import { formatINR } from '@/lib/calculations';
 import DaysCountBadge from '@/components/DaysCountBadge';
 import DateRangePicker from '@/components/DateRangePicker';
 import { getDefaultMonths } from '@/lib/dateRangeUtils';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 interface ProductRow {
   name: string;
@@ -326,8 +327,10 @@ function PageContent() {
 
 export default function ProductSpendsPage() {
   return (
-    <Suspense fallback={<div style={{ padding: '24px' }}>Loading...</div>}>
-      <PageContent />
-    </Suspense>
+    <GoogleAdsGate>
+      <Suspense fallback={<div style={{ padding: '24px' }}>Loading...</div>}>
+        <PageContent />
+      </Suspense>
+    </GoogleAdsGate>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlanUpload from '@/components/PlanUpload';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 const formatIndianNum = (num: number) => {
   return new Intl.NumberFormat('en-IN').format(Math.round(num));
@@ -332,8 +333,9 @@ export default function SixCityGoogleFiltered() {
   };
 
   return (
-    <div style={{ padding: '0 24px 24px' }}>
-      <div style={{ marginBottom: '24px' }}>
+    <GoogleAdsGate>
+      <div style={{ padding: '0 24px 24px' }}>
+        <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0' }}>6 City Filtered (Google)</h1>
@@ -383,6 +385,7 @@ export default function SixCityGoogleFiltered() {
       </div>
 
       {data && !loading && renderTable()}
-    </div>
+      </div>
+    </GoogleAdsGate>
   );
 }

@@ -5,6 +5,7 @@ import PlanUpload from '@/components/PlanUpload';
 import Google6CityTable from '@/components/Google6CityTable';
 import { parseGoogle6CityPlanCSV } from '@/lib/csvParser';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 export default function Google6CitySpends() {
   const [data, setData] = useState<any>(null);
@@ -110,8 +111,9 @@ export default function Google6CitySpends() {
   };
 
   return (
-    <div style={{ padding: '0 24px 24px' }}>
-      <div style={{ marginBottom: '24px' }}>
+    <GoogleAdsGate>
+      <div style={{ padding: '0 24px 24px' }}>
+        <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0' }}>6 City (Google)</h1>
@@ -146,6 +148,7 @@ export default function Google6CitySpends() {
       {data && !loading && (
         <Google6CityTable data={data} planData={planData} />
       )}
-    </div>
+      </div>
+    </GoogleAdsGate>
   );
 }

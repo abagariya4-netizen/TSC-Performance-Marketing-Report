@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
 import DateRangePicker from '@/components/DateRangePicker';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 const formatIndianNum = (num: number | undefined | null) => {
   if (num === undefined || num === null || isNaN(num)) return '—';
@@ -308,8 +309,9 @@ export default function SQRPage() {
   };
 
   return (
-    <div style={{ padding: '0 24px 24px', color: 'white', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <GoogleAdsGate>
+      <div style={{ padding: '0 24px 24px', color: 'white', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0' }}>SQR - Search Query Report (Google)</h1>
           <DaysCountBadge />
@@ -507,6 +509,7 @@ export default function SQRPage() {
           </table>
         </div>
       )}
-    </div>
+      </div>
+    </GoogleAdsGate>
   );
 }

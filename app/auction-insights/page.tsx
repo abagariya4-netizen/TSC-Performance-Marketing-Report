@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import DaysCountBadge from '@/components/DaysCountBadge';
 import DateRangePicker from '@/components/DateRangePicker';
 import { getDefaultMonths } from '@/lib/dateRangeUtils';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 const formatPercent = (val: number | undefined | null) => {
   if (val === undefined || val === null) return '—';
@@ -150,8 +151,9 @@ export default function AuctionInsightsPage() {
   };
 
   return (
-    <div style={{ padding: '0 24px 24px', color: 'white', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <GoogleAdsGate>
+      <div style={{ padding: '0 24px 24px', color: 'white', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0' }}>Auction Insights (Google)</h1>
           <DaysCountBadge />
@@ -310,6 +312,7 @@ export default function AuctionInsightsPage() {
           </table>
         </div>
       )}
-    </div>
+      </div>
+    </GoogleAdsGate>
   );
 }

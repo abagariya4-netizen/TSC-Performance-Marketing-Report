@@ -4,6 +4,7 @@ import PlanUpload from '@/components/PlanUpload';
 import { calcRow, formatINR } from '@/lib/calculations';
 import { parseRegionPlanCSV } from '@/lib/csvParser';
 import DaysCountBadge from '@/components/DaysCountBadge';
+import GoogleAdsGate from '@/components/GoogleAdsGate';
 
 interface CityData {
   rows: any[];
@@ -229,8 +230,10 @@ function PageContent() {
 
 export default function GoogleCitySpendsPage() {
   return (
-    <Suspense fallback={<div style={{ color: 'white', padding: '24px' }}>Loading...</div>}>
-      <PageContent />
-    </Suspense>
+    <GoogleAdsGate>
+      <Suspense fallback={<div style={{ color: 'white', padding: '24px' }}>Loading...</div>}>
+        <PageContent />
+      </Suspense>
+    </GoogleAdsGate>
   );
 }
