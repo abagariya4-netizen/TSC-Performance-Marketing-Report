@@ -5,11 +5,75 @@ import PlanUpload from '@/components/PlanUpload';
 const PLAN_STORAGE_KEY = 'tsc_six_city_filtered_plan';
 
 const CATEGORIES = ['All', 'Mattress', 'Chair', 'Sofa', 'Desk', 'Elite', 'Foot Massager', 'Accessories', 'Bed'];
-const REGIONS = ['Maharashtra', 'Karnataka', 'Tamil Nadu', 'Telangana', 'Delhi+NCR', 'Gujarat'];
+const REGIONS = [
+  'All', 'Maharashtra', 'Karnataka', 'Telangana', 'Delhi',
+  'Tamil Nadu', 'Uttar Pradesh', 'Gujarat', 'West Bengal',
+  'Andhra Pradesh', 'Rajasthan', 'Haryana', 'Kerala',
+  'Punjab region', 'Madhya Pradesh', 'Bihar', 'Odisha',
+  'Assam', 'Jharkhand', 'Chhattisgarh', 'Uttarakhand',
+  'Jammu and Kashmir', 'Himachal Pradesh', 'Chandigarh',
+  'Goa', 'Puducherry', 'Unknown'
+];
+
+function SearchableRegionDropdown({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const handleClick = () => setIsOpen(false);
+    if (isOpen) document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [isOpen]);
+
+  let filtered = REGIONS.filter(r => r === 'All' || r.toLowerCase().includes(search.toLowerCase()));
+  if (!filtered.includes('All')) {
+    filtered = ['All', ...filtered];
+  }
+
+  return (
+    <div style={{ position: 'relative', minWidth: '200px' }} onClick={e => e.stopPropagation()}>
+      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#a0aec0' }}>Region</label>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#1A2336', color: '#fff', border: '1px solid #2D3A57', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '35px', boxSizing: 'border-box' }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
+        <span style={{ fontSize: '10px', color: '#a0aec0', marginLeft: '8px' }}>▼</span>
+      </div>
+
+      {isOpen && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', backgroundColor: '#1A2336', border: '1px solid #2D3A57', borderRadius: '4px', zIndex: 50, maxHeight: '300px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid #2D3A57' }}>
+            <input 
+              type="text" 
+              placeholder="Search region..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '6px 8px', borderRadius: '4px', backgroundColor: '#0D1220', color: '#fff', border: '1px solid #2D3A57', outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {filtered.map(r => (
+              <div 
+                key={r}
+                onClick={() => { onChange(r); setIsOpen(false); setSearch(''); }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#243050'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                style={{ padding: '8px 12px', cursor: 'pointer', color: value === r ? '#e8733a' : '#fff', fontWeight: value === r ? 'bold' : 'normal', transition: 'background-color 0.2s' }}
+              >
+                {r}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SixCityFilteredPage() {
   const [category, setCategory] = useState('All');
-  const [region, setRegion] = useState('Maharashtra');
+  const [region, setRegion] = useState('All');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -268,12 +332,7 @@ export default function SixCityFilteredPage() {
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#a0aec0' }}>Region</label>
-          <select value={region} onChange={e => setRegion(e.target.value)} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#2d3748', color: '#fff', border: '1px solid #4a5568' }}>
-            {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
+        <SearchableRegionDropdown value={region} onChange={setRegion} />
         <div>
           <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#a0aec0' }}>Start Date</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#2d3748', color: '#fff', border: '1px solid #4a5568' }} />
