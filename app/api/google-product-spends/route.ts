@@ -62,12 +62,21 @@ export async function GET(request: NextRequest) {
     const currentMonthStartStr = formatDate(currentMonthStart);
 
     const totalDaysInMonth = getDaysInMonth(yesterday.getFullYear(), yesterday.getMonth());
-    const daysPassed = yesterday.getDate(); // e.g. 18 if yesterday = 18th
+    const daysPassed = yesterday.getDate(); // e.g. 24 if yesterday = 24th
     const daysRemaining = totalDaysInMonth - daysPassed;
 
-    // Up to yesterday for current month
-    const curMonthEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), Math.max(1, daysPassed));
-    const curMonthEndStr = formatDate(curMonthEnd);
+    // Up to 3 days before yesterday for the "1 to 21" bucket
+    let curMonthEnd = addDays(yesterday, -3);
+    if (curMonthEnd < currentMonthStart) {
+      curMonthEnd = new Date(currentMonthStart);
+      curMonthEnd.setDate(currentMonthStart.getDate() - 1); // makes it invalid/empty range if we want, or just let it overlap if needed. Actually let's just bound it.
+    }
+    const curMonthEndDay = Math.max(1, daysPassed - 3);
+    const validCurMonthEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), curMonthEndDay);
+    
+    // If daysPassed <= 3, we don't really have a "1 to N" bucket before the last 3 days. 
+    // To avoid fetching wrong data, we'll just set it to the 1st but we'll handle it below.
+    const curMonthEndStr = formatDate(validCurMonthEnd);
 
     // Previous 3 full months (rolling, relative to current month)
     const month1 = new Date(yesterday.getFullYear(), yesterday.getMonth() - 3, 1);
@@ -81,7 +90,7 @@ export async function GET(request: NextRequest) {
       { key: 'month1', start: formatDate(month1), end: formatDate(month1End) },
       { key: 'month2', start: formatDate(month2), end: formatDate(month2End) },
       { key: 'month3', start: formatDate(month3), end: formatDate(month3End) },
-      { key: 'curMonthFirst15', start: currentMonthStartStr, end: curMonthEndStr },
+      { key: 'curMonthFirst15', start: currentMonthStartStr, end: daysPassed > 3 ? curMonthEndStr : '1970-01-01' }, // empty if <= 3
       { key: 'day3', start: day2Before, end: day2Before },
       { key: 'day2', start: day1Before, end: day1Before },
       { key: 'day1', start: yesterdayStr, end: yesterdayStr }, // most recent = "yesterday"
@@ -337,7 +346,7 @@ export async function GET(request: NextRequest) {
       month1: monthNames[month1.getMonth()],
       month2: monthNames[month2.getMonth()],
       month3: monthNames[month3.getMonth()],
-      curMonthFirst15: `${monthNames[currentMonthStart.getMonth()].toUpperCase()} (1-${daysPassed})`,
+      curMonthFirst15: `${monthNames[currentMonthStart.getMonth()].toUpperCase()} (1-${Math.max(1, daysPassed - 3)})`,
       day3: `${day2Before.split('-')[2]} ${monthNames[new Date(day2Before).getMonth()]}`,
       day2: `${day1Before.split('-')[2]} ${monthNames[new Date(day1Before).getMonth()]}`,
       day1: `${yesterdayStr.split('-')[2]} ${monthNames[yesterday.getMonth()]}`,
