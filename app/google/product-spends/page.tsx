@@ -54,7 +54,7 @@ interface ReportData {
 const fmtFloat = (val: number | null) => (val === null || !isFinite(val)) ? '0.00' : Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPctStr = (val: number | null) => (val === null || !isFinite(val)) ? '0.00%' : Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 
-const CATEGORIES = ['Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager', 'Bed', 'Elite', 'Sofa'];
+const CATEGORIES = ['All', 'Mattress', 'Chair', 'Desk', 'Accessories', 'Foot Massager', 'Bed', 'Elite', 'Sofa'];
 
 function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, selectedCategory: string }) {
   const categoryData = data.categories[selectedCategory] || { products: [] };
@@ -70,16 +70,27 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
     setExpandedProducts(next);
   };
 
+  const today = new Date();
+  const d1 = new Date(today); d1.setDate(today.getDate() - 1);
+  const d2 = new Date(today); d2.setDate(today.getDate() - 2);
+  const d3 = new Date(today); d3.setDate(today.getDate() - 3);
+  const d4 = new Date(today); d4.setDate(today.getDate() - 4);
+
+  const getMonthStr = (d: Date) => d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  
+  const mtdLabel = `${getMonthStr(d4)} (${d4.getDate() === 1 ? '1' : `1-${d4.getDate()}`})`;
+  const day3Label = `${d3.getDate()} ${getMonthStr(d3)}`;
+  const day2Label = `${d2.getDate()} ${getMonthStr(d2)}`;
+  const day1Label = `${d1.getDate()} ${getMonthStr(d1)}`;
+
   const exportCSV = () => {
     const headers = [
       'Product',
-      `${labels.month1} Spend`, `${labels.month1} Salience %`, `${labels.month1} CPC`, `${labels.month1} CTR`, `${labels.month1} ROAS`,
-      `${labels.month2} Spend`, `${labels.month2} Salience %`, `${labels.month2} CPC`, `${labels.month2} CTR`, `${labels.month2} ROAS`,
-      `${labels.month3} Spend`, `${labels.month3} Salience %`, `${labels.month3} CPC`, `${labels.month3} CTR`, `${labels.month3} ROAS`,
-      `${labels.curMonthFirst15} Spend`, `${labels.curMonthFirst15} Salience %`, `${labels.curMonthFirst15} CPC`, `${labels.curMonthFirst15} CTR`, `${labels.curMonthFirst15} ROAS`,
-      `${labels.day3} Spend`, `${labels.day3} Salience %`,
-      `${labels.day2} Spend`, `${labels.day2} Salience %`,
-      `${labels.day1} Spend`, `${labels.day1} Salience %`,
+      `${labels.month1} Spend`, `${labels.month2} Spend`, `${labels.month3} Spend`, `${mtdLabel} Spend`, `${day3Label} Spend`, `${day2Label} Spend`, `${day1Label} Spend`,
+      `${labels.month1} Salience %`, `${labels.month2} Salience %`, `${labels.month3} Salience %`, `${mtdLabel} Salience %`, `${day3Label} Salience %`, `${day2Label} Salience %`, `${day1Label} Salience %`,
+      `${labels.month1} CPC`, `${labels.month2} CPC`, `${labels.month3} CPC`, `${mtdLabel} CPC`, `${day3Label} CPC`, `${day2Label} CPC`, `${day1Label} CPC`,
+      `${labels.month1} CTR`, `${labels.month2} CTR`, `${labels.month3} CTR`, `${mtdLabel} CTR`, `${day3Label} CTR`, `${day2Label} CTR`, `${day1Label} CTR`,
+      `${labels.month1} ROAS`, `${labels.month2} ROAS`, `${labels.month3} ROAS`, `${mtdLabel} ROAS`, `${day3Label} ROAS`, `${day2Label} ROAS`, `${day1Label} ROAS`,
       'MTD', 'Est. Spends', 'vs Avg 3 Months %', `vs ${labels.lastMonth} %`
     ];
 
@@ -89,13 +100,11 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
     rows.forEach(r => {
       const getRowData = (row: any) => [
         `"${row.name}"`,
-        row.month1, row.salienceMonth1, row.cpcMonth1, row.ctrMonth1, row.roasMonth1,
-        row.month2, row.salienceMonth2, row.cpcMonth2, row.ctrMonth2, row.roasMonth2,
-        row.month3, row.salienceMonth3, row.cpcMonth3, row.ctrMonth3, row.roasMonth3,
-        row.curMonthFirst15, row.salienceCurFirst15, row.cpcCurMonth, row.ctrCurMonth, row.roasCurMonth,
-        row.day3, row.salienceDay3,
-        row.day2, row.salienceDay2,
-        row.day1, row.salienceDay1,
+        row.month1, row.month2, row.month3, row.curMonthFirst15, row.day3, row.day2, row.day1,
+        row.salienceMonth1, row.salienceMonth2, row.salienceMonth3, row.salienceCurFirst15, row.salienceDay3, row.salienceDay2, row.salienceDay1,
+        row.cpcMonth1, row.cpcMonth2, row.cpcMonth3, row.cpcCurMonth, '', '', '',
+        row.ctrMonth1, row.ctrMonth2, row.ctrMonth3, row.ctrCurMonth, '', '', '',
+        row.roasMonth1, row.roasMonth2, row.roasMonth3, row.roasCurMonth, '', '', '',
         row.mtd, row.estSpends,
         row.vsAvg3Months !== null ? row.vsAvg3Months : '',
         row.vsLastMonth !== null ? row.vsLastMonth : ''
@@ -127,6 +136,54 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
     return <span style={{ color }}>{val > 0 ? '+' : ''}{val.toFixed(2)}%</span>;
   };
 
+  const renderDash = () => <span style={{ color: 'var(--text-secondary)' }}>—</span>;
+
+  const subHeaderStyle = { fontSize: '11px', fontWeight: 500, textAlign: 'center' as const, backgroundColor: '#1A2336' };
+  const subHeaderRightStyle = { ...subHeaderStyle, borderRight: '1px solid var(--border-color)' };
+
+  const renderDataRow = (r: any, isVariant: boolean) => {
+    const bg = isVariant ? 'rgba(255,255,255,0.03)' : 'transparent';
+    const stickyBg = isVariant ? '#1e283d' : '#1A2336';
+    const nameStyle = isVariant 
+      ? { textAlign: 'left' as const, borderRight: '1px solid var(--border-color)', paddingLeft: '32px', fontSize: '13px', color: 'var(--text-secondary)', position: 'sticky' as const, left: 0, zIndex: 10, backgroundColor: stickyBg }
+      : { textAlign: 'left' as const, borderRight: '1px solid var(--border-color)', fontWeight: 500, display: 'flex', alignItems: 'center', position: 'sticky' as const, left: 0, zIndex: 10, backgroundColor: stickyBg };
+    
+    const cellStyle = isVariant ? { fontSize: '13px' } : {};
+    const salienceStyle = isVariant ? { fontSize: '13px', color: 'var(--text-secondary)' } : {};
+
+    return (
+      <tr key={r.name} style={{ background: bg }}>
+        <td style={nameStyle}>
+          {!isVariant && r.variants && r.variants.length > 0 ? (
+            <button 
+              onClick={() => toggleProduct(r.name)}
+              style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginRight: '8px', fontSize: '10px' }}
+            >
+              {expandedProducts.has(r.name) ? '▼' : '▶'}
+            </button>
+          ) : !isVariant ? (
+            <span style={{ display: 'inline-block', width: '18px', marginRight: '8px' }}></span>
+          ) : null}
+          {isVariant ? `↳ ${r.name}` : r.name}
+        </td>
+        {/* SPEND */}
+        <td style={cellStyle}>{formatINR(r.month1)}</td><td style={cellStyle}>{formatINR(r.month2)}</td><td style={cellStyle}>{formatINR(r.month3)}</td><td style={cellStyle}>{formatINR(r.curMonthFirst15)}</td><td style={cellStyle}>{formatINR(r.day3)}</td><td style={cellStyle}>{formatINR(r.day2)}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{formatINR(r.day1)}</td>
+        {/* SALIENCE */}
+        <td style={salienceStyle}>{fmtPctStr(r.salienceMonth1)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceMonth2)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceMonth3)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceCurFirst15)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceDay3)}</td><td style={salienceStyle}>{fmtPctStr(r.salienceDay2)}</td><td style={{ ...salienceStyle, borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay1)}</td>
+        {/* CPC */}
+        <td style={cellStyle}>{formatINR(r.cpcMonth1)}</td><td style={cellStyle}>{formatINR(r.cpcMonth2)}</td><td style={cellStyle}>{formatINR(r.cpcMonth3)}</td><td style={cellStyle}>{formatINR(r.cpcCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        {/* CTR */}
+        <td style={cellStyle}>{fmtPctStr(r.ctrMonth1)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth2)}</td><td style={cellStyle}>{fmtPctStr(r.ctrMonth3)}</td><td style={cellStyle}>{fmtPctStr(r.ctrCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        {/* ROAS */}
+        <td style={cellStyle}>{fmtFloat(r.roasMonth1)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth2)}</td><td style={cellStyle}>{fmtFloat(r.roasMonth3)}</td><td style={cellStyle}>{fmtFloat(r.roasCurMonth)}</td><td style={cellStyle}>{renderDash()}</td><td style={cellStyle}>{renderDash()}</td><td style={{ ...cellStyle, borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+        
+        <td style={{ ...cellStyle, fontWeight: isVariant ? 'normal' : 'bold' }}>{formatINR(r.estSpends)}</td>
+        <td style={cellStyle}>{renderPct(r.vsAvg3Months)}</td>
+        <td style={cellStyle}>{renderPct(r.vsLastMonth)}</td>
+      </tr>
+    );
+  };
+
   return (
     <div style={{ marginTop: '16px', marginBottom: '32px' }}>
       <div style={{ marginBottom: '12px', textAlign: 'right' }}>
@@ -134,104 +191,67 @@ function ProductSpendsTable({ data, selectedCategory }: { data: ReportData, sele
           📥 Export CSV
         </button>
       </div>
-      <div className="table-wrapper">
-        <table className="modern-table">
-          <thead>
+      <div className="table-wrapper" style={{ overflowX: 'auto', maxHeight: '70vh' }}>
+        <table className="modern-table" style={{ minWidth: 'max-content' }}>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 20 }}>
             <tr>
-              <th rowSpan={2} style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', minWidth: '200px' }}>Product ({selectedCategory})</th>
-              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month1}</th>
-              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month2}</th>
-              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.month3}</th>
-              <th colSpan={5} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.curMonthFirst15}</th>
-              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day3}</th>
-              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day2}</th>
-              <th colSpan={2} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>{labels.day1}</th>
-              <th rowSpan={2} style={{ textAlign: 'center' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {labels.day1}×Remaining)</span></th>
-              <th rowSpan={2} style={{ textAlign: 'center' }}>vs Avg 3 Months</th>
-              <th rowSpan={2} style={{ textAlign: 'center' }}>vs {labels.lastMonth}</th>
+              <th rowSpan={2} style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', minWidth: '200px', position: 'sticky', left: 0, zIndex: 30, backgroundColor: '#1A2336' }}>Product ({selectedCategory})</th>
+              <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>SPEND</th>
+              <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>SALIENCE %</th>
+              <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>CPC</th>
+              <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>CTR</th>
+              <th colSpan={7} style={{ textAlign: 'center', borderRight: '1px solid var(--border-color)', backgroundColor: '#1A2336' }}>ROAS</th>
+              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>Est. Spends<br/><span style={{fontSize: '10px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>(MTD + {day1Label}×Remaining)</span></th>
+              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>vs Avg 3 Months</th>
+              <th rowSpan={2} style={{ textAlign: 'center', backgroundColor: '#1A2336' }}>vs {labels.lastMonth}</th>
             </tr>
             <tr>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500 }}>Salience</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CPC</th><th style={{ fontSize: '11px', fontWeight: 500 }}>CTR</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>ROAS</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
-              <th style={{ fontSize: '11px', fontWeight: 500 }}>Spend</th><th style={{ fontSize: '11px', fontWeight: 500, borderRight: '1px solid var(--border-color)' }}>Salience</th>
+              {/* SPEND */}
+              <th style={subHeaderStyle}>{labels.month1}</th><th style={subHeaderStyle}>{labels.month2}</th><th style={subHeaderStyle}>{labels.month3}</th><th style={subHeaderStyle}>{mtdLabel}</th><th style={subHeaderStyle}>{day3Label}</th><th style={subHeaderStyle}>{day2Label}</th><th style={subHeaderRightStyle}>{day1Label}</th>
+              {/* SALIENCE */}
+              <th style={subHeaderStyle}>{labels.month1}</th><th style={subHeaderStyle}>{labels.month2}</th><th style={subHeaderStyle}>{labels.month3}</th><th style={subHeaderStyle}>{mtdLabel}</th><th style={subHeaderStyle}>{day3Label}</th><th style={subHeaderStyle}>{day2Label}</th><th style={subHeaderRightStyle}>{day1Label}</th>
+              {/* CPC */}
+              <th style={subHeaderStyle}>{labels.month1}</th><th style={subHeaderStyle}>{labels.month2}</th><th style={subHeaderStyle}>{labels.month3}</th><th style={subHeaderStyle}>{mtdLabel}</th><th style={subHeaderStyle}>{day3Label}</th><th style={subHeaderStyle}>{day2Label}</th><th style={subHeaderRightStyle}>{day1Label}</th>
+              {/* CTR */}
+              <th style={subHeaderStyle}>{labels.month1}</th><th style={subHeaderStyle}>{labels.month2}</th><th style={subHeaderStyle}>{labels.month3}</th><th style={subHeaderStyle}>{mtdLabel}</th><th style={subHeaderStyle}>{day3Label}</th><th style={subHeaderStyle}>{day2Label}</th><th style={subHeaderRightStyle}>{day1Label}</th>
+              {/* ROAS */}
+              <th style={subHeaderStyle}>{labels.month1}</th><th style={subHeaderStyle}>{labels.month2}</th><th style={subHeaderStyle}>{labels.month3}</th><th style={subHeaderStyle}>{mtdLabel}</th><th style={subHeaderStyle}>{day3Label}</th><th style={subHeaderStyle}>{day2Label}</th><th style={subHeaderRightStyle}>{day1Label}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={29} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No products found in this category.</td>
+                <td colSpan={39} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No products found in this category.</td>
               </tr>
             )}
-            {rows.map((r, i) => (
+            {rows.map(r => (
               <React.Fragment key={r.name}>
-                <tr>
-                  <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
-                    {r.variants && r.variants.length > 0 ? (
-                      <button 
-                        onClick={() => toggleProduct(r.name)}
-                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginRight: '8px', fontSize: '10px' }}
-                      >
-                        {expandedProducts.has(r.name) ? '▼' : '▶'}
-                      </button>
-                    ) : (
-                      <span style={{ display: 'inline-block', width: '18px', marginRight: '8px' }}></span>
-                    )}
-                    {r.name}
-                  </td>
-                  <td>{formatINR(r.month1)}</td><td>{fmtPctStr(r.salienceMonth1)}</td><td>{formatINR(r.cpcMonth1)}</td><td>{fmtPctStr(r.ctrMonth1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth1)}</td>
-                  <td>{formatINR(r.month2)}</td><td>{fmtPctStr(r.salienceMonth2)}</td><td>{formatINR(r.cpcMonth2)}</td><td>{fmtPctStr(r.ctrMonth2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth2)}</td>
-                  <td>{formatINR(r.month3)}</td><td>{fmtPctStr(r.salienceMonth3)}</td><td>{formatINR(r.cpcMonth3)}</td><td>{fmtPctStr(r.ctrMonth3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasMonth3)}</td>
-                  <td>{formatINR(r.curMonthFirst15)}</td><td>{fmtPctStr(r.salienceCurFirst15)}</td><td>{formatINR(r.cpcCurMonth)}</td><td>{fmtPctStr(r.ctrCurMonth)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(r.roasCurMonth)}</td>
-                  
-                  <td>{formatINR(r.day3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay3)}</td>
-                  <td>{formatINR(r.day2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay2)}</td>
-                  <td>{formatINR(r.day1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(r.salienceDay1)}</td>
-                  
-                  <td style={{ fontWeight: 'bold' }}>{formatINR(r.estSpends)}</td>
-                  <td>{renderPct(r.vsAvg3Months)}</td>
-                  <td>{renderPct(r.vsLastMonth)}</td>
-                </tr>
-                {expandedProducts.has(r.name) && r.variants && r.variants.map((v, vi) => (
-                  <tr key={v.name} style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', paddingLeft: '32px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      ↳ {v.name}
-                    </td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.month1)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth1)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth1)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth1)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth1)}</td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.month2)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth2)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth2)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth2)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth2)}</td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.month3)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceMonth3)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcMonth3)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrMonth3)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasMonth3)}</td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.curMonthFirst15)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{fmtPctStr(v.salienceCurFirst15)}</td><td style={{ fontSize: '13px' }}>{formatINR(v.cpcCurMonth)}</td><td style={{ fontSize: '13px' }}>{fmtPctStr(v.ctrCurMonth)}</td><td style={{ fontSize: '13px', borderRight: '1px solid var(--border-color)' }}>{fmtFloat(v.roasCurMonth)}</td>
-                    
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.day3)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay3)}</td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.day2)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay2)}</td>
-                    <td style={{ fontSize: '13px' }}>{formatINR(v.day1)}</td><td style={{ fontSize: '13px', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>{fmtPctStr(v.salienceDay1)}</td>
-                    
-                    <td></td><td></td><td></td>
-                  </tr>
-                ))}
+                {renderDataRow(r, false)}
+                {expandedProducts.has(r.name) && r.variants && r.variants.map(v => renderDataRow(v, true))}
               </React.Fragment>
             ))}
+          </tbody>
+          <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 20 }}>
             {totals && rows.length > 0 && (
-              <tr style={{ background: 'rgba(232, 115, 58, 0.15)', fontWeight: 'bold' }}>
-                <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)' }}>Total</td>
-                <td>{formatINR(totals.month1)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth1)}</td><td>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth1)}</td>
-                <td>{formatINR(totals.month2)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth2)}</td><td>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth2)}</td>
-                <td>{formatINR(totals.month3)}</td><td>100.00%</td><td>{formatINR(totals.cpcMonth3)}</td><td>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasMonth3)}</td>
-                <td>{formatINR(totals.curMonthFirst15)}</td><td>100.00%</td><td>{formatINR(totals.cpcCurMonth)}</td><td>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>{fmtFloat(totals.roasCurMonth)}</td>
+              <tr style={{ fontWeight: 'bold' }}>
+                <td style={{ textAlign: 'left', borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, zIndex: 30, backgroundColor: '#281d18' }}>Total</td>
+                {/* SPEND */}
+                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.month1)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.month2)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.month3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.curMonthFirst15)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.day3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.day2)}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{formatINR(totals.day1)}</td>
+                {/* SALIENCE */}
+                <td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18' }}>100.00%</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>100.00%</td>
+                {/* CPC */}
+                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.cpcCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+                {/* CTR */}
+                <td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtPctStr(totals.ctrCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
+                {/* ROAS */}
+                <td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth1)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth2)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasMonth3)}</td><td style={{ backgroundColor: '#281d18' }}>{fmtFloat(totals.roasCurMonth)}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18' }}>{renderDash()}</td><td style={{ backgroundColor: '#281d18', borderRight: '1px solid var(--border-color)' }}>{renderDash()}</td>
                 
-                <td>{formatINR(totals.day3)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
-                <td>{formatINR(totals.day2)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
-                <td>{formatINR(totals.day1)}</td><td style={{ borderRight: '1px solid var(--border-color)' }}>100.00%</td>
-                
-                <td>{formatINR(totals.estSpends)}</td>
-                <td>{renderPct(totals.vsAvg3Months)}</td>
-                <td>{renderPct(totals.vsLastMonth)}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{formatINR(totals.estSpends)}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{renderPct(totals.vsAvg3Months)}</td>
+                <td style={{ backgroundColor: '#281d18' }}>{renderPct(totals.vsLastMonth)}</td>
               </tr>
             )}
-          </tbody>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -243,7 +263,7 @@ function PageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Mattress');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
   const defMonths = getDefaultMonths();
   const [startDate, setStartDate] = useState(defMonths[0].startDate);
