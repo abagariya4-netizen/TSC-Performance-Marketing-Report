@@ -142,32 +142,34 @@ export async function GET(request: NextRequest) {
         const cleanName = getCleanProductName(rawTitle);
         const campaignCategory = getCategoryFromCampaign(campaignName);
         
-        const category = campaignCategory;
+        const categoriesToUpdate = [campaignCategory, 'All'];
 
-        if (!categoryTotals[category]) categoryTotals[category] = {};
-        if (!categoryTotals[category][key]) categoryTotals[category][key] = { spend: 0, clicks: 0, impressions: 0, cv: 0 };
-        categoryTotals[category][key].spend += cost;
-        categoryTotals[category][key].clicks += clicks;
-        categoryTotals[category][key].impressions += impressions;
-        categoryTotals[category][key].cv += cv;
+        categoriesToUpdate.forEach(category => {
+          if (!categoryTotals[category]) categoryTotals[category] = {};
+          if (!categoryTotals[category][key]) categoryTotals[category][key] = { spend: 0, clicks: 0, impressions: 0, cv: 0 };
+          categoryTotals[category][key].spend += cost;
+          categoryTotals[category][key].clicks += clicks;
+          categoryTotals[category][key].impressions += impressions;
+          categoryTotals[category][key].cv += cv;
 
-        if (!productData[category]) productData[category] = {};
-        if (!productData[category][cleanName]) productData[category][cleanName] = {
-          spends: {}, clicks: {}, impressions: {}, cv: {}, variants: {}
-        };
-        const pNode = productData[category][cleanName];
-        
-        pNode.spends[key] = (pNode.spends[key] || 0) + cost;
-        pNode.clicks[key] = (pNode.clicks[key] || 0) + clicks;
-        pNode.impressions[key] = (pNode.impressions[key] || 0) + impressions;
-        pNode.cv[key] = (pNode.cv[key] || 0) + cv;
+          if (!productData[category]) productData[category] = {};
+          if (!productData[category][cleanName]) productData[category][cleanName] = {
+            spends: {}, clicks: {}, impressions: {}, cv: {}, variants: {}
+          };
+          const pNode = productData[category][cleanName];
+          
+          pNode.spends[key] = (pNode.spends[key] || 0) + cost;
+          pNode.clicks[key] = (pNode.clicks[key] || 0) + clicks;
+          pNode.impressions[key] = (pNode.impressions[key] || 0) + impressions;
+          pNode.cv[key] = (pNode.cv[key] || 0) + cv;
 
-        if (!pNode.variants[variantId]) pNode.variants[variantId] = { spends: {}, clicks: {}, impressions: {}, cv: {} };
-        const vNode = pNode.variants[variantId];
-        vNode.spends[key] = (vNode.spends[key] || 0) + cost;
-        vNode.clicks[key] = (vNode.clicks[key] || 0) + clicks;
-        vNode.impressions[key] = (vNode.impressions[key] || 0) + impressions;
-        vNode.cv[key] = (vNode.cv[key] || 0) + cv;
+          if (!pNode.variants[variantId]) pNode.variants[variantId] = { spends: {}, clicks: {}, impressions: {}, cv: {} };
+          const vNode = pNode.variants[variantId];
+          vNode.spends[key] = (vNode.spends[key] || 0) + cost;
+          vNode.clicks[key] = (vNode.clicks[key] || 0) + clicks;
+          vNode.impressions[key] = (vNode.impressions[key] || 0) + impressions;
+          vNode.cv[key] = (vNode.cv[key] || 0) + cv;
+        });
       });
     });
 
