@@ -33,8 +33,10 @@ export async function GET(req: NextRequest) {
       ydayData[city] = { TOP: 0, MID: 0, BOTTOM: 0, RNF: 0, GROUP: 0, TOTAL: 0 };
     }
 
+    let maharashtraBottomCount = 0;
+
     const processRows = (rows: any[], target: CityData) => {
-      const excludedKeywords = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth'];
+      const excludedKeywords = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
       const adsetExcludedKeywords = ['boost', 'growth'];
       
       for (const row of rows) {
@@ -71,6 +73,11 @@ export async function GET(req: NextRequest) {
           if (regions.includes(region)) {
             target[city][funnel] += spend;
             target[city]['TOTAL'] += spend;
+            
+            if (city === 'Maharashtra' && funnel === 'BOTTOM') {
+              maharashtraBottomCount++;
+            }
+            
             break;
           }
         }
@@ -79,6 +86,8 @@ export async function GET(req: NextRequest) {
 
     processRows(mtdRows,  mtdData);
     processRows(ydayRows, ydayData);
+
+    console.log(`Total Maharashtra Bottom Adsets Included: ${maharashtraBottomCount}`);
 
     return NextResponse.json({
       cities: { mtd: mtdData, yday: ydayData },
