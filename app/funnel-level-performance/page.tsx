@@ -95,9 +95,7 @@ export default function FunnelLevelPerformance() {
 
     const headers = [
       'Funnel',
-      headerM +
-      'Vs Last Month (Spend),Vs Last Month (Category ROAS),Vs Last Month (Overall ROAS),Vs Last Month (CPM),Vs Last Month (CPW),Vs Last Month (Walk-in),Vs Last Month (CTR),Vs Last Month (CPC),Vs Last Month (LC to LP%),Vs Last Month (LC),Vs Last Month (LP),Vs Last Month (Impressions),' +
-      'Vs Avg 3M (Spend),Vs Avg 3M (Category ROAS),Vs Avg 3M (Overall ROAS),Vs Avg 3M (CPM),Vs Avg 3M (CPW),Vs Avg 3M (Walk-in),Vs Avg 3M (CTR),Vs Avg 3M (CPC),Vs Avg 3M (LC to LP%),Vs Avg 3M (LC),Vs Avg 3M (LP),Vs Avg 3M (Impressions)'
+      headerM.slice(0, -1)
     ];
 
     const rows = data.campaigns.map((c: any) => {
@@ -114,9 +112,7 @@ export default function FunnelLevelPerformance() {
       mLabels.forEach((m: string) => row += `${c[m].lc},`);
       mLabels.forEach((m: string) => row += `${c[m].lp},`);
       mLabels.forEach((m: string) => row += `${c[m].impressions},`);
-      row += `${c.vsLastMonth?.spend || 0},${c.vsLastMonth?.categoryRoas || 0},${c.vsLastMonth?.overallRoas || 0},${c.vsLastMonth?.cpm || 0},${c.vsLastMonth?.cpw || 0},${c.vsLastMonth?.walkin || 0},${c.vsLastMonth?.ctr || 0},${c.vsLastMonth?.cpc || 0},${c.vsLastMonth?.lcToLp || 0},${c.vsLastMonth?.lc || 0},${c.vsLastMonth?.lp || 0},${c.vsLastMonth?.impressions || 0},`;
-      row += `${c.vsAvg3M?.spend || 0},${c.vsAvg3M?.categoryRoas || 0},${c.vsAvg3M?.overallRoas || 0},${c.vsAvg3M?.cpm || 0},${c.vsAvg3M?.cpw || 0},${c.vsAvg3M?.walkin || 0},${c.vsAvg3M?.ctr || 0},${c.vsAvg3M?.cpc || 0},${c.vsAvg3M?.lcToLp || 0},${c.vsAvg3M?.lc || 0},${c.vsAvg3M?.lp || 0},${c.vsAvg3M?.impressions || 0}`;
-      return row;
+      return row.slice(0, -1);
     });
 
     const csvContent = [
@@ -208,7 +204,6 @@ export default function FunnelLevelPerformance() {
                 <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LC</th>
                 <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>LP</th>
                 <th colSpan={data?.monthLabels?.length || 4} style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Impressions</th>
-                <th colSpan={2} style={{ background: '#e8733a', color: '#fff', padding: '8px', textAlign: 'center' }}>Comparison</th>
               </tr>
               <tr>
                 {/* 12 Metric blocks */}
@@ -219,8 +214,6 @@ export default function FunnelLevelPerformance() {
                     ))}
                   </React.Fragment>
                 ))}
-                <th style={{ background: '#e8733a', color: '#fff', padding: '8px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Vs Last Month</th>
-                <th style={{ background: '#e8733a', color: '#fff', padding: '8px' }}>Vs Avg 3M</th>
               </tr>
             </thead>
             <tbody>
@@ -265,40 +258,6 @@ export default function FunnelLevelPerformance() {
 
                     {/* Impressions */}
                     {data.monthLabels?.map((m: string) => <td key={`imp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(c[m]?.impressions)}</td>)}
-
-                    {/* Comparison */}
-                    <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div>Spend: {renderVs(c.vsLastMonth.spend)}</div>
-                        <div>Cat ROAS: {renderVs(c.vsLastMonth.categoryRoas)}</div>
-                        <div>Ovr ROAS: {renderVs(c.vsLastMonth.overallRoas)}</div>
-                        <div>CPM: {renderVs(c.vsLastMonth.cpm)}</div>
-                        <div>CPW: {renderVs(c.vsLastMonth.cpw)}</div>
-                        <div>Walkin: {renderVs(c.vsLastMonth.walkin)}</div>
-                        <div>CTR: {renderVs(c.vsLastMonth.ctr)}</div>
-                        <div>CPC: {renderVs(c.vsLastMonth.cpc)}</div>
-                        <div>LC-LP%: {renderVs(c.vsLastMonth.lcToLp)}</div>
-                        <div>LC: {renderVs(c.vsLastMonth.lc)}</div>
-                        <div>LP: {renderVs(c.vsLastMonth.lp)}</div>
-                        <div>Impr: {renderVs(c.vsLastMonth.impressions)}</div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px 8px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div>Spend: {renderVs(c.vsAvg3M.spend)}</div>
-                        <div>Cat ROAS: {renderVs(c.vsAvg3M.categoryRoas)}</div>
-                        <div>Ovr ROAS: {renderVs(c.vsAvg3M.overallRoas)}</div>
-                        <div>CPM: {renderVs(c.vsAvg3M.cpm)}</div>
-                        <div>CPW: {renderVs(c.vsAvg3M.cpw)}</div>
-                        <div>Walkin: {renderVs(c.vsAvg3M.walkin)}</div>
-                        <div>CTR: {renderVs(c.vsAvg3M.ctr)}</div>
-                        <div>CPC: {renderVs(c.vsAvg3M.cpc)}</div>
-                        <div>LC-LP%: {renderVs(c.vsAvg3M.lcToLp)}</div>
-                        <div>LC: {renderVs(c.vsAvg3M.lc)}</div>
-                        <div>LP: {renderVs(c.vsAvg3M.lp)}</div>
-                        <div>Impr: {renderVs(c.vsAvg3M.impressions)}</div>
-                      </div>
-                    </td>
                   </tr>
                 );
               })}
@@ -343,40 +302,6 @@ export default function FunnelLevelPerformance() {
 
                   {/* Impressions */}
                   {data.monthLabels?.map((m: string) => <td key={`timp-${m}`} style={{ padding: '12px 8px' }}>{fmtVal(data.total[m]?.impressions)}</td>)}
-
-                  {/* Comparison */}
-                  <td style={{ padding: '12px 8px', borderRight: '1px solid #2d3348' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div>Spend: {renderVs(data.total.vsLastMonth.spend)}</div>
-                      <div>Cat ROAS: {renderVs(data.total.vsLastMonth.categoryRoas)}</div>
-                      <div>Ovr ROAS: {renderVs(data.total.vsLastMonth.overallRoas)}</div>
-                      <div>CPM: {renderVs(data.total.vsLastMonth.cpm)}</div>
-                      <div>CPW: {renderVs(data.total.vsLastMonth.cpw)}</div>
-                      <div>Walkin: {renderVs(data.total.vsLastMonth.walkin)}</div>
-                      <div>CTR: {renderVs(data.total.vsLastMonth.ctr)}</div>
-                      <div>CPC: {renderVs(data.total.vsLastMonth.cpc)}</div>
-                      <div>LC-LP%: {renderVs(data.total.vsLastMonth.lcToLp)}</div>
-                      <div>LC: {renderVs(data.total.vsLastMonth.lc)}</div>
-                      <div>LP: {renderVs(data.total.vsLastMonth.lp)}</div>
-                      <div>Impr: {renderVs(data.total.vsLastMonth.impressions)}</div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px 8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div>Spend: {renderVs(data.total.vsAvg3M.spend)}</div>
-                      <div>Cat ROAS: {renderVs(data.total.vsAvg3M.categoryRoas)}</div>
-                      <div>Ovr ROAS: {renderVs(data.total.vsAvg3M.overallRoas)}</div>
-                      <div>CPM: {renderVs(data.total.vsAvg3M.cpm)}</div>
-                      <div>CPW: {renderVs(data.total.vsAvg3M.cpw)}</div>
-                      <div>Walkin: {renderVs(data.total.vsAvg3M.walkin)}</div>
-                      <div>CTR: {renderVs(data.total.vsAvg3M.ctr)}</div>
-                      <div>CPC: {renderVs(data.total.vsAvg3M.cpc)}</div>
-                      <div>LC-LP%: {renderVs(data.total.vsAvg3M.lcToLp)}</div>
-                      <div>LC: {renderVs(data.total.vsAvg3M.lc)}</div>
-                      <div>LP: {renderVs(data.total.vsAvg3M.lp)}</div>
-                      <div>Impr: {renderVs(data.total.vsAvg3M.impressions)}</div>
-                    </div>
-                  </td>
                 </tr>
               </tfoot>
             )}
