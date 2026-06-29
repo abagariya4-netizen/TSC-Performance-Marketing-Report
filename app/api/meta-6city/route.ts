@@ -17,8 +17,9 @@ const CAMPAIGN_EXCLUSION_KEYWORDS = [
   'foot', 'growth', 'acce'
 ];
 
-function isCampaignExcluded(campaignName: string): boolean {
-  const cn = (campaignName || '').toLowerCase();
+function isCampaignExcluded(campaignName: string | null | undefined): boolean {
+  if (!campaignName) return false;
+  const cn = campaignName.toLowerCase();
   return CAMPAIGN_EXCLUSION_KEYWORDS.some(
     keyword => cn.includes(keyword)
   );
@@ -51,6 +52,11 @@ export async function GET(req: NextRequest) {
       const adsetExcludedKeywords = ['boost', 'growth'];
       
       for (const row of rows) {
+        console.log('Campaign:', row.campaign_name, 
+                    'Adset:', row.adset_name, 
+                    'Region:', row.region,
+                    'Spend:', row.spend);
+
         if (isCampaignExcluded(row.campaign_name)) {
           console.log('Excluding campaign:', row.campaign_name);
           continue;
