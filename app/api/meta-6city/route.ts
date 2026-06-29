@@ -12,6 +12,18 @@ const SIX_CITIES: Record<string, string[]> = {
   "Gujarat":     ["Gujarat"],
 };
 
+const CAMPAIGN_EXCLUSION_KEYWORDS = [
+  'chair', 'desk', 'sofa', 'elite', 
+  'foot', 'growth', 'acce'
+];
+
+function isCampaignExcluded(campaignName: string): boolean {
+  const cn = (campaignName || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(
+    keyword => cn.includes(keyword)
+  );
+}
+
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
@@ -36,17 +48,16 @@ export async function GET(req: NextRequest) {
     let maharashtraBottomCount = 0;
 
     const processRows = (rows: any[], target: CityData) => {
-      const excludedKeywords = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
       const adsetExcludedKeywords = ['boost', 'growth'];
       
       for (const row of rows) {
-        const cName = (row.campaign_name || '').toLowerCase();
-        const aName = (row.adset_name || '').toLowerCase();
-        
-        // STEP 1 - Campaign exclusions
-        if (excludedKeywords.some(kw => cName.includes(kw))) {
+        if (isCampaignExcluded(row.campaign_name)) {
+          console.log('Excluding campaign:', row.campaign_name);
           continue;
         }
+
+        const cName = (row.campaign_name || '').toLowerCase();
+        const aName = (row.adset_name || '').toLowerCase();
 
         // STEP 3 - Adset exclusions
         if (adsetExcludedKeywords.some(kw => aName.includes(kw))) {
