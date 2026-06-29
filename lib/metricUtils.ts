@@ -93,56 +93,54 @@ export function matchesCategoryForMetrics(
   adsetName: string,
   category: string
 ): boolean {
-  const cn = (campaignName || '').toLowerCase();
-  const an = (adsetName    || '').toLowerCase();
-  const rule = CATEGORY_RULES[category];
-  if (!rule) return false;
+  const lowerCamp = (campaignName || '').toLowerCase();
+  const lowerAdset = (adsetName || '').toLowerCase();
 
-  const isAllProducts = cn.includes('all_products');
-  const isMattress = cn.includes('mat') || cn.includes('dhoni');
+  const hasDhoni = lowerCamp.includes('dhoni');
 
+  let passesCategory = false;
 
-
-  // STEP 1: Campaign exclusions are ALWAYS applied
-  for (const exc of rule.campaign.excludes) {
-    if (cn.includes(exc)) return false;
-  }
-
-  // STEP 2: Adset exclusions (bypassed if campaign explicitly claims the category)
-  let skipAdsetExcludes = false;
-  if (category === 'Chair' && cn.includes('chair')) {
-      skipAdsetExcludes = true;
-  }
-  if (category === 'Desk' && cn.includes('desk')) {
-      skipAdsetExcludes = true;
-  }
-  if (category === 'Sofa' && cn.includes('sofa')) {
-      skipAdsetExcludes = true;
-  }
-
-  if (!skipAdsetExcludes) {
-    for (const exc of rule.adset.excludes) {
-      if (an.includes(exc)) return false;
+  if (category === 'All') {
+    passesCategory = true;
+  } else if (hasDhoni) {
+    // Classify by ADSET name keyword
+    if (category === 'Mattress') passesCategory = lowerAdset.includes('mat');
+    else if (category === 'Chair') passesCategory = lowerAdset.includes('chair');
+    else if (category === 'Sofa') passesCategory = lowerAdset.includes('sofa');
+    else if (category === 'Desk') passesCategory = lowerAdset.includes('desk');
+    else if (category === 'Elite') passesCategory = lowerAdset.includes('elite');
+    else if (category === 'Foot Massager') passesCategory = lowerAdset.includes('foot');
+    else if (category === 'Accessories') passesCategory = lowerAdset.includes('acce');
+    else if (category === 'Bed') passesCategory = lowerAdset.includes('bed');
+  } else {
+    // Classify by CAMPAIGN name keyword ALWAYS
+    if (category === 'Mattress') {
+      const excludes = ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'];
+      passesCategory = lowerCamp.includes('mat') && !excludes.some(ex => lowerCamp.includes(ex));
     }
+    else if (category === 'Chair') passesCategory = lowerCamp.includes('chair');
+    else if (category === 'Sofa') passesCategory = lowerCamp.includes('sofa');
+    else if (category === 'Desk') passesCategory = lowerCamp.includes('desk');
+    else if (category === 'Elite') passesCategory = lowerCamp.includes('elite');
+    else if (category === 'Foot Massager') passesCategory = lowerCamp.includes('foot');
+    else if (category === 'Accessories') passesCategory = lowerCamp.includes('acce');
+    else if (category === 'Bed') passesCategory = lowerCamp.includes('bed');
   }
 
-  if (category === 'All') return true;
+  if (!passesCategory) return false;
 
-  // STEP 3: Does the adset explicitly contain the product keyword?
-  const keyword = getCategoryKeyword(category);
-  if (keyword && an.includes(keyword)) {
-    return true;
+  // ADSET EXCLUSIONS (always apply regardless)
+  if (category === 'Mattress') {
+    if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else if (category === 'Chair') {
+    if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else if (category === 'Desk') {
+    if (['mattress', 'mat', 'sofa', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else {
+    if (['boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
   }
 
-  // STEP 4: Does the campaign explicitly contain the category keyword?
-  if (category === 'Mattress' && isMattress) {
-    return true;
-  }
-  if (category !== 'Mattress' && rule.campaign.contains && cn.includes(rule.campaign.contains)) {
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' | 'GROWTH' | null {

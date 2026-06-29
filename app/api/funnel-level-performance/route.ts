@@ -30,57 +30,7 @@ function classifyFunnel(campaignName: string): string {
   return 'Top';
 }
 
-function isProductCreative(adsetName: string): boolean {
-  const lower = adsetName.toLowerCase();
-  return lower.includes('_all_asset') || lower.includes(' all asset') || lower.includes('_video') || lower.includes(' video');
-}
-
-function passesCategoryFilter(campaignName: string, adsetName: string, category: string): boolean {
-  if (category === 'All') return true;
-  
-  const lowerCamp = campaignName.toLowerCase();
-  const lowerAdset = adsetName.toLowerCase();
-
-  if (isProductCreative(adsetName)) {
-    if (category === 'Mattress') return lowerAdset.includes('mat');
-    if (category === 'Chair') return lowerAdset.includes('chair');
-    if (category === 'Sofa') return lowerAdset.includes('sofa');
-    if (category === 'Desk') return lowerAdset.includes('desk');
-    if (category === 'Elite') return lowerAdset.includes('elite');
-    if (category === 'Foot Massager') return lowerAdset.includes('foot');
-    if (category === 'Accessories') return lowerAdset.includes('acce');
-    if (category === 'Bed') return lowerAdset.includes('bed');
-    return false;
-  } else {
-    if (category === 'Mattress') {
-      if (!lowerCamp.includes('mat')) return false;
-      const excludes = ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'];
-      if (excludes.some(ex => lowerCamp.includes(ex))) return false;
-      return true;
-    }
-    if (category === 'Chair') return lowerCamp.includes('chair');
-    if (category === 'Sofa') return lowerCamp.includes('sofa');
-    if (category === 'Desk') return lowerCamp.includes('desk');
-    if (category === 'Elite') return lowerCamp.includes('elite');
-    if (category === 'Foot Massager') return lowerCamp.includes('foot');
-    if (category === 'Accessories') return lowerCamp.includes('acce');
-    if (category === 'Bed') return lowerCamp.includes('bed');
-    return false;
-  }
-}
-
-function passesAdsetExclusions(adsetName: string, category: string): boolean {
-  const lower = adsetName.toLowerCase();
-  if (category === 'Mattress') {
-    return !['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lower.includes(ex));
-  } else if (category === 'Chair') {
-    return !['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lower.includes(ex));
-  } else if (category === 'Desk') {
-    return !['mattress', 'mat', 'sofa', 'chair', 'boost', 'growth'].some(ex => lower.includes(ex));
-  } else {
-    return !['boost', 'growth'].some(ex => lower.includes(ex));
-  }
-}
+import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 function isCampaignExcluded(campaignName: string): boolean {
   const lower = campaignName.toLowerCase();
@@ -127,8 +77,7 @@ export async function GET(req: NextRequest) {
         const aName = row.adset_name || '';
 
         if (isCampaignExcluded(cName)) continue;
-        if (!passesCategoryFilter(cName, aName, category)) continue;
-        if (!passesAdsetExclusions(aName, category)) continue;
+        if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
         const funnelName = classifyFunnel(cName);
         const node = getCampNode(funnelName);

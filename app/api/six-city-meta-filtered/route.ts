@@ -11,60 +11,7 @@ const SIX_CITIES: Record<string, string[]> = {
   "Gujarat":     ["Gujarat"],
 };
 
-function isProductCreative(adsetName: string): boolean {
-  const lower = adsetName.toLowerCase();
-  return lower.includes('_all_asset') || lower.includes(' all asset') || lower.includes('_video') || lower.includes(' video');
-}
-
-function passesCategoryFilter(cName: string, aName: string, category: string): boolean {
-  const lowerC = cName.toLowerCase();
-  const lowerA = aName.toLowerCase();
-
-  // Adset exclusions (always apply)
-  if (category === 'Mattress') {
-    if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerA.includes(ex))) return false;
-  } else if (category === 'Chair') {
-    if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerA.includes(ex))) return false;
-  } else if (category === 'Desk') {
-    if (['mattress', 'mat', 'sofa', 'chair', 'boost', 'growth'].some(ex => lowerA.includes(ex))) return false;
-  } else {
-    if (['boost', 'growth'].some(ex => lowerA.includes(ex))) return false;
-  }
-
-  // Campaign exclusions (always apply)
-  if (category === 'All') {
-    if (['chair', 'desk', 'sofa', 'elite', 'foot', 'growth'].some(ex => lowerC.includes(ex))) return false;
-  }
-
-  if (isProductCreative(aName)) {
-    if (category === 'All') return true;
-    if (category === 'Mattress') return lowerA.includes('mat');
-    if (category === 'Chair') return lowerA.includes('chair');
-    if (category === 'Sofa') return lowerA.includes('sofa');
-    if (category === 'Desk') return lowerA.includes('desk');
-    if (category === 'Elite') return lowerA.includes('elite');
-    if (category === 'Foot Massager') return lowerA.includes('foot');
-    if (category === 'Accessories') return lowerA.includes('acce');
-    if (category === 'Bed') return lowerA.includes('bed');
-  } else {
-    if (category === 'All') return true;
-    if (category === 'Mattress') {
-      if (!lowerC.includes('mat')) return false;
-      const ex = ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'];
-      if (ex.some(e => lowerC.includes(e))) return false;
-      return true;
-    }
-    if (category === 'Chair') return lowerC.includes('chair');
-    if (category === 'Sofa') return lowerC.includes('sofa');
-    if (category === 'Desk') return lowerC.includes('desk');
-    if (category === 'Elite') return lowerC.includes('elite');
-    if (category === 'Foot Massager') return lowerC.includes('foot');
-    if (category === 'Accessories') return lowerC.includes('acce');
-    if (category === 'Bed') return lowerC.includes('bed');
-  }
-
-  return false;
-}
+import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 function getFunnel(cName: string, region: string): string {
   const lower = cName.toLowerCase();
@@ -124,7 +71,7 @@ export async function GET(req: NextRequest) {
         const rowRegion = row.region || '';
 
         if (regionFilter !== 'All' && !allowedRegions.includes(rowRegion)) continue;
-        if (!passesCategoryFilter(cName, aName, categoryFilter)) continue;
+        if (!matchesCategoryForMetrics(cName, aName, categoryFilter)) continue;
 
         const funnel = getFunnel(cName, regionFilter);
         if (funnel === 'Growth') continue; // Skipped per requirements

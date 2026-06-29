@@ -44,65 +44,6 @@ function groupRows(rows: any[], cat: string) {
     'Bed': 'bed'
   };
 
-  function matchesCategoryForMetrics(
-    campaignName: string,
-    adsetName: string,
-    category: string
-  ): boolean {
-    const cn = (campaignName || '').toLowerCase();
-    const an = (adsetName    || '').toLowerCase();
-  
-    const isAllProducts = cn.includes('all_products');
-    const isMattress = cn.includes('mat') || cn.includes('dhoni');
-  
-
-
-    // STEP 1: Campaign Exclusions
-    const cRules = CAMPAIGN_RULES[category];
-    if (cRules && cRules.excludes) {
-      for (const exc of cRules.excludes) {
-        if (cn.includes(exc)) return false;
-      }
-    }
-  
-    // STEP 2: Adset Exclusions (bypassed if campaign explicitly claims the category)
-    let skipAdsetExcludes = false;
-    if (category === 'Chair' && cn.includes('chair')) {
-        skipAdsetExcludes = true;
-    }
-    if (category === 'Desk' && cn.includes('desk')) {
-        skipAdsetExcludes = true;
-    }
-    if (category === 'Sofa' && cn.includes('sofa')) {
-        skipAdsetExcludes = true;
-    }
-  
-    if (!skipAdsetExcludes) {
-      const aExcludes = ADSET_EXCLUDES[category] || [];
-      for (const exc of aExcludes) {
-        if (an.includes(exc)) return false;
-      }
-    }
-  
-    if (category === 'All') return true;
-  
-    // STEP 3: Does the adset explicitly contain the keyword?
-    const keyword = CATEGORY_KEYWORDS[category];
-    if (keyword && an.includes(keyword)) {
-      return true;
-    }
-  
-    // STEP 4: Does the campaign explicitly contain the keyword?
-    if (category === 'Mattress' && isMattress) {
-      return true;
-    }
-    if (category !== 'Mattress' && cRules?.contains && cn.includes(cRules.contains)) {
-      return true;
-    }
-  
-    return false;
-  }
-
   function classifyFunnel(cn: string): string | null {
     if (cn.includes('growth'))                        return 'GROWTH';
     if (cn.includes('bot') && !cn.includes('growth')) return 'BOTTOM';

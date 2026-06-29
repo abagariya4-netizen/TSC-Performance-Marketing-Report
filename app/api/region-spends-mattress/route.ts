@@ -6,34 +6,7 @@ export const dynamic = 'force-dynamic';
 const ACCOUNT_ID = 'act_2240079932900749';
 const BASE_URL = 'https://graph.facebook.com/v19.0';
 
-function isProductCreative(adsetName: string): boolean {
-  const lower = adsetName.toLowerCase();
-  return lower.includes('_all_asset') || lower.includes(' all asset') || lower.includes('_video') || lower.includes(' video');
-}
-
-function passesFilters(campaignName: string, adsetName: string): boolean {
-  const lowerCamp = campaignName.toLowerCase();
-  const lowerAdset = adsetName.toLowerCase();
-
-  // Campaign rules
-  if (!lowerCamp.includes('mat')) return false;
-
-  const campExcludes = ['growth', 'sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'chair', 'pillow', 'cushion', 'massa', 'sensai', 'boost'];
-  if (campExcludes.some(ex => lowerCamp.includes(ex))) return false;
-
-  // General Adset exclusions
-  const adsetExcludes = ['sofa', 'desk', 'chair', 'boost', 'growth'];
-  if (adsetExcludes.some(ex => lowerAdset.includes(ex))) return false;
-
-  // Product creative adset rules
-  if (isProductCreative(adsetName)) {
-    if (!lowerAdset.includes('mat')) return false;
-    const prodCreativeAdsetExcludes = ['sofa', 'desk', 'elite', 'foot', 'bed', 'acce', 'chair'];
-    if (prodCreativeAdsetExcludes.some(ex => lowerAdset.includes(ex))) return false;
-  }
-
-  return true;
-}
+import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 export async function GET(req: NextRequest) {
   try {
@@ -65,7 +38,7 @@ export async function GET(req: NextRequest) {
       const cName = row.campaign_name || '';
       const aName = row.adset_name || '';
 
-      if (!passesFilters(cName, aName)) return;
+      if (!matchesCategoryForMetrics(cName, aName, 'Mattress')) return;
 
       const reg = row.region || 'Unknown';
       const spend = parseFloat(row.spend || '0');
