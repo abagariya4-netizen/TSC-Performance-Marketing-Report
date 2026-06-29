@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
     });
 
     const fetchPeriod = async (p: any) => {
-      const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.since, until: p.until }));
+      const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.startDate, until: p.endDate }));
       const url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,impressions,clicks,actions,action_values&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
       const data = await fetchAllPages(url);
       
