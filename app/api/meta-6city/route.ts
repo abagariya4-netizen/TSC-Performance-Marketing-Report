@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages, buildAdsetUrl } from '@/lib/metaApi';
-import { classifyAdset } from '@/lib/classify';
+
 import { getDateParams } from '@/lib/dateUtils';
 
 const SIX_CITIES: Record<string, string[]> = {
@@ -35,17 +35,28 @@ export async function GET(req: NextRequest) {
 
     const processRows = (rows: any[], target: CityData) => {
       const excludedKeywords = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth'];
+      const adsetExcludedKeywords = ['boost', 'growth'];
       
       for (const row of rows) {
         const cName = (row.campaign_name || '').toLowerCase();
+        const aName = (row.adset_name || '').toLowerCase();
         
-        // Exclude before funnel classification
+        // STEP 1 - Campaign exclusions
         if (excludedKeywords.some(kw => cName.includes(kw))) {
           continue;
         }
 
-        const funnel = classifyAdset(row.campaign_name, row.adset_name);
-        if (funnel === 'EXCLUDED') continue;
+        // STEP 3 - Adset exclusions
+        if (adsetExcludedKeywords.some(kw => aName.includes(kw))) {
+          continue;
+        }
+
+        // STEP 2 - Funnel classification
+        let funnel = 'TOP';
+        if (cName.includes('group')) funnel = 'GROUP';
+        else if (cName.includes('rnf')) funnel = 'RNF';
+        else if (cName.includes('bot') && !cName.includes('growth')) funnel = 'BOTTOM';
+        else if (cName.includes('mid') && !cName.includes('group') && !cName.includes('rnf')) funnel = 'MID';
         const spend  = Math.round(parseFloat(row.spend) || 0);
         const region = row.region || '';
         for (const [city, regions] of Object.entries(SIX_CITIES)) {
