@@ -37,7 +37,7 @@ function buildUrl(
   const timeRange = encodeURIComponent(
     JSON.stringify({ since, until })
   );
-  return `https://graph.facebook.com/v19.0/act_${accountId}/insights` +
+  return `https://graph.facebook.com/v19.0/${accountId}/insights` +
     `?fields=campaign_name,adset_name,spend` +
     `&breakdowns=region` +
     `&time_range=${timeRange}` +
