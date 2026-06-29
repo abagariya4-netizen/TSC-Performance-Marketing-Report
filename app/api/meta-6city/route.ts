@@ -51,6 +51,14 @@ export async function GET(req: NextRequest) {
           continue;
         }
 
+        // Dhoni specific rule
+        if (cName.includes('dhoni')) {
+          const productKeywords = ['mat', 'chair', 'sofa', 'desk', 'elite', 'foot', 'acce', 'bed'];
+          if (!productKeywords.some(kw => aName.includes(kw))) {
+            continue;
+          }
+        }
+
         // STEP 2 - Funnel classification
         let funnel = 'TOP';
         if (cName.includes('group')) funnel = 'GROUP';
