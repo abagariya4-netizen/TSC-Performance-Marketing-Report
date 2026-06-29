@@ -69,9 +69,6 @@ function matchesCategoryForMetrics(
 
   // STEP 2: Adset Exclusions (bypassed if campaign explicitly claims the category)
   let skipAdsetExcludes = false;
-  if (category === 'Mattress' && cn.includes('dhoni') && !isAllProducts) {
-      skipAdsetExcludes = true;
-  }
   if (category === 'Chair' && cn.includes('chair')) {
       skipAdsetExcludes = true;
   }
