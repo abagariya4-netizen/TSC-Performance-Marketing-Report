@@ -52,6 +52,29 @@ export async function GET(req: NextRequest) {
       const adsetExcludedKeywords = ['boost', 'growth'];
       
       for (const row of rows) {
+        // Debug: log first 5 rows to see actual data structure
+        if (rows.indexOf(row) < 5) {
+          console.log('ROW SAMPLE:', JSON.stringify({
+            campaign_name: row.campaign_name,
+            adset_name: row.adset_name,
+            region: row.region,
+            spend: row.spend
+          }));
+        }
+
+        // Debug: check if excluded campaigns appear
+        const testCampaigns = [
+          'tsc_retargeting_chair_bot_funnel_nst',
+          'desk_asc_bot_funnel_retargeting',
+          'tsc_asc_foot_massager_bot_funnel'
+        ];
+        const cn_debug = (row.campaign_name || '').toLowerCase();
+        if (testCampaigns.some(t => cn_debug.includes('chair') || 
+            cn_debug.includes('desk') || cn_debug.includes('foot'))) {
+          console.log('FOUND EXCLUDED CAMPAIGN:', row.campaign_name, 
+            'excluded:', isCampaignExcluded(row.campaign_name));
+        }
+
         console.log('Campaign:', row.campaign_name, 
                     'Adset:', row.adset_name, 
                     'Region:', row.region,
