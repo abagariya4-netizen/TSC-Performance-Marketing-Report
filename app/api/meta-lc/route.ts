@@ -192,9 +192,11 @@ export async function GET(req: NextRequest) {
       + `&level=adset&limit=500`
       + `&access_token=${token}`;
 
-    const monthRows = await fetchAllPages(monthUrl);
-    
+    let monthRows: any[];
+    let dayRows: any[] = [];
+
     if (debug) {
+      monthRows = await fetchAllPages(monthUrl);
       const rawAdsets: any[] = [];
       const includedAdsets: any[] = [];
       const excludedAdsets: any[] = [];
@@ -252,7 +254,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const dayRows   = await fetchAllPages(dayUrl);
+    [monthRows, dayRows] = await Promise.all([
+      fetchAllPages(monthUrl),
+      fetchAllPages(dayUrl)
+    ]);
 
     const monthlyData = groupRows(monthRows, category);
     const dailyData   = groupRows(dayRows, category);
