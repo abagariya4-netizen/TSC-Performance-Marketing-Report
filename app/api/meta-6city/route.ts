@@ -34,7 +34,16 @@ export async function GET(req: NextRequest) {
     }
 
     const processRows = (rows: any[], target: CityData) => {
+      const excludedKeywords = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth'];
+      
       for (const row of rows) {
+        const cName = (row.campaign_name || '').toLowerCase();
+        
+        // Exclude before funnel classification
+        if (excludedKeywords.some(kw => cName.includes(kw))) {
+          continue;
+        }
+
         const funnel = classifyAdset(row.campaign_name, row.adset_name);
         if (funnel === 'EXCLUDED') continue;
         const spend  = Math.round(parseFloat(row.spend) || 0);
