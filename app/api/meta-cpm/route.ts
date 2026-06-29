@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
-import { classifyFunnel } from '@/lib/metricUtils';
+import { classifyFunnel, matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
