@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
 
     const fetchPeriod = async (p: any) => {
       const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.startDate, until: p.endDate }));
-      const url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,impressions,clicks,actions,action_values&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
+      const url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,impressions,clicks,actions,action_values,results,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
       const data = await fetchAllPages(url);
       
       for (const row of data) {
@@ -143,7 +143,42 @@ export async function GET(req: NextRequest) {
 
         m.lc += parseInt(actions.find((a: any) => a.action_type === 'link_click')?.value || '0', 10);
         m.lp += parseInt(actions.find((a: any) => a.action_type === 'landing_page_view')?.value || '0', 10);
-        m.walkin += parseFloat(actions.find((a: any) => a.action_type === 'cl_walk_in')?.value || '0');
+        
+        let walkins = 0;
+        
+        // METHOD 1 — Extract from results array (primary):
+        const resultsArr = Array.isArray(row.results) 
+          ? row.results
+          : Array.isArray(row.results?.value) 
+          ? row.results.value 
+          : [];
+
+        const wi = resultsArr.find(
+          (x: any) => x.indicator && x.indicator.includes('cl_walk_in')
+        );
+        walkins = wi 
+          ? +(wi.values?.[0]?.value || wi.value || 0) 
+          : 0;
+
+        // METHOD 2 — Fallback to actions array:
+        if (!walkins && Array.isArray(row.actions)) {
+          const action = row.actions.find(
+            (x: any) => x.action_type && 
+            x.action_type.includes('cl_walk_in')
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        // METHOD 3 — Final fallback exact match:
+        if (!walkins && Array.isArray(row.actions)) {
+          const action = row.actions.find(
+            (x: any) => x.action_type === 
+            'offsite_conversion.fb_pixel_custom.cl_walk_in'
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        m.walkin += walkins;
 
         const expectedAction = CATEGORY_CONVERSION_ACTION[category];
         if (expectedAction) {

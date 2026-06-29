@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     const fetchPeriod = async (p: any) => {
       const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.since, until: p.until }));
-      let url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,actions,action_values&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
+      let url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,actions,action_values,results,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
       
       if (dayType !== 'All') {
         url += '&time_increment=1';
@@ -144,7 +144,41 @@ export async function GET(req: NextRequest) {
         m.spend += parseFloat(row.spend || '0');
 
         const actions = row.actions || [];
-        m.walkin += parseFloat(actions.find((a: any) => a.action_type === 'cl_walk_in')?.value || '0');
+        let walkins = 0;
+        
+        // METHOD 1 — Extract from results array (primary):
+        const resultsArr = Array.isArray(row.results) 
+          ? row.results
+          : Array.isArray(row.results?.value) 
+          ? row.results.value 
+          : [];
+
+        const wi = resultsArr.find(
+          (x: any) => x.indicator && x.indicator.includes('cl_walk_in')
+        );
+        walkins = wi 
+          ? +(wi.values?.[0]?.value || wi.value || 0) 
+          : 0;
+
+        // METHOD 2 — Fallback to actions array:
+        if (!walkins && Array.isArray(row.actions)) {
+          const action = row.actions.find(
+            (x: any) => x.action_type && 
+            x.action_type.includes('cl_walk_in')
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        // METHOD 3 — Final fallback exact match:
+        if (!walkins && Array.isArray(row.actions)) {
+          const action = row.actions.find(
+            (x: any) => x.action_type === 
+            'offsite_conversion.fb_pixel_custom.cl_walk_in'
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        m.walkin += walkins;
       }
     };
 
