@@ -110,7 +110,7 @@ export function matchesCategoryForMetrics(
 
   // STEP 2: Adset exclusions (bypassed if campaign explicitly claims the category)
   let skipAdsetExcludes = false;
-  if (category === 'Mattress' && (isAllProducts || cn.includes('dhoni'))) {
+  if (category === 'Mattress' && cn.includes('dhoni')) {
       skipAdsetExcludes = true;
   }
   if (category === 'Chair' && cn.includes('chair')) {
