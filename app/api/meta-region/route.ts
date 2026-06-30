@@ -61,16 +61,8 @@ export async function GET(req: NextRequest) {
       const cn = cName.toLowerCase();
       const an = aName.toLowerCase();
 
-      // STEP 1 & 2: Exclusions
-      if (isCampaignExcluded(cn)) return;
-      if (isAdsetExcluded(an)) return;
-
-      // STEP 3: Dhoni rule
-      if (cn.includes('dhoni')) {
-        // This report has no category filter (shows All Data)
-        // so we default to mattress-related adsets only
-        if (!an.includes('mat')) return;
-      }
+      // Use centralized matching logic for 'All' category (which allows dhoni adsets if they contain 'mat')
+      if (!matchesCategoryForMetrics(cn, an, 'All')) return;
 
       if (!includeInRegion(cName)) return;
 
