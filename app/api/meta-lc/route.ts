@@ -24,7 +24,7 @@ function groupRows(rows: any[], cat: string) {
 
   rows.forEach(row => {
     const cn = (row.campaign_name || '').toLowerCase();
-    const an = (row.adset_name    || '').toLowerCase();
+    const an = (row.adset_name || '').toLowerCase();
 
     if (cat === 'All') {
       if (cn.includes('dhoni') && !an.includes('mat')) return;
@@ -40,8 +40,8 @@ function groupRows(rows: any[], cat: string) {
 
     // Step 4: Accumulate
     const period = row.date_start;
-    const spend  = Math.round(parseFloat(row.spend || '0'));
-    
+    const spend = Math.round(parseFloat(row.spend || '0'));
+
     let lc = 0;
     let lp = 0;
 
@@ -56,9 +56,9 @@ function groupRows(rows: any[], cat: string) {
     if (!result[funnel][period]) {
       result[funnel][period] = { spend: 0, link_clicks: 0, landing_page_views: 0 };
     }
-    result[funnel][period].spend               += spend;
-    result[funnel][period].link_clicks         += lc;
-    result[funnel][period].landing_page_views  += lp;
+    result[funnel][period].spend += spend;
+    result[funnel][period].link_clicks += lc;
+    result[funnel][period].landing_page_views += lp;
   });
 
   return result;
@@ -68,14 +68,14 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category') || 'All';
-    const since    = searchParams.get('since')    || '';
-    const until    = searchParams.get('until')    || '';
-    const debug    = searchParams.get('debug') === 'true';
+    const since = searchParams.get('since') || '';
+    const until = searchParams.get('until') || '';
+    const debug = searchParams.get('debug') === 'true';
 
-  const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
-  if (!token) return NextResponse.json({ error: 'META_ACCESS_TOKEN not set' }, { status: 500 });
+    const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
+    if (!token) return NextResponse.json({ error: 'META_ACCESS_TOKEN not set' }, { status: 500 });
     const accountId = process.env.META_AD_ACCOUNT_ID!;
-    const BASE      = 'https://graph.facebook.com/v19.0';
+    const BASE = 'https://graph.facebook.com/v19.0';
 
     // Fetch month-level data
     const monthUrl = `${BASE}/${accountId}/insights`
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
       const rawAdsets: any[] = [];
       const includedAdsets: any[] = [];
       const excludedAdsets: any[] = [];
-      
+
       let totalRawLC = 0, totalRawLP = 0;
       let totalIncludedLC = 0, totalIncludedLP = 0;
 
@@ -117,36 +117,36 @@ export async function GET(req: NextRequest) {
         const cn = row.campaign_name || '';
         const an = row.adset_name || '';
         let lc = 0, lp = 0;
-        
+
         if (row.actions && Array.isArray(row.actions)) {
           row.actions.forEach((a: any) => {
             if (a.action_type === 'link_click') lc += parseInt(a.value || '0', 10);
             if (a.action_type === 'landing_page_view') lp += parseInt(a.value || '0', 10);
           });
         }
-        
+
         totalRawLC += lc;
         totalRawLP += lp;
         rawAdsets.push({ campaign_name: cn, adset_name: an, link_clicks: lc, landing_page_views: lp });
 
         const passesCategory = matchesCategoryForMetrics(cn.toLowerCase(), an.toLowerCase(), category);
         const funnel = classifyFunnel(cn.toLowerCase());
-        
+
         if (passesCategory && funnel) {
           totalIncludedLC += lc;
           totalIncludedLP += lp;
           includedAdsets.push({ campaign_name: cn, adset_name: an, link_clicks: lc, landing_page_views: lp });
         } else {
-          excludedAdsets.push({ 
-            campaign_name: cn, 
-            adset_name: an, 
-            link_clicks: lc, 
-            landing_page_views: lp, 
-            reason: !passesCategory ? 'Category Filter' : 'Funnel Filter (Not Top/Mid/Bot/Growth)' 
+          excludedAdsets.push({
+            campaign_name: cn,
+            adset_name: an,
+            link_clicks: lc,
+            landing_page_views: lp,
+            reason: !passesCategory ? 'Category Filter' : 'Funnel Filter (Not Top/Mid/Bot/Growth)'
           });
         }
       }
-      
+
       // Sort for top 20
       includedAdsets.sort((a, b) => b.link_clicks - a.link_clicks);
       excludedAdsets.sort((a, b) => b.link_clicks - a.link_clicks);
@@ -169,7 +169,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     const monthlyData = groupRows(monthRows, category);
-    const dailyData   = groupRows(dayRows, category);
+    const dailyData = groupRows(dayRows, category);
 
     // Extract sorted periods
     const monthPeriods = new Set<string>();
@@ -184,10 +184,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       monthly: monthlyData,
-      daily:   dailyData,
+      daily: dailyData,
       periods: {
         months: Array.from(monthPeriods).sort(),
-        days:   Array.from(dayPeriods).sort()
+        days: Array.from(dayPeriods).sort()
       }
     });
   } catch (err: any) {
