@@ -2,53 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
 import { classifyFunnel, matchesCategoryForMetrics } from '@/lib/metricUtils';
 
-const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
-const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
 
-function isCampaignExcluded(name: string): boolean {
-  const cn = (name || '').toLowerCase();
-  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
-}
-
-function isAdsetExcluded(name: string): boolean {
-  const an = (name || '').toLowerCase();
-  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
-}
 
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
     spend: number; impressions: number;
   }>> = { TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {} };
 
-  function classifyFunnel(cn: string): string | null {
-    if (cn.includes('growth'))                        return 'GROWTH';
-    if (cn.includes('bot') && !cn.includes('growth')) return 'BOTTOM';
-    if (cn.includes('mid') && !cn.includes('growth')) return 'MID';
-    if (!cn.includes('mid') && !cn.includes('bot'))   return 'TOP';
-    return null;
-  }
-
   rows.forEach(row => {
     const cn = (row.campaign_name || '').toLowerCase();
     const an = (row.adset_name    || '').toLowerCase();
-
-    // STEP 1 & 2: Exclusions
-    if (isCampaignExcluded(cn)) return;
-    if (isAdsetExcluded(an)) return;
-
-    // STEP 3: Dhoni rule
-    if (cn.includes('dhoni')) {
-      let productKw = 'mat';
-      if (cat === 'Chair') productKw = 'chair';
-      else if (cat === 'Desk') productKw = 'desk';
-      else if (cat === 'Sofa') productKw = 'sofa';
-      else if (cat === 'Elite') productKw = 'elite';
-      else if (cat === 'Foot Massager') productKw = 'foot';
-      else if (cat === 'Accessories') productKw = 'acce';
-      else if (cat === 'Bed') productKw = 'bed';
-      
-      if (!an.includes(productKw)) return;
-    }
 
     if (!matchesCategoryForMetrics(cn, an, cat)) return;
 

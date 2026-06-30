@@ -4,16 +4,7 @@ import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 
 
-function classifyFunnel(cn: string): string | null {
-  if (cn.includes('growth')) return 'GROWTH';
-  if (cn.includes('group')) return null;
-  if (cn.includes('rnf')) return null;
-
-  if (cn.includes('bot')) return 'BOTTOM';
-  if (cn.includes('mid')) return 'MID';
-  if (!cn.includes('mid') && !cn.includes('bot')) return 'TOP';
-  return null;
-}
+import { classifyFunnel } from '@/lib/metricUtils';
 
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
@@ -26,13 +17,7 @@ function groupRows(rows: any[], cat: string) {
     const cn = (row.campaign_name || '').toLowerCase();
     const an = (row.adset_name || '').toLowerCase();
 
-    if (cat === 'All') {
-      if (cn.includes('dhoni') && !an.includes('mat')) return;
-      if (cn.includes('boost') || cn.includes('growth')) return;
-      if (an.includes('boost') || an.includes('growth')) return;
-    } else {
-      if (!matchesCategoryForMetrics(cn, an, cat)) return;
-    }
+    if (!matchesCategoryForMetrics(cn, an, cat)) return;
 
     // Step 3: Classify funnel by campaign name
     const funnel = classifyFunnel(cn);

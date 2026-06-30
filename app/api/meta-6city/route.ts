@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
+import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 import { getDateParams } from '@/lib/dateUtils';
 
 const SIX_CITIES: Record<string, string[]> = {
@@ -11,22 +12,7 @@ const SIX_CITIES: Record<string, string[]> = {
   "Gujarat":     ["Gujarat"],
 };
 
-const CAMPAIGN_EXCLUSION_KEYWORDS = [
-  'chair', 'desk', 'sofa', 'elite',
-  'foot', 'growth', 'acce'
-];
 
-const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
-
-function isCampaignExcluded(name: string): boolean {
-  const cn = (name || '').toLowerCase();
-  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
-}
-
-function isAdsetExcluded(name: string): boolean {
-  const an = (name || '').toLowerCase();
-  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
-}
 
 function buildUrl(
   accountId: string,
@@ -85,21 +71,11 @@ export async function GET(req: NextRequest) {
         // Skip zero spend rows
         if (spend === 0) continue;
 
-        // STEP 1: Exclude campaigns with excluded keywords
-        if (isCampaignExcluded(campaignName)) continue;
-
-        // STEP 2: Exclude adsets with excluded keywords
-        if (isAdsetExcluded(adsetName)) continue;
-
-        // STEP 3: Dhoni rule - classify by adset name
         const cn = campaignName.toLowerCase();
         const an = adsetName.toLowerCase();
 
-        if (cn.includes('dhoni')) {
-          // For 6 City Meta (All category), only count 
-          // mattress-related adsets from Dhoni campaigns
-          if (!an.includes('mat')) continue;
-        }
+        // Use centralized matching logic for 'All' category
+        if (!matchesCategoryForMetrics(cn, an, 'All')) continue;
 
         // STEP 4: Funnel classification
         let funnel = 'TOP';
