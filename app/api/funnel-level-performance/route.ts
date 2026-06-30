@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
 import { getMonthsInRange, getDefaultMonths } from '@/lib/dateRangeUtils';
+import { matchesCategoryForMetrics, classifyFunnel } from '@/lib/metricUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +22,6 @@ const CATEGORY_CONVERSION_ACTION: Record<string, string> = {
 
 const WALKIN_ACTION = 'cl_walk_in';
 const OVERALL_ROAS_ACTION = 'omni_purchase';
-
-function classifyFunnel(campaignName: string): string {
-  const lower = campaignName.toLowerCase();
-  if (lower.includes('bot')) return 'Bot';
-  if (lower.includes('mid')) return 'Mid';
-  return 'Top';
-}
-
-import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
 const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
 const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
@@ -89,8 +81,16 @@ export async function GET(req: NextRequest) {
 
         if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
-        const funnelName = classifyFunnel(cName);
+        let rawFunnel = classifyFunnel(cName);
+        if (rawFunnel === 'BOTTOM') rawFunnel = 'Bot';
+        if (rawFunnel === 'TOP') rawFunnel = 'Top';
+        if (rawFunnel === 'MID') rawFunnel = 'Mid';
+        
+        const funnelName = rawFunnel;
+        if (!funnelName) continue;
+        
         const node = getCampNode(funnelName);
+        if (!node) continue;
         const m = node[p.label];
 
         m.spend += parseFloat(row.spend || '0');
