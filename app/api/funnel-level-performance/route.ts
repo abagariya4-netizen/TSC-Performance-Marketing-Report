@@ -24,7 +24,7 @@ const OVERALL_ROAS_ACTION = 'omni_purchase';
 
 function classifyFunnel(campaignName: string): string {
   const lower = campaignName.toLowerCase();
-  if (lower.includes('bot')) return 'Bottom';
+  if (lower.includes('bot')) return 'Bot';
   if (lower.includes('mid')) return 'Mid';
   return 'Top';
 }
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     const campaignsMap = new Map<string, any>();
     const getCampNode = (name: string) => campaignsMap.get(name);
 
-    ['Top', 'Mid', 'Bottom'].forEach(name => {
+    ['Top', 'Mid', 'Bot'].forEach(name => {
       const node: any = { name };
       periods.forEach(p => {
         node[p.label] = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 };
