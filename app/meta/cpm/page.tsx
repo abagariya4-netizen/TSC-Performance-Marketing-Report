@@ -22,8 +22,8 @@ export default function CPMPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ category, since, until });
-      const res = await fetch(`/api/meta-cpm?${params.toString()}`);
+      const params = new URLSearchParams({ category, since, until, _t: Date.now().toString() });
+      const res = await fetch(`/api/meta-cpm?${params.toString()}`, { cache: 'no-store' });
       const data = await res.json();
       
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to fetch data');

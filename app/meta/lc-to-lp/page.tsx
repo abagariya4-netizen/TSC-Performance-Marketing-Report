@@ -42,8 +42,8 @@ export default function LCToLPPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ category, since, until });
-      const res = await fetch(`/api/meta-lc?${params.toString()}`);
+      const params = new URLSearchParams({ category, since, until, _t: Date.now().toString() });
+      const res = await fetch(`/api/meta-lc?${params.toString()}`, { cache: 'no-store' });
       const data = await res.json();
       
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to fetch data');
