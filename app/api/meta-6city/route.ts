@@ -96,11 +96,9 @@ export async function GET(req: NextRequest) {
         const an = adsetName.toLowerCase();
 
         if (cn.includes('dhoni')) {
-          const productKeywords = [
-            'mat', 'chair', 'sofa', 'desk',
-            'elite', 'foot', 'acce', 'bed'
-          ];
-          if (!productKeywords.some(kw => an.includes(kw))) continue;
+          // For 6 City Meta (All category), only count 
+          // mattress-related adsets from Dhoni campaigns
+          if (!an.includes('mat')) continue;
         }
 
         // STEP 4: Funnel classification
