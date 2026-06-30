@@ -37,7 +37,7 @@ function classifyFunnel(cn) {
   if (cn.includes('growth')) return 'GROWTH';
   if (cn.includes('bot') && !cn.includes('growth')) return 'BOTTOM';
   if (cn.includes('mid') && !cn.includes('growth')) return 'MID';
-  if (cn.includes('top') && !cn.includes('growth')) return 'TOP';
+  if (cn.includes('top')) return 'TOP';
   return null;
 }
 
@@ -45,12 +45,12 @@ function matchesCategory(cn, an, cat) {
   const lowerCamp = (cn || '').toLowerCase();
   const lowerAdset = (an || '').toLowerCase();
 
-  const hasDhoni = lowerCamp.includes('dhoni') || lowerCamp.includes('all_products');
+  const hasDhoni = lowerCamp.includes('dhoni');
+
   let passesCategory = false;
 
   if (hasDhoni) {
-    if (cat === 'All') passesCategory = true;
-    else if (cat === 'Mattress') passesCategory = lowerAdset.includes('mat');
+    if (cat === 'All' || cat === 'Mattress') passesCategory = lowerAdset.includes('mat');
     else if (cat === 'Chair') passesCategory = lowerAdset.includes('chair');
     else if (cat === 'Sofa') passesCategory = lowerAdset.includes('sofa');
     else if (cat === 'Desk') passesCategory = lowerAdset.includes('desk');
@@ -94,12 +94,15 @@ async function main() {
   
   const rows = await fetchAllPages(url);
   
-  const categories = ['All', 'Elite', 'Foot Massager', 'Desk', 'Sofa', 'Mattress'];
+  const categories = ['All', 'Elite', 'Foot Massager', 'Desk', 'Sofa', 'Mattress', 'Chair', 'Accessories', 'Bed'];
   
   const results = {};
   for (const cat of categories) {
     results[cat] = {
-      '03': { TOP: {lc:0, lp:0}, MID: {lc:0, lp:0}, BOTTOM: {lc:0, lp:0} }
+      '03': { TOP: {lc:0, lp:0}, MID: {lc:0, lp:0}, BOTTOM: {lc:0, lp:0} },
+      '04': { TOP: {lc:0, lp:0}, MID: {lc:0, lp:0}, BOTTOM: {lc:0, lp:0} },
+      '05': { TOP: {lc:0, lp:0}, MID: {lc:0, lp:0}, BOTTOM: {lc:0, lp:0} },
+      '06': { TOP: {lc:0, lp:0}, MID: {lc:0, lp:0}, BOTTOM: {lc:0, lp:0} }
     };
   }
 
@@ -116,7 +119,7 @@ async function main() {
     }
 
     const month = r.date_start.split('-')[1];
-    if (month !== '03') continue;
+    if (!['03', '04', '05', '06'].includes(month)) continue;
 
     for (const cat of categories) {
       if (matchesCategory(cn, an, cat)) {
@@ -130,11 +133,14 @@ async function main() {
   }
 
   for (const cat of categories) {
-    const data = results[cat]['03'];
-    const pTop = data.TOP.lc === 0 ? '0.00%' : ((data.TOP.lp / data.TOP.lc) * 100).toFixed(2) + '%';
-    const pMid = data.MID.lc === 0 ? '0.00%' : ((data.MID.lp / data.MID.lc) * 100).toFixed(2) + '%';
-    const pBot = data.BOTTOM.lc === 0 ? '0.00%' : ((data.BOTTOM.lp / data.BOTTOM.lc) * 100).toFixed(2) + '%';
-    console.log(`${cat.padEnd(15)} | TOP: ${pTop.padEnd(6)} | MID: ${pMid.padEnd(6)} | BOT: ${pBot.padEnd(6)}`);
+    console.log(`\n--- ${cat.toUpperCase()} ---`);
+    for (const month of ['03', '04', '05', '06']) {
+      const data = results[cat][month];
+      const pTop = data.TOP.lc === 0 ? '0.00%' : ((data.TOP.lp / data.TOP.lc) * 100).toFixed(2) + '%';
+      const pMid = data.MID.lc === 0 ? '0.00%' : ((data.MID.lp / data.MID.lc) * 100).toFixed(2) + '%';
+      const pBot = data.BOTTOM.lc === 0 ? '0.00%' : ((data.BOTTOM.lp / data.BOTTOM.lc) * 100).toFixed(2) + '%';
+      console.log(`${month} | TOP: ${pTop.padEnd(6)} | MID: ${pMid.padEnd(6)} | BOT: ${pBot.padEnd(6)}`);
+    }
   }
 }
 main().catch(console.error);

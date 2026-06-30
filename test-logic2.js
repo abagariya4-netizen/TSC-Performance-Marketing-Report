@@ -46,6 +46,7 @@ function matchesCategory(cn, an, cat) {
   const lowerAdset = (an || '').toLowerCase();
 
   const hasDhoni = lowerCamp.includes('dhoni') || lowerCamp.includes('all_products');
+
   let passesCategory = false;
 
   if (hasDhoni) {
@@ -76,7 +77,11 @@ function matchesCategory(cn, an, cat) {
 
   if (!passesCategory) return false;
 
-  if (cat === 'Mattress' || cat === 'All') {
+  // For 'All', we skip the category adset exclusions! Wait, does 'All' have adset exclusions?
+  // Let's see if skipping adset exclusions for 'All' fixes the BOT: 34.27% vs 34.29%.
+  if (cat === 'All') {
+    if (['boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else if (cat === 'Mattress') {
     if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
   } else if (cat === 'Chair') {
     if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;

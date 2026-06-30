@@ -45,19 +45,14 @@ function matchesCategory(cn, an, cat) {
   const lowerCamp = (cn || '').toLowerCase();
   const lowerAdset = (an || '').toLowerCase();
 
-  const hasDhoni = lowerCamp.includes('dhoni') || lowerCamp.includes('all_products');
+  const isDhoniOrAll = lowerCamp.includes('dhoni') || lowerCamp.includes('all_products');
   let passesCategory = false;
 
-  if (hasDhoni) {
+  if (isDhoniOrAll) {
+    // Both are blocked from Chair, Desk, Sofa, Elite, etc.
     if (cat === 'All') passesCategory = true;
     else if (cat === 'Mattress') passesCategory = lowerAdset.includes('mat');
-    else if (cat === 'Chair') passesCategory = lowerAdset.includes('chair');
-    else if (cat === 'Sofa') passesCategory = lowerAdset.includes('sofa');
-    else if (cat === 'Desk') passesCategory = lowerAdset.includes('desk');
-    else if (cat === 'Elite') passesCategory = lowerAdset.includes('elite');
-    else if (cat === 'Foot Massager') passesCategory = lowerAdset.includes('foot');
-    else if (cat === 'Accessories') passesCategory = lowerAdset.includes('acce');
-    else if (cat === 'Bed') passesCategory = lowerAdset.includes('bed');
+    else passesCategory = false; 
   } else if (cat === 'All') {
     passesCategory = true;
   } else {
@@ -76,7 +71,10 @@ function matchesCategory(cn, an, cat) {
 
   if (!passesCategory) return false;
 
-  if (cat === 'Mattress' || cat === 'All') {
+  // ADSET EXCLUSIONS
+  if (cat === 'All') {
+    if (['boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else if (cat === 'Mattress') {
     if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
   } else if (cat === 'Chair') {
     if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
