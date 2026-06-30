@@ -96,27 +96,21 @@ export function matchesCategoryForMetrics(
   const lowerCamp = (campaignName || '').toLowerCase();
   const lowerAdset = (adsetName || '').toLowerCase();
 
-  const hasDhoni = lowerCamp.includes('dhoni');
+  const isDhoniOrAll = lowerCamp.includes('dhoni') || lowerCamp.includes('all_products');
 
   let passesCategory = false;
 
-  if (hasDhoni) {
-    // Even for "All" category, Dhoni campaigns only 
-    // count mattress-related adsets
-    if (category === 'All' || category === 'Mattress') {
+  if (isDhoniOrAll) {
+    if (category === 'All') {
+      passesCategory = true;
+    } else if (category === 'Mattress') {
       passesCategory = lowerAdset.includes('mat');
+    } else {
+      passesCategory = false;
     }
-    else if (category === 'Chair') passesCategory = lowerAdset.includes('chair');
-    else if (category === 'Sofa') passesCategory = lowerAdset.includes('sofa');
-    else if (category === 'Desk') passesCategory = lowerAdset.includes('desk');
-    else if (category === 'Elite') passesCategory = lowerAdset.includes('elite');
-    else if (category === 'Foot Massager') passesCategory = lowerAdset.includes('foot');
-    else if (category === 'Accessories') passesCategory = lowerAdset.includes('acce');
-    else if (category === 'Bed') passesCategory = lowerAdset.includes('bed');
   } else if (category === 'All') {
     passesCategory = true;
   } else {
-    // Classify by CAMPAIGN name keyword ALWAYS
     if (category === 'Mattress') {
       const excludes = ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai'];
       passesCategory = lowerCamp.includes('mat') && !excludes.some(ex => lowerCamp.includes(ex));
@@ -132,8 +126,10 @@ export function matchesCategoryForMetrics(
 
   if (!passesCategory) return false;
 
-  // ADSET EXCLUSIONS (always apply regardless)
-  if (category === 'Mattress' || category === 'All') {
+  // ADSET EXCLUSIONS
+  if (category === 'All') {
+    if (['boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
+  } else if (category === 'Mattress') {
     if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
   } else if (category === 'Chair') {
     if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
@@ -158,8 +154,8 @@ export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' |
   // MID: contains 'mid', doesn't contain 'growth'
   if (n.includes('mid') && !n.includes('growth')) return 'MID';
 
-  // TOP: doesn't contain 'mid', doesn't contain 'bot'
-  if (!n.includes('mid') && !n.includes('bot')) return 'TOP';
+  // TOP: contains 'top', doesn't contain 'growth'
+  if (n.includes('top') && !n.includes('growth')) return 'TOP';
 
   return null;
 }

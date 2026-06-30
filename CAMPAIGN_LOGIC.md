@@ -13,7 +13,7 @@ Funnels are determined strictly based on the **Campaign Name**. The application 
 | **GROWTH** | Highest | Campaign name contains `growth` |
 | **BOTTOM** | High | Campaign name contains `bot` AND does NOT contain `growth` |
 | **MID** | Medium | Campaign name contains `mid` AND does NOT contain `growth` |
-| **TOP** | Lowest | Campaign name does NOT contain `mid` and does NOT contain `bot` |
+| **TOP** | Lowest | Campaign name contains `top` AND does NOT contain `growth` |
 
 > [!NOTE]
 > `growth` overrides everything. If a campaign is named `TSC_Growth_Mid_Funnel`, it is classified as GROWTH, not MID.
