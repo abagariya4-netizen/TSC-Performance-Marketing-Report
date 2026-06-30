@@ -25,6 +25,7 @@ function groupRows(rows: any[], cat: string) {
 
     if (cat === 'All') {
       if (cn.includes('dhoni') && !an.includes('mat')) return;
+      if (cn.includes('boost') || cn.includes('growth')) return;
       if (an.includes('boost') || an.includes('growth')) return;
     } else {
       if (!matchesCategoryForMetrics(cn, an, cat)) return;
