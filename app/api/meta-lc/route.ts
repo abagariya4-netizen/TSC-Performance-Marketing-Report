@@ -23,8 +23,12 @@ function groupRows(rows: any[], cat: string) {
     const cn = (row.campaign_name || '').toLowerCase();
     const an = (row.adset_name    || '').toLowerCase();
 
-    // Let matchesCategoryForMetrics handle all the category filtering
-    if (!matchesCategoryForMetrics(cn, an, cat)) return;
+    if (cat === 'All') {
+      if (cn.includes('dhoni') && !an.includes('mat')) return;
+      if (an.includes('boost') || an.includes('growth')) return;
+    } else {
+      if (!matchesCategoryForMetrics(cn, an, cat)) return;
+    }
 
     // Step 3: Classify funnel by campaign name
     const funnel = classifyFunnel(cn);
