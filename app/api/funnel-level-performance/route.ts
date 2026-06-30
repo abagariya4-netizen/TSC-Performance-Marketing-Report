@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
 
         if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
-        let rawFunnel = classifyFunnel(cName);
+        let rawFunnel: string | null = classifyFunnel(cName);
         if (rawFunnel === 'BOTTOM') rawFunnel = 'Bot';
         if (rawFunnel === 'TOP') rawFunnel = 'Top';
         if (rawFunnel === 'MID') rawFunnel = 'Mid';
