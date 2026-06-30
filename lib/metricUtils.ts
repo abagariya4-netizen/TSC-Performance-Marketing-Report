@@ -100,11 +100,12 @@ export function matchesCategoryForMetrics(
 
   let passesCategory = false;
 
-  if (category === 'All') {
-    passesCategory = true;
-  } else if (hasDhoni) {
-    // Classify by ADSET name keyword
-    if (category === 'Mattress') passesCategory = lowerAdset.includes('mat');
+  if (hasDhoni) {
+    // Even for "All" category, Dhoni campaigns only 
+    // count mattress-related adsets
+    if (category === 'All' || category === 'Mattress') {
+      passesCategory = lowerAdset.includes('mat');
+    }
     else if (category === 'Chair') passesCategory = lowerAdset.includes('chair');
     else if (category === 'Sofa') passesCategory = lowerAdset.includes('sofa');
     else if (category === 'Desk') passesCategory = lowerAdset.includes('desk');
@@ -112,6 +113,8 @@ export function matchesCategoryForMetrics(
     else if (category === 'Foot Massager') passesCategory = lowerAdset.includes('foot');
     else if (category === 'Accessories') passesCategory = lowerAdset.includes('acce');
     else if (category === 'Bed') passesCategory = lowerAdset.includes('bed');
+  } else if (category === 'All') {
+    passesCategory = true;
   } else {
     // Classify by CAMPAIGN name keyword ALWAYS
     if (category === 'Mattress') {
@@ -130,7 +133,7 @@ export function matchesCategoryForMetrics(
   if (!passesCategory) return false;
 
   // ADSET EXCLUSIONS (always apply regardless)
-  if (category === 'Mattress') {
+  if (category === 'Mattress' || category === 'All') {
     if (['sofa', 'desk', 'chair', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
   } else if (category === 'Chair') {
     if (['mattress', 'mat', 'desk', 'sofa', 'boost', 'growth'].some(ex => lowerAdset.includes(ex))) return false;
