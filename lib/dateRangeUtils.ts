@@ -5,6 +5,8 @@ export type Month = {
   endDate: string; // YYYY-MM-DD
 };
 
+import { fmtDate } from './dateUtils';
+
 export function getMonthsInRange(start: Date, end: Date): Month[] {
   const months: Month[] = [];
   const currentDate = new Date(start.getFullYear(), start.getMonth(), 1);
@@ -26,8 +28,8 @@ export function getMonthsInRange(start: Date, end: Date): Month[] {
     months.push({
       label: currentDate.toLocaleString('default', { month: 'short' }),
       fullLabel: currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }),
-      startDate: monthStart.toISOString().split('T')[0],
-      endDate: monthEnd.toISOString().split('T')[0],
+      startDate: fmtDate(monthStart),
+      endDate: fmtDate(monthEnd),
     });
 
     currentDate.setMonth(currentDate.getMonth() + 1);

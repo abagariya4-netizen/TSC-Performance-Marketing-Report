@@ -171,8 +171,15 @@ export default function FunnelLevelPerformance() {
               endD = yday;
             }
             
-            setStartDate(startD.toISOString().split('T')[0]);
-            setEndDate(endD.toISOString().split('T')[0]);
+            const fmt = (d: Date) => {
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              return `${y}-${m}-${day}`;
+            };
+            
+            setStartDate(fmt(startD));
+            setEndDate(fmt(endD));
           }}
           onReset={() => {
             const def = getDefaultMonths();
