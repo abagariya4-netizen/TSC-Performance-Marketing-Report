@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { fetchAllPages, buildAdsetUrl } from '@/lib/metaApi';
 import { includeInRegion } from '@/lib/classify';
 import { calcRow } from '@/lib/calculations';
+import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 import { getDateParams } from '@/lib/dateUtils';
 
 const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
