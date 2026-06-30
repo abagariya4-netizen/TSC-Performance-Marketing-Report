@@ -24,7 +24,7 @@ const OVERALL_ROAS_ACTION = 'omni_purchase';
 
 function classifyFunnel(campaignName: string): string {
   const lower = campaignName.toLowerCase();
-  if (lower.includes('growth')) return 'Growth';
+  if (lower.includes('group')) return 'Group';
   if (lower.includes('bot')) return 'Bottom';
   if (lower.includes('mid')) return 'Mid';
   return 'Top';
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     const campaignsMap = new Map<string, any>();
     const getCampNode = (name: string) => campaignsMap.get(name);
 
-    ['Top', 'Mid', 'Bottom', 'Growth'].forEach(name => {
+    ['Top', 'Mid', 'Bottom', 'Group'].forEach(name => {
       const node: any = { name };
       periods.forEach(p => {
         node[p.label] = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 };
@@ -86,24 +86,7 @@ export async function GET(req: NextRequest) {
         const cn = cName.toLowerCase();
         const an = aName.toLowerCase();
 
-        // STEP 1 & 2: Exclusions
-        if (isCampaignExcluded(cn)) continue;
-        if (isAdsetExcluded(an)) continue;
-
-        // STEP 3: Dhoni rule
-        if (cn.includes('dhoni')) {
-          let productKw = 'mat';
-          if (category === 'Chair') productKw = 'chair';
-          else if (category === 'Desk') productKw = 'desk';
-          else if (category === 'Sofa') productKw = 'sofa';
-          else if (category === 'Elite') productKw = 'elite';
-          else if (category === 'Foot Massager') productKw = 'foot';
-          else if (category === 'Accessories') productKw = 'acce';
-          else if (category === 'Bed') productKw = 'bed';
-          
-          if (!an.includes(productKw)) continue;
-        }
-
+        if (cn.includes('growth')) continue;
         if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
         const funnelName = classifyFunnel(cName);
