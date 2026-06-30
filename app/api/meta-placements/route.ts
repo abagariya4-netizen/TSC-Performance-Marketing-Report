@@ -28,7 +28,41 @@ const PLACEMENT_LABELS: Record<string, string> = {
   'messenger|story':               'Messenger Stories',
 };
 
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
+}
+
 function passesFilter(campaignName: string, adsetName: string, category: string, funnel: string): boolean {
+  const cn = (campaignName || '').toLowerCase();
+  const an = (adsetName || '').toLowerCase();
+
+  // STEP 1 & 2: Exclusions
+  if (isCampaignExcluded(cn)) return false;
+  if (isAdsetExcluded(an)) return false;
+
+  // STEP 3: Dhoni rule
+  if (cn.includes('dhoni')) {
+    let productKw = 'mat';
+    if (category === 'Chair') productKw = 'chair';
+    else if (category === 'Desk') productKw = 'desk';
+    else if (category === 'Sofa') productKw = 'sofa';
+    else if (category === 'Elite') productKw = 'elite';
+    else if (category === 'Foot Massager') productKw = 'foot';
+    else if (category === 'Accessories') productKw = 'acce';
+    else if (category === 'Bed') productKw = 'bed';
+    
+    if (!an.includes(productKw)) return false;
+  }
+
   if (!matchesCategoryForMetrics(campaignName, adsetName, category)) {
     return false;
   }

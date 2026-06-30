@@ -32,10 +32,17 @@ function classifyFunnel(campaignName: string): string {
 
 import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
-function isCampaignExcluded(campaignName: string): boolean {
-  const lower = campaignName.toLowerCase();
-  if (lower.includes('boost')) return true;
-  return false;
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
 }
 
 export async function GET(req: NextRequest) {
@@ -76,7 +83,27 @@ export async function GET(req: NextRequest) {
         const cName = row.campaign_name || '';
         const aName = row.adset_name || '';
 
-        if (isCampaignExcluded(cName)) continue;
+        const cn = cName.toLowerCase();
+        const an = aName.toLowerCase();
+
+        // STEP 1 & 2: Exclusions
+        if (isCampaignExcluded(cn)) continue;
+        if (isAdsetExcluded(an)) continue;
+
+        // STEP 3: Dhoni rule
+        if (cn.includes('dhoni')) {
+          let productKw = 'mat';
+          if (category === 'Chair') productKw = 'chair';
+          else if (category === 'Desk') productKw = 'desk';
+          else if (category === 'Sofa') productKw = 'sofa';
+          else if (category === 'Elite') productKw = 'elite';
+          else if (category === 'Foot Massager') productKw = 'foot';
+          else if (category === 'Accessories') productKw = 'acce';
+          else if (category === 'Bed') productKw = 'bed';
+          
+          if (!an.includes(productKw)) continue;
+        }
+
         if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
         const funnelName = classifyFunnel(cName);

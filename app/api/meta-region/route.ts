@@ -1,8 +1,21 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { fetchAllPages, buildCampaignUrl } from '@/lib/metaApi';
+import { fetchAllPages, buildAdsetUrl } from '@/lib/metaApi';
 import { includeInRegion } from '@/lib/classify';
 import { calcRow } from '@/lib/calculations';
 import { getDateParams } from '@/lib/dateUtils';
+
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,24 +43,52 @@ export async function GET(req: NextRequest) {
     dates.sinceYday = fmt(yesterday);
     dates.untilYday = fmt(yesterday);
 
-    const mtdUrl  = buildCampaignUrl(accountId, token, dates.sinceMTD,  dates.untilMTD);
-    const ydayUrl = buildCampaignUrl(accountId, token, dates.sinceYday, dates.untilYday);
+    const mtdUrl  = buildAdsetUrl(accountId, token, dates.sinceMTD,  dates.untilMTD);
+    const ydayUrl = buildAdsetUrl(accountId, token, dates.sinceYday, dates.untilYday);
 
-    const mtdRows = await fetchAllPages(mtdUrl);
-    const ydayRows = await fetchAllPages(ydayUrl);
+    const [mtdRows, ydayRows] = await Promise.all([
+      fetchAllPages(mtdUrl),
+      fetchAllPages(ydayUrl)
+    ]);
 
     const mtdByRegion:  Record<string, number> = {};
     const ydayByRegion: Record<string, number> = {};
 
-    for (const row of mtdRows) {
-      if (!includeInRegion(row.campaign_name)) continue;
+    const processRow = (row: any, isMtd: boolean) => {
+      const cName = row.campaign_name || '';
+      const aName = row.adset_name || '';
+
+      const cn = cName.toLowerCase();
+      const an = aName.toLowerCase();
+
+      // STEP 1 & 2: Exclusions
+      if (isCampaignExcluded(cn)) return;
+      if (isAdsetExcluded(an)) return;
+
+      // STEP 3: Dhoni rule
+      if (cn.includes('dhoni')) {
+        // This report has no category filter (shows All Data)
+        // so we default to mattress-related adsets only
+        if (!an.includes('mat')) return;
+      }
+
+      if (!includeInRegion(cName)) return;
+
       const r = row.region || 'Unknown';
-      mtdByRegion[r] = (mtdByRegion[r] || 0) + Math.round(parseFloat(row.spend) || 0);
+      const spend = Math.round(parseFloat(row.spend) || 0);
+
+      if (isMtd) {
+        mtdByRegion[r] = (mtdByRegion[r] || 0) + spend;
+      } else {
+        ydayByRegion[r] = (ydayByRegion[r] || 0) + spend;
+      }
+    };
+
+    for (const row of mtdRows) {
+      processRow(row, true);
     }
     for (const row of ydayRows) {
-      if (!includeInRegion(row.campaign_name)) continue;
-      const r = row.region || 'Unknown';
-      ydayByRegion[r] = (ydayByRegion[r] || 0) + Math.round(parseFloat(row.spend) || 0);
+      processRow(row, false);
     }
 
     return NextResponse.json({

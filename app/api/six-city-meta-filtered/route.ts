@@ -23,6 +23,19 @@ function getFunnel(cName: string, region: string): string {
   return 'Top';
 }
 
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
@@ -69,6 +82,27 @@ export async function GET(req: NextRequest) {
         const cName = row.campaign_name || '';
         const aName = row.adset_name || '';
         const rowRegion = row.region || '';
+
+        const cn = cName.toLowerCase();
+        const an = aName.toLowerCase();
+
+        // STEP 1 & 2: Exclusions
+        if (isCampaignExcluded(cn)) continue;
+        if (isAdsetExcluded(an)) continue;
+
+        // STEP 3: Dhoni rule
+        if (cn.includes('dhoni')) {
+          let productKw = 'mat';
+          if (categoryFilter === 'Chair') productKw = 'chair';
+          else if (categoryFilter === 'Desk') productKw = 'desk';
+          else if (categoryFilter === 'Sofa') productKw = 'sofa';
+          else if (categoryFilter === 'Elite') productKw = 'elite';
+          else if (categoryFilter === 'Foot Massager') productKw = 'foot';
+          else if (categoryFilter === 'Accessories') productKw = 'acce';
+          else if (categoryFilter === 'Bed') productKw = 'bed';
+          
+          if (!an.includes(productKw)) continue;
+        }
 
         if (regionFilter !== 'All' && !allowedRegions.includes(rowRegion)) continue;
         if (!matchesCategoryForMetrics(cName, aName, categoryFilter)) continue;

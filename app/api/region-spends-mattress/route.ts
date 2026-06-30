@@ -8,6 +8,19 @@ const BASE_URL = 'https://graph.facebook.com/v19.0';
 
 import { matchesCategoryForMetrics } from '@/lib/metricUtils';
 
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
@@ -37,6 +50,19 @@ export async function GET(req: NextRequest) {
     const processRow = (row: any, isMtd: boolean) => {
       const cName = row.campaign_name || '';
       const aName = row.adset_name || '';
+
+      const cn = cName.toLowerCase();
+      const an = aName.toLowerCase();
+
+      // STEP 1 & 2: Exclusions
+      if (isCampaignExcluded(cn)) return;
+      if (isAdsetExcluded(an)) return;
+
+      // STEP 3: Dhoni rule
+      if (cn.includes('dhoni')) {
+        // This report is Mattress only
+        if (!an.includes('mat')) return;
+      }
 
       if (!matchesCategoryForMetrics(cName, aName, 'Mattress')) return;
 

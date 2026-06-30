@@ -2,47 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchAllPages } from '@/lib/metaApi';
 import { classifyFunnel, matchesCategoryForMetrics } from '@/lib/metricUtils';
 
+const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
+const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
+
+function isCampaignExcluded(name: string): boolean {
+  const cn = (name || '').toLowerCase();
+  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
+}
+
+function isAdsetExcluded(name: string): boolean {
+  const an = (name || '').toLowerCase();
+  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
+}
+
 function groupRows(rows: any[], cat: string) {
   const result: Record<string, Record<string, {
     spend: number; impressions: number;
   }>> = { TOP: {}, MID: {}, BOTTOM: {}, GROWTH: {} };
-
-  // Campaign name rules
-  const CAMPAIGN_RULES: Record<string, { contains?: string; excludes: string[] }> = {
-    'All':          { excludes: ['boost','growth'] },
-    'Mattress':     { contains: 'mat', excludes: ['sofa','desk','elite','foot','bed','acce','chair','pillow','cushion','massa','sensai','boost','growth'] },
-    'Chair':        { contains: 'chair', excludes: ['boost','growth','desk','sofa'] },
-    'Desk':         { contains: 'desk', excludes: ['boost','growth','chair','sofa'] },
-    'Sofa':         { contains: 'sofa', excludes: ['boost','growth','chair','desk'] },
-    'Elite':        { contains: 'elite',  excludes: ['boost','growth'] },
-    'Foot Massager':{ contains: 'foot',   excludes: ['boost','growth'] },
-    'Accessories':  { contains: 'acce',   excludes: ['boost','growth'] },
-    'Bed':          { contains: 'bed',    excludes: ['boost','growth'] },
-  };
-
-  // Adset name exclusion rules (no "contains" check, only exclusions)
-  const ADSET_EXCLUDES: Record<string, string[]> = {
-    'All':          ['boost','growth'],
-    'Mattress':     ['sofa','desk','chair','boost','growth'],
-    'Chair':        ['mattress','mat','desk','sofa','boost','growth'],
-    'Desk':         ['mattress','mat','sofa','chair','boost','growth'],
-    'Sofa':         ['boost','growth'],
-    'Elite':        ['boost','growth'],
-    'Foot Massager':['boost','growth'],
-    'Accessories':  ['boost','growth'],
-    'Bed':          ['boost','growth'],
-  };
-
-  const CATEGORY_KEYWORDS: Record<string, string> = {
-    'Mattress': 'mat',
-    'Chair': 'chair',
-    'Sofa': 'sofa',
-    'Desk': 'desk',
-    'Elite': 'elite',
-    'Foot Massager': 'foot',
-    'Accessories': 'acce',
-    'Bed': 'bed'
-  };
 
   function classifyFunnel(cn: string): string | null {
     if (cn.includes('growth'))                        return 'GROWTH';
@@ -55,6 +31,24 @@ function groupRows(rows: any[], cat: string) {
   rows.forEach(row => {
     const cn = (row.campaign_name || '').toLowerCase();
     const an = (row.adset_name    || '').toLowerCase();
+
+    // STEP 1 & 2: Exclusions
+    if (isCampaignExcluded(cn)) return;
+    if (isAdsetExcluded(an)) return;
+
+    // STEP 3: Dhoni rule
+    if (cn.includes('dhoni')) {
+      let productKw = 'mat';
+      if (cat === 'Chair') productKw = 'chair';
+      else if (cat === 'Desk') productKw = 'desk';
+      else if (cat === 'Sofa') productKw = 'sofa';
+      else if (cat === 'Elite') productKw = 'elite';
+      else if (cat === 'Foot Massager') productKw = 'foot';
+      else if (cat === 'Accessories') productKw = 'acce';
+      else if (cat === 'Bed') productKw = 'bed';
+      
+      if (!an.includes(productKw)) return;
+    }
 
     if (!matchesCategoryForMetrics(cn, an, cat)) return;
 
