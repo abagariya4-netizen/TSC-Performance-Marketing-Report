@@ -97,26 +97,26 @@ export function matchesCategoryForMetrics(
   const an = (adsetName || '').toLowerCase();
   const str = cn + " " + an;
 
-  // Globally exclude boost and growth
-  if (str.includes('boost') || str.includes('growth')) return false;
-
-  let matchedCategory: string | null = null;
-
-  if (str.includes('chair')) matchedCategory = 'Chair';
-  else if (str.includes('desk')) matchedCategory = 'Desk';
-  else if (str.includes('sofa')) matchedCategory = 'Sofa';
-  else if (str.includes('elite')) matchedCategory = 'Elite';
-  else if (str.includes('foot')) matchedCategory = 'Foot Massager';
-  else if (str.includes('bed')) matchedCategory = 'Bed';
-  else if (str.includes('acce')) matchedCategory = 'Accessories';
-  else if (str.includes('mat') || str.includes('mattress')) matchedCategory = 'Mattress';
-  else if (str.includes('dhoni') || str.includes('all_products')) matchedCategory = 'Mattress';
-
-  if (category === 'All') {
-    return matchedCategory !== null;
+  let mCat: string | null = null;
+  
+  if (cn.includes('mat') || cn.includes('mattress')) {
+      mCat = 'Mattress';
+  } else {
+      if (str.includes('chair')) mCat = 'Chair';
+      else if (str.includes('desk')) mCat = 'Desk';
+      else if (str.includes('sofa')) mCat = 'Sofa';
+      else if (str.includes('elite')) mCat = 'Elite';
+      else if (str.includes('foot')) mCat = 'Foot Massager';
+      else if (str.includes('bed')) mCat = 'Bed';
+      else if (str.includes('acce')) mCat = 'Accessories';
+      else if (str.includes('dhoni') || str.includes('all_products') || str.includes('mat') || str.includes('mattress')) mCat = 'Mattress';
   }
 
-  return matchedCategory === category;
+  if (category === 'All') {
+    return mCat !== null;
+  }
+
+  return mCat === category;
 }
 
 export function classifyFunnel(campaignName: string): 'TOP' | 'MID' | 'BOTTOM' | 'GROWTH' | null {

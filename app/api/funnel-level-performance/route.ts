@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     const campaignsMap = new Map<string, any>();
     const getCampNode = (name: string) => campaignsMap.get(name);
 
-    ['Top', 'Mid', 'Bot'].forEach(name => {
+    ['Top', 'Mid', 'Bot', 'Growth'].forEach(name => {
       const node: any = { name };
       periods.forEach(p => {
         node[p.label] = { spend: 0, categoryRoas: 0, overallRoas: 0, cpm: 0, cpw: 0, walkin: 0, ctr: 0, cpc: 0, lcToLp: 0, lc: 0, lp: 0, impressions: 0, clicks: 0, catValue: 0, overallValue: 0 };
@@ -77,14 +77,13 @@ export async function GET(req: NextRequest) {
         const cn = cName.toLowerCase();
         const an = aName.toLowerCase();
 
-        if (cn.includes('growth')) continue;
-
         if (!matchesCategoryForMetrics(cName, aName, category)) continue;
 
         let rawFunnel: string | null = classifyFunnel(cName);
         if (rawFunnel === 'BOTTOM') rawFunnel = 'Bot';
         if (rawFunnel === 'TOP') rawFunnel = 'Top';
         if (rawFunnel === 'MID') rawFunnel = 'Mid';
+        if (rawFunnel === 'GROWTH') rawFunnel = 'Growth';
         
         const funnelName = rawFunnel;
         if (!funnelName) continue;
