@@ -71,8 +71,11 @@ export default function FunnelLevelPerformance() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [category, startDate, endDate]);
+    if (!data && !loading) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const exportCSV = () => {
     if (!data) return;
@@ -187,6 +190,28 @@ export default function FunnelLevelPerformance() {
             setEndDate(def[def.length - 1].endDate);
           }}
         />
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <button 
+            onClick={fetchData} 
+            disabled={loading}
+            style={{ 
+              padding: '8px 16px', 
+              borderRadius: '4px', 
+              background: '#3182ce', 
+              color: '#fff', 
+              border: 'none', 
+              cursor: loading ? 'not-allowed' : 'pointer', 
+              height: '38px',
+              fontWeight: 'bold',
+              opacity: loading ? 0.7 : 1,
+              transition: 'background 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#2b6cb0'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#3182ce'}
+          >
+            {loading ? 'Generating...' : 'Generate Output'}
+          </button>
+        </div>
       </div>
 
       {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>{error}</div>}
