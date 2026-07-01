@@ -11,7 +11,7 @@ const fmtFloat = (val: number) => (Number(val) || 0).toLocaleString('en-IN', { m
 
 export default function WalkinDashboard() {
   const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   
@@ -66,9 +66,7 @@ export default function WalkinDashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [category, dayType, startDate, endDate]);
+
 
   const exportCSV = () => {
     if (!data) return;
@@ -146,13 +144,32 @@ export default function WalkinDashboard() {
             setEndDate(defEnd);
           }}
         />
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <button 
+            onClick={fetchData} 
+            disabled={loading}
+            style={{ 
+              backgroundColor: '#e8733a', 
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 24px', 
+              borderRadius: '4px', 
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              height: '38px',
+              opacity: loading ? 0.7 : 1
+            }}
+          >
+            {loading ? 'Fetching...' : 'Generate Report'}
+          </button>
+        </div>
       </div>
 
       {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>{error}</div>}
 
       {loading && !data ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
-      ) : (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Fetching data...</div>
+      ) : data ? (
         <div style={{ overflowX: 'auto', border: '1px solid #2d3348', borderRadius: '8px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
             <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
@@ -229,7 +246,7 @@ export default function WalkinDashboard() {
             )}
           </table>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
