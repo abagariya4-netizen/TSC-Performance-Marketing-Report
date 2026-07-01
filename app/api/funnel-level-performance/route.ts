@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 
     const fetchPeriod = async (p: any) => {
       const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.startDate, until: p.endDate }));
-      const url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,impressions,clicks,actions,action_values,results,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
+      const url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,impressions,clicks,actions,action_values,results,conversions,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
       const data = await fetchAllPages(url);
       
       for (const row of data) {
@@ -116,7 +116,16 @@ export async function GET(req: NextRequest) {
           if (action) walkins = parseFloat(action.value || '0');
         }
 
-        // METHOD 3 — Final fallback exact match:
+        // METHOD 3 — Fallback to conversions array:
+        if (!walkins && Array.isArray(row.conversions)) {
+          const action = row.conversions.find(
+            (x: any) => x.action_type && 
+            x.action_type.includes('cl_walk_in')
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        // METHOD 4 — Final fallback exact match:
         if (!walkins && Array.isArray(row.actions)) {
           const action = row.actions.find(
             (x: any) => x.action_type === 
