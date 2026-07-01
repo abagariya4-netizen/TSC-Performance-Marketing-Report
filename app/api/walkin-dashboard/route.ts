@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     const fetchPeriod = async (p: any) => {
       const timeRangeStr = encodeURIComponent(JSON.stringify({ since: p.since, until: p.until }));
-      let url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,actions,action_values,results,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
+      let url = `${BASE_URL}/${ACCOUNT_ID}/insights?fields=campaign_name,adset_name,spend,actions,action_values,results,conversions,cost_per_result&level=adset&time_range=${timeRangeStr}&limit=500&access_token=${token}`;
       
       if (dayType !== 'All') {
         url += '&time_increment=1';
@@ -117,7 +117,16 @@ export async function GET(req: NextRequest) {
           if (action) walkins = parseFloat(action.value || '0');
         }
 
-        // METHOD 3 — Final fallback exact match:
+        // METHOD 3 — Fallback to conversions array (crucial for offline conversions):
+        if (!walkins && Array.isArray(row.conversions)) {
+          const action = row.conversions.find(
+            (x: any) => x.action_type && 
+            x.action_type.includes('cl_walk_in')
+          );
+          if (action) walkins = parseFloat(action.value || '0');
+        }
+
+        // METHOD 4 — Final fallback exact match:
         if (!walkins && Array.isArray(row.actions)) {
           const action = row.actions.find(
             (x: any) => x.action_type === 
