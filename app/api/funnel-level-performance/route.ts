@@ -23,18 +23,7 @@ const CATEGORY_CONVERSION_ACTION: Record<string, string> = {
 const WALKIN_ACTION = 'cl_walk_in';
 const OVERALL_ROAS_ACTION = 'omni_purchase';
 
-const CAMPAIGN_EXCLUSION_KEYWORDS = ['chair', 'desk', 'sofa', 'elite', 'foot', 'growth', 'acce'];
-const ADSET_EXCLUSION_KEYWORDS = ['boost', 'growth'];
 
-function isCampaignExcluded(name: string): boolean {
-  const cn = (name || '').toLowerCase();
-  return CAMPAIGN_EXCLUSION_KEYWORDS.some(kw => cn.includes(kw));
-}
-
-function isAdsetExcluded(name: string): boolean {
-  const an = (name || '').toLowerCase();
-  return ADSET_EXCLUSION_KEYWORDS.some(kw => an.includes(kw));
-}
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('meta_token')?.value || process.env.META_ACCESS_TOKEN;
