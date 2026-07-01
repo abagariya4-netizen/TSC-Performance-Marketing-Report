@@ -162,6 +162,8 @@ export default function FunnelLevelPerformance() {
           </select>
         </div>
         <DateRangePicker 
+          defaultStartDate={startDate}
+          defaultEndDate={endDate}
           onApply={(start, end) => {
             const yday = new Date();
             yday.setDate(yday.getDate() - 1);
