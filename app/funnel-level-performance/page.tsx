@@ -22,7 +22,7 @@ const renderVs = (val: number) => {
 
 export default function FunnelLevelPerformance() {
   const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   
@@ -70,12 +70,7 @@ export default function FunnelLevelPerformance() {
     }
   };
 
-  useEffect(() => {
-    if (!data && !loading) {
-      fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Removed automatic fetch on mount since user will click Generate Report
 
   const exportCSV = () => {
     if (!data) return;
@@ -195,21 +190,18 @@ export default function FunnelLevelPerformance() {
             onClick={fetchData} 
             disabled={loading}
             style={{ 
-              padding: '8px 16px', 
-              borderRadius: '4px', 
-              background: '#3182ce', 
-              color: '#fff', 
+              backgroundColor: '#e8733a', 
+              color: 'white', 
               border: 'none', 
-              cursor: loading ? 'not-allowed' : 'pointer', 
-              height: '38px',
+              padding: '8px 24px', 
+              borderRadius: '4px', 
+              cursor: loading ? 'not-allowed' : 'pointer',
               fontWeight: 'bold',
-              opacity: loading ? 0.7 : 1,
-              transition: 'background 0.2s'
+              height: '38px',
+              opacity: loading ? 0.7 : 1
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#2b6cb0'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#3182ce'}
           >
-            {loading ? 'Generating...' : 'Generate Output'}
+            {loading ? 'Fetching...' : 'Generate Report'}
           </button>
         </div>
       </div>
@@ -217,8 +209,8 @@ export default function FunnelLevelPerformance() {
       {error && <div style={{ color: '#fc8181', marginBottom: '16px' }}>{error}</div>}
 
       {loading && !data ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
-      ) : (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Fetching data...</div>
+      ) : data ? (
         <div style={{ overflowX: 'auto', border: '1px solid #2d3348', borderRadius: '8px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
             <thead style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
@@ -339,7 +331,7 @@ export default function FunnelLevelPerformance() {
             )}
           </table>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
