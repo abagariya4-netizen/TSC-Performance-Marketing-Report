@@ -9,12 +9,12 @@ const ACCOUNT_ID = 'act_2240079932900749';
 const BASE_URL = 'https://graph.facebook.com/v19.0';
 
 const CATEGORY_CONVERSION_ACTION: Record<string, string> = {
-  'Mattress': 'offsite_conversion.custom.cl_overall_mattress_purchase',
-  'Chair': 'offsite_conversion.custom.cl_overall_chair_purchase',
-  'Sofa': 'offsite_conversion.custom.cl_overall_sofa_purchase',
-  'Desk': 'offsite_conversion.custom.cl_overall_desk_purchase',
-  'Elite': 'offsite_conversion.custom.elite_purchase_offline',
-  'Foot Massager': 'offsite_conversion.custom.cl_overall_foot_massager_purchase',
+  'Mattress': 'cl_overall_mattress_purchase',
+  'Chair': 'cl_overall_chair_purchase',
+  'Sofa': 'cl_overall_sofa_purchase',
+  'Desk': 'cl_overall_desk_purchase',
+  'Elite': 'elite_purchase_offline',
+  'Foot Massager': 'cl_overall_foot_massager_purchase',
   'Accessories': 'omni_purchase',
   'Bed': 'omni_purchase',
   'All': 'omni_purchase'
@@ -141,9 +141,20 @@ export async function GET(req: NextRequest) {
 
         const expectedAction = CATEGORY_CONVERSION_ACTION[category];
         if (expectedAction) {
-           m.catValue += parseFloat(actionVals.find((a: any) => a.action_type === expectedAction || a.action_type === `custom.${expectedAction}`)?.value || '0');
+           const matchVal = actionVals.find((a: any) => 
+             a.action_type === expectedAction || 
+             a.action_type === `offsite_conversion.custom.${expectedAction}` ||
+             a.action_type === `custom.${expectedAction}`
+           );
+           m.catValue += parseFloat(matchVal?.value || '0');
         }
-        m.overallValue += parseFloat(actionVals.find((a: any) => a.action_type === OVERALL_ROAS_ACTION || a.action_type === `custom.${OVERALL_ROAS_ACTION}`)?.value || '0');
+        
+        const overallMatchVal = actionVals.find((a: any) => 
+          a.action_type === OVERALL_ROAS_ACTION || 
+          a.action_type === `offsite_conversion.custom.${OVERALL_ROAS_ACTION}` ||
+          a.action_type === `custom.${OVERALL_ROAS_ACTION}`
+        );
+        m.overallValue += parseFloat(overallMatchVal?.value || '0');
       }
     };
 
